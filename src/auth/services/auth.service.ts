@@ -6,15 +6,14 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from './jwt.service';
 import { User } from '../interface/user-interface';
 import { Response } from 'express';
-
-
+import { verify } from 'jsonwebtoken';
+import { UserDocument } from 'src/user/user.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-
   ) {}
 
   async signUp(dto: CreateUserDto) {
@@ -22,9 +21,9 @@ export class AuthService {
   }
 
   async login(loginData: LoginDto, res: Response) {
-    const user = await this.validateUser(loginData); 
+    const user = await this.validateUser(loginData);
     const tokens = await this.generateTokens(user as User);
-     this.storeTokens(res, tokens, user.id)
+    this.storeTokens(res, tokens, user.id);
     return user;
   }
 
@@ -39,32 +38,69 @@ export class AuthService {
   }
 
   private async generateTokens(user: User) {
-  const payload = {id: user._id, email: user.email, role: user.role};
-  const accessToken = this.jwtService.signAccessToken(payload);
-  const refreshToken = this.jwtService.signRefreshToken(payload);
+    const payload = { id: user._id, email: user.email, role: user.role };
+    const accessToken = this.jwtService.signAccessToken(payload);
+    const refreshToken = this.jwtService.signRefreshToken(payload);
 
-  return {accessToken, refreshToken}
+    return { accessToken, refreshToken };
   }
 
-  private async storeTokens(res: Response, tokens: {accessToken: string, refreshToken: string}, userId: string){
+  private async storeTokens(
+    res: Response,
+    tokens: { accessToken: string; refreshToken: string },
+    userId: string,
+  ) {
     res.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      maxAge: 15 * 60 * 1000,
     });
 
-  await this.userService.addRefreshToken(userId, tokens.refreshToken)
+
+    await this.userService.addRefreshToken(userId, tokens.refreshToken);
   }
 
-  //async validateRefreshToken(token: string): Promise<User> {
-    // const user = await this.userModel.findOne({ refreshToken: token });
-  
-    // if (!user || user.refreshTokenExpiresAt < new Date()) {
-    //   throw new UnauthorizedException('Refresh token expired or invalid');
-    // }
-  
-    // return user;
- // }
-  
+  async findUserById(userId: string) {
+    return await this.userService.findUserById(userId);
+  }
+
+  async refreshToken(refreshToken: string): Promise<{ accessToken: string }> {
+    try {
+      const decoded: any = this.jwtService.verifyToken(refreshToken);
+      const userId = decoded.sub || decoded.id;
+
+      const user = await this.userService.findUserById(userId);
+
+      if (!user || user.refreshToken !== refreshToken) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      if (
+        user.refreshTokenExpiresAt &&
+        new Date() > user.refreshTokenExpiresAt
+      ) {
+        throw new UnauthorizedException('Refresh token expired');
+      }
+
+      const payload = { id: user._id, email: user.email, role: user.role };
+
+      const newAccessToken = this.jwtService.signAccessToken(payload);
+      const newRefreshToken = this.jwtService.signRefreshToken(payload);
+      this.userService.addRefreshToken(userId, newRefreshToken);
+
+      return {
+        accessToken: newAccessToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Could not refresh token');
+    }
+  }
+
+  setAccessTokenCookie(res: Response, accessToken: string): void {
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+    });
+  }
 }

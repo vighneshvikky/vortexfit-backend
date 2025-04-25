@@ -5,7 +5,6 @@ import { User, UserDocument } from '../user.schema';
 import { create } from 'domain';
 import { CreateUserDto } from 'src/auth/dto/create-user.dto';
 
-
 @Injectable()
 export class UserRepository {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
@@ -22,14 +21,15 @@ export class UserRepository {
     return createdUser;
   }
 
-    async addRefreshToken(userId: string, token: string): Promise<void>{
-      const expiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-      await this.userModel.findByIdAndUpdate(userId, {
-        refreshToken: token,
-        refreshTokenExpiresAt: expiry,
-      })
-    }
-  
+  async addRefreshToken(userId: string, token: string): Promise<void> {
+    const expiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    await this.userModel.findByIdAndUpdate(userId, {
+      refreshToken: token,
+      refreshTokenExpiresAt: expiry,
+    });
+  }
 
-
+  async findUserById(userId: string) {
+    return await this.userModel.findById(userId);
+  }
 }

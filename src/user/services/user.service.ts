@@ -69,4 +69,8 @@ export class UserService {
   async addRefreshToken(userId: string, refreshToken: string) {
      await this.userRepository.addRefreshToken(userId, refreshToken);
   }
+
+  async findUserById(userId: string){
+    return await this.userRepository.findUserById(userId)
+  }
 }

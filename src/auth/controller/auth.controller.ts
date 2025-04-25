@@ -4,19 +4,24 @@ import {
   Body,
   NotFoundException,
   Res,
+  HttpCode,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { CreateUserDto, Role } from '../dto/create-user.dto';
 import { OtpService } from '../services/otp.service';
 import { UserService } from 'src/user/services/user.service';
 import { LoginDto } from '../dto/auth.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
+import { JwtService } from '../services/jwt.service';
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private otpService: OtpService,
     private userService: UserService,
+    private jwtService: JwtService
   ) {}
 
   @Post('signup')
@@ -43,7 +48,7 @@ export class AuthController {
       role: tempUserStr.role === 'trainer' ? Role.Trainer : Role.User,
     });
     
-    console.log('user', user);
+    // console.log('user', user);
     return user;
   }
 
@@ -64,16 +69,50 @@ export class AuthController {
   async login(@Body() body: LoginDto, @Res() res: Response) {
     const user  = await this.authService.login(body, res);
     return res.json({
-      message: 'User successfully logged in',
+      message: 'Login successful',
       user: {
-        id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
       },
-      accessToken: 'Access Token is Stored in http-only cookie',
+      loggedIn: true,
     });
   }
+
+  @Post('validateRefreshToken')
+  async validateRefreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const accessToken = req.cookies['access_token'];
+
+    if (!accessToken) {
+      throw new UnauthorizedException('Access token not found');
+    }
+
+    const decoded = this.jwtService.decodeToken(accessToken);
+    if (!decoded || typeof decoded === 'string' || !decoded['id']) {
+      throw new UnauthorizedException('Invalid access token');
+    }
+
+    const userId = decoded['id'];
+
+    const user = await this.userService.findUserById(userId);
+
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('User not found or refresh token missing');
+    }
+
+    const newAccessToken = await this.authService.refreshToken(user.refreshToken);
+
+
+    return { 
+      success: true,
+      message: 'Access token refreshed successfully' 
+    };
+    
+
+  }
+  
+  
+  
 
   
 }
