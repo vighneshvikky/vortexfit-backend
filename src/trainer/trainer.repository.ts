@@ -3,10 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Trainer, TrainerDocument } from './trainer.schema';
 
-
 @Injectable()
 export class TrainerRepository {
-  constructor(@InjectModel(Trainer.name) private trainerModel: Model<TrainerDocument>) {}
+  constructor(
+    @InjectModel(Trainer.name) private trainerModel: Model<TrainerDocument>,
+  ) {}
 
   async findByEmail(email: string): Promise<TrainerDocument | null> {
     console.log('email', email);

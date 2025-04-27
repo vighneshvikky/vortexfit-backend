@@ -70,6 +70,10 @@ export class TrainerService {
         return await this.trainerRepository.findTrainerById(trainerId)
       }
 
+      async findAllTrainers(){
+        return await this.trainerRepository.findAllTrainers()
+      }
+
       async updateTrainerStatus(trainerId: string, isBlocked: boolean){
         return this.trainerRepository.findByIdAndUpdate(trainerId, isBlocked)
       }

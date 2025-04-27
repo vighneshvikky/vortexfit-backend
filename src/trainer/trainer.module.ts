@@ -9,6 +9,7 @@ import { TempUser, TempUserSchema } from 'src/auth/schema/temp-user.schema';
 import { Trainer, TrainerSchema } from './trainer.schema';
 import { MailService } from 'src/common/utils/mailer/mailer.service';
 import { DatabaseModule } from 'src/database/database.module';
+import { TrainerController } from './trainer/trainer.controller';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DatabaseModule } from 'src/database/database.module';
     ]),
   ],
   providers: [TrainerService, TrainerRepository, MailService],
-  exports: [TrainerService, TrainerRepository], 
+  exports: [TrainerService, TrainerRepository],
+  controllers: [TrainerController], 
 })
 export class TrainerModule {}

@@ -17,7 +17,7 @@ export class Trainer {
 
   @Prop()
   role: string;
-  
+
   @Prop()
   refreshToken: string;
 
