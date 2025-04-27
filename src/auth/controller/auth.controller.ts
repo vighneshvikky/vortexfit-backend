@@ -7,6 +7,9 @@ import {
   HttpCode,
   Req,
   UnauthorizedException,
+  Get,
+  Patch,
+  Param,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { CreateUserDto, Role } from '../dto/create-user.dto';
@@ -15,18 +18,24 @@ import { UserService } from 'src/user/services/user.service';
 import { LoginDto } from '../dto/auth.dto';
 import { Response, Request } from 'express';
 import { JwtService } from '../services/jwt.service';
+import { adminLoginDto } from '../dto/adminLogin.dto';
+import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
+import { TrainerService } from 'src/trainer/trainer.service';
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private otpService: OtpService,
     private userService: UserService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private trainerService: TrainerService
   ) {}
 
   @Post('signup')
   signup(@Body() body: CreateUserDto) {
-    return this.authService.signUp(body);
+ 
+      return this.authService.signUp(body);
+    
   }
 
   @Post('verify-otp')
@@ -38,18 +47,25 @@ export class AuthController {
     }
 
     const tempUserStr = await this.userService.findTempUser(body.email);
-    console.log('tempUserStr', tempUserStr);
+  
     if (!tempUserStr) {
       throw new NotFoundException('User data expired or not found');
     }
-
-    const user = await this.userService.createUser({
+  
+    if(tempUserStr.role === 'trainer'){
+    return await this.trainerService.createTrainer({
       ...tempUserStr,
-      role: tempUserStr.role === 'trainer' ? Role.Trainer : Role.User,
-    });
-    
-    // console.log('user', user);
-    return user;
+      role: Role.Trainer,
+    })
+    }else{
+      return await this.userService.createUser({
+        ...tempUserStr,
+        role:  Role.User,
+      });
+    }
+  
+
+   
   }
 
   @Post('resend-otp')
@@ -67,7 +83,7 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() body: LoginDto, @Res() res: Response) {
-    const user  = await this.authService.login(body, res);
+    const user = await this.authService.login(body, res);
     return res.json({
       message: 'Login successful',
       user: {
@@ -80,7 +96,10 @@ export class AuthController {
   }
 
   @Post('validateRefreshToken')
-  async validateRefreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async validateRefreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const accessToken = req.cookies['access_token'];
 
     if (!accessToken) {
@@ -97,22 +116,44 @@ export class AuthController {
     const user = await this.userService.findUserById(userId);
 
     if (!user || !user.refreshToken) {
-      throw new UnauthorizedException('User not found or refresh token missing');
+      throw new UnauthorizedException(
+        'User not found or refresh token missing',
+      );
     }
 
-    const newAccessToken = await this.authService.refreshToken(user.refreshToken);
+    const newAccessToken = await this.authService.refreshToken(
+      user.refreshToken,
+    );
 
-
-    return { 
+    return {
       success: true,
-      message: 'Access token refreshed successfully' 
+      message: 'Access token refreshed successfully',
     };
-    
+  }
 
+
+  @Post('adminLogin')
+  async adminLogin(@Body() body: adminLoginDto, @Res() res: Response) {
+    try {
+      const users = await this.authService.validateAdmin(body, res);
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      throw new UnauthorizedException(error.message || 'Invalid credentials');
+    }
   }
   
-  
-  
+  @Get('users')
+  async getUsers(){
+    const users = await this.userService.findAllUsers();
+    return {success: true, users}
+  }
 
+  @Patch(':id/status')
+  async updateUserStatus(
+    @Param('id') id: string,
+    @Body() updateUserStatusDto: UpdateUserStatusDto,
+  ) {
+    return this.userService.updateUserStatus(id, updateUserStatusDto.isBlocked);
+  }
   
 }

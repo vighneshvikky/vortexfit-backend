@@ -30,10 +30,7 @@ export class UserService {
       createUserDto.password,
     );
 
-    // const tempUser = {
-    //   ...createUserDto,
-    //   password: hashedPassword,
-    // };
+
 
     await this.tempUserRepository.create({
       name: createUserDto.name,
@@ -72,5 +69,13 @@ export class UserService {
 
   async findUserById(userId: string){
     return await this.userRepository.findUserById(userId)
+  }
+
+  async findAllUsers(){
+    return await this.userRepository.findAllUsers()
+  }
+
+  async updateUserStatus(userId: string, isBlocked: boolean){
+    return this.userRepository.findByIdAndUpdate(userId, isBlocked)
   }
 }

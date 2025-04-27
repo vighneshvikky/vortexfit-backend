@@ -22,6 +22,9 @@ export class User {
 
   @Prop()
   refreshTokenExpiresAt: Date;
+
+  @Prop()
+  isBlocked: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

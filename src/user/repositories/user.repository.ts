@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../user.schema';
-import { create } from 'domain';
 import { CreateUserDto } from 'src/auth/dto/create-user.dto';
 
 @Injectable()
@@ -31,5 +30,15 @@ export class UserRepository {
 
   async findUserById(userId: string) {
     return await this.userModel.findById(userId);
+  }
+
+  async findAllUsers() {
+    return await this.userModel.find();
+  }
+
+  async findByIdAndUpdate(userId: string, isBlocked: boolean) {
+    return this.userModel
+      .findByIdAndUpdate(userId, { isBlocked }, { new: true })
+      .exec();
   }
 }

@@ -15,9 +15,8 @@ export class AuthMiddleware implements NestMiddleware {
     }
 
     try {
-     
+      // Decode the JWT token
       const decoded = jwt.verify(accessToken, process.env.JWT_SECRET!);
-      
 
       if (typeof decoded === 'string') {
         return res.status(401).json({
@@ -26,17 +25,24 @@ export class AuthMiddleware implements NestMiddleware {
         });
       }
 
-    
-      const now = Date.now().valueOf() / 1000;
-      if (decoded.exp && decoded.exp < now) {
-        return res.status(401).json({
-          message: 'Access token has expired',
-          expired: true,
-        });
-      }
+      // If the decoded token has role "user", proceed with the request.
+      // If it's any other role, skip this middleware and continue.
+      if (decoded.role === 'user') {
+        // Check for token expiration
+        const now = Date.now().valueOf() / 1000;
+        if (decoded.exp && decoded.exp < now) {
+          return res.status(401).json({
+            message: 'Access token has expired',
+            expired: true,
+          });
+        }
 
-  
-      next();
+        // Proceed to the next middleware or route handler
+        next();
+      } else {
+        // If the role is not 'user', simply continue the request without blocking it.
+        next();
+      }
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
         return res.status(401).json({

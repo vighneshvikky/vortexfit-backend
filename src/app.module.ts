@@ -22,15 +22,16 @@ import { AuthMiddleware } from './auth/middleware/auth-middleware';
   providers: [AppService],
 })
 export class AppModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(AuthMiddleware)
-      .exclude(
-        { path: 'auth/signup', method: RequestMethod.POST },
-        { path: 'auth/login', method: RequestMethod.POST },
-        { path: 'auth/verify-otp', method: RequestMethod.POST },
-        { path: 'auth/resend-otp', method: RequestMethod.POST },
-      )
-      .forRoutes('*');
-  }
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer
+  //     .apply(AuthMiddleware)
+  //     .exclude(
+  //       { path: 'auth/signup', method: RequestMethod.POST },
+  //       { path: 'auth/login', method: RequestMethod.POST },
+  //       { path: 'auth/verify-otp', method: RequestMethod.POST },
+  //       { path: 'auth/resend-otp', method: RequestMethod.POST },
+  //       {path: 'auth/adminLogin', method: RequestMethod.POST}
+  //     )
+  //     .forRoutes('*');
+  // }
 }

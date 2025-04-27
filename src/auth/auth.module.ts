@@ -8,12 +8,21 @@ import { OtpModule } from './modules/otp.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtService } from './services/jwt.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TrainerService } from 'src/trainer/trainer.service';
+import { HashingModule } from './modules/hashing.module';
+import { TrainerModule } from 'src/trainer/trainer.module';
+import { TempUserRepository } from './repository/temp-user.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { TempUser, TempUserSchema } from './schema/temp-user.schema';
 
 @Module({
   imports: [
     UsersModule,
     MailerModule,
     OtpModule,
+    HashingModule,
+    TrainerModule,
+    MongooseModule.forFeature([{ name: TempUser.name, schema: TempUserSchema }]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -24,7 +33,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, OtpService, JwtService],
-  exports: [OtpService, JwtModule],
+  providers: [AuthService, OtpService, JwtService, TrainerService, TempUserRepository],
+  exports: [OtpService, JwtModule, TempUserRepository],
 })
 export class AuthModule {}
