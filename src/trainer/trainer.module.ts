@@ -9,7 +9,8 @@ import { TempUser, TempUserSchema } from 'src/auth/schema/temp-user.schema';
 import { Trainer, TrainerSchema } from './trainer.schema';
 import { MailService } from 'src/common/utils/mailer/mailer.service';
 import { DatabaseModule } from 'src/database/database.module';
-import { TrainerController } from './trainer/trainer.controller';
+import { TrainerController } from './trainer.controller';
+
 
 @Module({
   imports: [

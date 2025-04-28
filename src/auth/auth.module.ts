@@ -14,6 +14,10 @@ import { TrainerModule } from 'src/trainer/trainer.module';
 import { TempUserRepository } from './repository/temp-user.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { TempUser, TempUserSchema } from './schema/temp-user.schema';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+// import { TokenRefreshInterceptor } from './interceptors/token-refresh.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -33,7 +37,16 @@ import { TempUser, TempUserSchema } from './schema/temp-user.schema';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, OtpService, JwtService, TrainerService, TempUserRepository],
-  exports: [OtpService, JwtModule, TempUserRepository],
+  providers: [
+    AuthService, 
+    OtpService, 
+    JwtService, 
+    TrainerService, 
+    TempUserRepository, 
+    JwtStrategy, 
+    JwtAuthGuard,
+ 
+  ],
+  exports: [OtpService, JwtModule, TempUserRepository, JwtAuthGuard],
 })
 export class AuthModule {}

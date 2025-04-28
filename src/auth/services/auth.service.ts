@@ -31,9 +31,21 @@ export class AuthService {
   }
 
   async login(loginData: LoginDto, res: Response) {
-    const user = await this.validateLogin(loginData);
-    const tokens = await this.generateTokens(user as User);
-    this.storeTokens(res, tokens, user.id);
+    const entity = await this.validateLogin(loginData);
+    const user = entity as User;
+    console.log('user from login', user)
+    const tokens = await this.generateTokens(user);
+    
+    // Store tokens in cookies
+    this.setTokensInCookies(res, tokens);
+    
+    // Store refresh token in database based on role
+    if (user.role === 'trainer') {
+      await this.trainerService.addRefreshToken(user._id, tokens.refreshToken);
+    } else {
+      await this.userService.addRefreshToken(user._id, tokens.refreshToken);
+    }
+    
     return user;
   }
 
@@ -69,25 +81,34 @@ private async validatePassword(entity: any, password: string) {
 }
 
   private async generateTokens(user: User) {
-    const payload = { id: user._id, email: user.email, role: user.role };
+    const payload = { sub: user._id, email: user.email, role: user.role };
     const accessToken = this.jwtService.signAccessToken(payload);
     const refreshToken = this.jwtService.signRefreshToken(payload);
 
     return { accessToken, refreshToken };
   }
 
-  private async storeTokens(
+  private setTokensInCookies(
     res: Response,
     tokens: { accessToken: string; refreshToken: string },
-    userId: string,
   ) {
+    // Set access token in cookie
     res.cookie('access_token', tokens.accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
-    await this.userService.addRefreshToken(userId, tokens.refreshToken);
+    // Set refresh token in cookie
+    res.cookie('refresh_token', tokens.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
   }
 
   async findUserById(userId: string) {
@@ -98,25 +119,39 @@ private async validatePassword(entity: any, password: string) {
     try {
       const decoded: any = this.jwtService.verifyToken(refreshToken);
       const userId = decoded.sub || decoded.id;
+      const role = decoded.role;
 
-      const user = await this.userService.findUserById(userId);
+      let entity;
+      if (role === 'trainer') {
+        entity = await this.trainerService.findTrainerById(userId);
+      } else if (role === 'user') {
+        entity = await this.userService.findUserById(userId);
+      } else {
+        throw new UnauthorizedException('Invalid role');
+      }
 
-      if (!user || user.refreshToken !== refreshToken) {
+      if (!entity || entity.refreshToken !== refreshToken) {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
       if (
-        user.refreshTokenExpiresAt &&
-        new Date() > user.refreshTokenExpiresAt
+        entity.refreshTokenExpiresAt &&
+        new Date() > entity.refreshTokenExpiresAt
       ) {
         throw new UnauthorizedException('Refresh token expired');
       }
 
-      const payload = { id: user._id, email: user.email, role: user.role };
+      const payload = { sub: entity._id, email: entity.email, role: entity.role };
 
       const newAccessToken = this.jwtService.signAccessToken(payload);
       const newRefreshToken = this.jwtService.signRefreshToken(payload);
-      this.userService.addRefreshToken(userId, newRefreshToken);
+      
+      // Update the refresh token in the appropriate service
+      if (role === 'trainer') {
+        await this.trainerService.addRefreshToken(userId, newRefreshToken);
+      } else {
+        await this.userService.addRefreshToken(userId, newRefreshToken);
+      }
 
       return {
         accessToken: newAccessToken,
@@ -129,8 +164,10 @@ private async validatePassword(entity: any, password: string) {
   setAccessTokenCookie(res: Response, accessToken: string): void {
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000,
     });
   }
   async validateAdmin(body: adminLoginDto, res: Response): Promise<boolean> {
@@ -164,14 +201,18 @@ private async validatePassword(entity: any, password: string) {
   ): void {
     res.cookie('admin_access_token', accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('admin_refresh_token', refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
   }
 }

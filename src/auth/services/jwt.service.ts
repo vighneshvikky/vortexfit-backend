@@ -14,7 +14,16 @@ export class JwtService {
   }
 
   verifyToken(token: string) {
-    return this.jwt.verify(token);
+    try {
+      const payload = this.jwt.verify(token);
+      return payload;
+    } catch (err) {
+      if (err.name === 'TokenExpiredError') {
+        console.log('Token is expired!');
+        throw new Error('TokenExpiredError');
+      }
+      throw err;
+    }
   }
 
   decodeToken(token: string) {

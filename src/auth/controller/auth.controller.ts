@@ -10,6 +10,8 @@ import {
   Get,
   Patch,
   Param,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { CreateUserDto, Role } from '../dto/create-user.dto';
@@ -28,14 +30,12 @@ export class AuthController {
     private otpService: OtpService,
     private userService: UserService,
     private jwtService: JwtService,
-    private trainerService: TrainerService
+    private trainerService: TrainerService,
   ) {}
 
   @Post('signup')
   signup(@Body() body: CreateUserDto) {
- 
-      return this.authService.signUp(body);
-    
+    return this.authService.signUp(body);
   }
 
   @Post('verify-otp')
@@ -47,50 +47,50 @@ export class AuthController {
     }
 
     const tempUserStr = await this.userService.findTempUser(body.email);
-  
+
     if (!tempUserStr) {
       throw new NotFoundException('User data expired or not found');
     }
-  
-    if(tempUserStr.role === 'trainer'){
-    return await this.trainerService.createTrainer({
-      ...tempUserStr,
-      role: Role.Trainer,
-    })
-    }else{
-      return await this.userService.createUser({
-        ...tempUserStr,
-        role:  Role.User,
-      });
-    }
-  
 
-   
+    if (tempUserStr.role === 'trainer') {
+      return await this.trainerService.createTrainer({
+        ...tempUserStr,
+        role: Role.Trainer,
+      });
+    } else {
+      const user = await this.userService.createUser({
+        ...tempUserStr,
+        role: Role.User,
+      });
+
+      return {
+        message: 'User created successfully',
+        user,
+      };
+    }
   }
 
   @Post('resend-otp')
   async resendOtp(@Body() body: { email: string }) {
-    console.log('resend email', body.email);
-    const tempUserStr = await this.userService.findTempUser(body.email);
-    console.log('tempUserStr', tempUserStr);
-    if (!tempUserStr) {
-      throw new NotFoundException('User data expired. Please register again.');
-    }
-    const newOtp = this.otpService.generateAndStoreOtp(body.email);
+    const otp = await this.otpService.generateAndStoreOtp(body.email);
 
-    return newOtp;
+    return {
+      message: 'OTP sent to email',
+      email: body.email,
+      otp,
+    };
   }
 
   @Post('login')
+  @HttpCode(200)
   async login(@Body() body: LoginDto, @Res() res: Response) {
+    console.log('Login request received for:', body.email);
     const user = await this.authService.login(body, res);
+    console.log('Login successful, user:', user);
+
     return res.json({
       message: 'Login successful',
-      user: {
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
+      user,
       loggedIn: true,
     });
   }
@@ -131,29 +131,92 @@ export class AuthController {
     };
   }
 
+  @Post('refresh')
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    console.log('Refresh token request received');
+    console.log('Cookies:', req.cookies);
+
+    // Get the refresh token from the cookie
+    const refreshToken = req.cookies['refresh_token'];
+
+    if (!refreshToken) {
+      console.log('No refresh token found in cookies');
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
+    try {
+      // Use the auth service to refresh the token
+      const { accessToken } = await this.authService.refreshToken(refreshToken);
+      console.log('New access token generated');
+
+      // Set the new access token in an HTTP-only cookie
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      return {
+        success: true,
+        message: 'Access token refreshed successfully',
+      };
+    } catch (error) {
+      console.log('Error refreshing token:', error);
+      throw new UnauthorizedException('Failed to refresh token');
+    }
+  }
 
   @Post('adminLogin')
   async adminLogin(@Body() body: adminLoginDto, @Res() res: Response) {
-    try {
-      const users = await this.authService.validateAdmin(body, res);
-      return res.status(200).json({ success: true });
-    } catch (error) {
-      throw new UnauthorizedException(error.message || 'Invalid credentials');
-    }
-  }
-  
-  @Get('users')
-  async getUsers(){
-    const users = await this.userService.findAllUsers();
-    return {success: true, users}
+    const isValid = await this.authService.validateAdmin(body, res);
+
+    return res.json({
+      message: 'Login successful',
+      isValid,
+    });
   }
 
-  @Patch(':id/status')
+  @Get('users')
+  async getUsers() {
+    try {
+      const [users, trainers] = await Promise.all([
+        this.userService.findAllUsers(),
+        this.trainerService.findAllTrainers()
+      ]);
+
+      return {
+        users: users || [],
+        trainers: trainers || []
+      };
+    } catch (error) {
+      console.error('Error fetching users and trainers:', error);
+      throw new HttpException('Failed to fetch users and trainers', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Patch('users/:role/:id/status')
   async updateUserStatus(
     @Param('id') id: string,
+    @Param('role') role: string,
     @Body() updateUserStatusDto: UpdateUserStatusDto,
   ) {
-    return this.userService.updateUserStatus(id, updateUserStatusDto.isBlocked);
+    if (role === 'user') {
+      return this.userService.updateUserStatus(
+        id,
+        updateUserStatusDto.isBlocked,
+      );
+    } else if (role === 'trainer') {
+      return this.trainerService.updateTrainerStatus(
+        id,
+        updateUserStatusDto.isBlocked,
+      );
+    } else {
+      throw new NotFoundException('Invalid role');
+    }
   }
-  
 }
