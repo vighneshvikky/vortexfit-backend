@@ -33,7 +33,10 @@ import { AUTH_SERVICE_REGISTRY } from './interfaces/auth-service-registry.interf
 import { UserRoleServiceRegistry } from 'src/common/services/user-role-service.registry';
 import { IOtpService, OTP_SERVICE } from './interfaces/otp-service.interface';
 import { SignupDto } from './dto/auth.dto';
-import { IPasswordUtil, PASSWORD_UTIL } from 'src/common/interface/IPasswordUtil.interface';
+import {
+  IPasswordUtil,
+  PASSWORD_UTIL,
+} from 'src/common/interface/IPasswordUtil.interface';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -49,7 +52,7 @@ export class AuthService implements IAuthService {
     private readonly trainerRepo: ITrainerRepository,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     @Inject(OTP_SERVICE) private readonly otpService: IOtpService,
-    @Inject(PASSWORD_UTIL) private readonly passwordUtil: IPasswordUtil
+    @Inject(PASSWORD_UTIL) private readonly passwordUtil: IPasswordUtil,
   ) {}
 
   private googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -87,7 +90,7 @@ export class AuthService implements IAuthService {
       data: {
         email,
         role,
-      },  
+      },
     };
   }
 
@@ -173,12 +176,8 @@ export class AuthService implements IAuthService {
   async rotateRefreshToken(
     oldToken: string,
     role: 'user' | 'trainer' | 'admin',
+    userId: string,
   ): Promise<{ accessToken: string; newRefreshToken: string }> {
-    const userId = await this.redis.get(oldToken);
-    if (!userId) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
     const accessToken = this.jwtService.signAccessToken({
       sub: userId,
       role: role,
@@ -333,5 +332,10 @@ export class AuthService implements IAuthService {
 
   async getUser(id: string) {
     return this.trainerRepo.findById(id);
+  }
+
+  async blackListToken(token: string, exp: number) {
+    const ttl = exp - Math.floor(Date.now() / 1000);
+    await this.redis.set(`bl_${token}`, '1', 'EX', ttl);
   }
 }

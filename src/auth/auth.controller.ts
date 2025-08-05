@@ -86,19 +86,19 @@ export class AuthController {
   @Post('refresh/token')
   async refreshToken(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'];
-   console.log('refresh tokenn', refreshToken);
+    console.log('refresh tokenn', refreshToken);
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const payload = this.jwtService.decodeToken(refreshToken);
+    const payload = this.jwtService.verifyRefreshToken(refreshToken);
 
     if (!payload?.sub || !payload?.role) {
       throw new UnauthorizedException('Invalid refresh token payload');
     }
 
     const { accessToken, newRefreshToken } =
-      await this.authService.rotateRefreshToken(refreshToken, payload.role);
+      await this.authService.rotateRefreshToken(refreshToken, payload.role, payload.sub);
 
     setTokenCookies(res, accessToken, newRefreshToken);
 
@@ -146,12 +146,24 @@ export class AuthController {
   }
 
   @Post('logout')
-    @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async logOut(
-     @GetUser() user: TokenPayload,
+    @GetUser() user: TokenPayload,
+    @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
+    const access_token = req.cookies['access_token'];
+    const refresh_token = req.cookies['refresh_token'];
 
+    if (access_token) {
+      const accessExp = this.jwtService.getTokenExpiration(access_token);
+      this.authService.blackListToken(access_token, accessExp!);
+    }
+
+    if (refresh_token) {
+      const refreshExp = this.jwtService.getTokenExpiration(refresh_token);
+      this.authService.blackListToken(refresh_token, refreshExp!);
+    }
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: true,
