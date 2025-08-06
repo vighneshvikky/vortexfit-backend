@@ -8,6 +8,7 @@ import * as winston from 'winston';
       transports: [
         new winston.transports.Console({
           format: winston.format.combine(
+            winston.format.colorize({ all: true }), 
             winston.format.timestamp(),
             winston.format.printf(
               ({ timestamp, level, message }) =>
@@ -18,9 +19,14 @@ import * as winston from 'winston';
         new winston.transports.File({
           filename: 'logs/error.log',
           level: 'error',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json()
+          ),
         }),
       ],
     }),
   ],
+  exports: [WinstonModule],
 })
 export class LoggerModule {}

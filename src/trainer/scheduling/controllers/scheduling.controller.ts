@@ -15,7 +15,6 @@ import {
   SCHEDULE_SERVICE,
 } from '../services/interface/scheduling.interface';
 import { CreateScheduleDto, UpdateScheduleDto } from '../dtos/scheduling.dto';
-import { LoggerService } from 'src/common/logger/implementation/log.service';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
