@@ -21,7 +21,6 @@ import { RolesGuard } from 'src/common/guards/role.guard';
 import { NotBlockedGuard } from 'src/common/guards/notBlocked.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 
-
 @Controller('schedules')
 export class ScheduleController {
   constructor(
@@ -54,13 +53,11 @@ export class ScheduleController {
     return this.schedulingService.deleteSchedule(id);
   }
 
-
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('trainer')
   @Get('getSchedules')
   async getSchedules(@GetUser('sub') trainerId: string) {
-    console.log('trainerId', trainerId)
+    console.log('trainerId', trainerId);
     return this.schedulingService.getSchedulesOfTrainer(trainerId);
   }
 }
