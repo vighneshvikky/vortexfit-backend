@@ -31,6 +31,7 @@ export interface IAuthService {
   rotateRefreshToken(
     oldToken: string,
     role: 'user' | 'trainer' | 'admin',
+    id: string
   ): Promise<{
     accessToken: string;
     newRefreshToken: string;

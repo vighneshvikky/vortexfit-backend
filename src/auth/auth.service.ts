@@ -173,11 +173,9 @@ export class AuthService implements IAuthService {
   async rotateRefreshToken(
     oldToken: string,
     role: 'user' | 'trainer' | 'admin',
+    userId: string,
   ): Promise<{ accessToken: string; newRefreshToken: string }> {
-    const userId = await this.redis.get(oldToken);
-    if (!userId) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
+ 
 
     const accessToken = this.jwtService.signAccessToken({
       sub: userId,

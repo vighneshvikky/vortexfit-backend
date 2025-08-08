@@ -98,7 +98,7 @@ export class AuthController {
     }
 
     const { accessToken, newRefreshToken } =
-      await this.authService.rotateRefreshToken(refreshToken, payload.role);
+      await this.authService.rotateRefreshToken(refreshToken, payload.role, payload.sub);
 
     setTokenCookies(res, accessToken, newRefreshToken);
 
