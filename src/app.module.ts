@@ -13,8 +13,6 @@ import { AwsS3Controller } from './common/aws/controller/aws-s3.controller';
 import { AwsS3Service } from './common/aws/services/aws-s3.service';
 import * as winston from 'winston';
 import { WinstonModule } from 'nest-winston';
-import { ScheduleModule } from './trainer/scheduling/scheduling.module';
-import { LoggerModule } from './common/logger/log.module';
 
 
 @Module({
@@ -46,8 +44,7 @@ import { LoggerModule } from './common/logger/log.module';
     MailModule,
     AdminModule,
     UploadModule,
-   ScheduleModule,
-   LoggerModule
+    // AvailabilityModule
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],

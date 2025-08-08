@@ -31,7 +31,6 @@ export interface IAuthService {
   rotateRefreshToken(
     oldToken: string,
     role: 'user' | 'trainer' | 'admin',
-    userId: string
   ): Promise<{
     accessToken: string;
     newRefreshToken: string;
@@ -56,8 +55,6 @@ export interface IAuthService {
   }>;
 
   getUser(id: string): Promise<BaseModel | null>;
-
-  blackListToken(token: string, exp: number): void;
 }
 
 export const AUTH_SERVICE = Symbol('AuthService');

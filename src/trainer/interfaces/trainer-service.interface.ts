@@ -1,4 +1,5 @@
 import { IUserRoleService } from 'src/common/interface/user-role-service.interface';
+import { CreateTrainerProfileDto } from '../dtos/create-trainer.dto';
 import { TrainerProfileDto } from '../dtos/trainer.dto';
 import { Trainer } from '../schemas/trainer.schema';
 

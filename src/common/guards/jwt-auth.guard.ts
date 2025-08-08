@@ -17,8 +17,8 @@ export class JwtAuthGuard implements CanActivate {
     @Inject(IJwtTokenService) private readonly jwtService: IJwtTokenService,
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request: Request = context.switchToHttp ().getRequest();
+  canActivate(context: ExecutionContext): boolean {
+    const request: Request = context.switchToHttp().getRequest();
     const token = request.cookies?.['access_token'];
    
     if (!token) {
@@ -29,12 +29,6 @@ export class JwtAuthGuard implements CanActivate {
       const secret = this.configService.get<string>('ACCESS_TOKEN_SECRET');
 
       if (!secret) throw new Error('ACCESS_TOKEN_SECRET is not defined');
-
-      const isBlacklisted = await this.jwtService.isTokenBlackListed(token);
-
-      if(  isBlacklisted){
-        throw new UnauthorizedException('Token is blacklisted');
-      }
 
       const payload = this.jwtService.verifyToken(token);
 

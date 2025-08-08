@@ -1,3 +1,4 @@
+
 export const PASSWORD_UTIL = Symbol('PASSWORD_UTIL');
 
 export interface IPasswordUtil {

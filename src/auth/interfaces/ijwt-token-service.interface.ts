@@ -9,7 +9,4 @@ export interface IJwtTokenService {
   decodeToken(token: string): TokenPayload | null;
   signPasswordResetToken(payload: TokenPayload): string;
   verifyPasswordResetToken(token: string): TokenPayload;
-  getTokenExpiration(token: string): number | null;
-  isTokenBlackListed(token: string): Promise<boolean>;
-  verifyRefreshToken(token: string): TokenPayload;
 }

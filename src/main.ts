@@ -17,10 +17,6 @@ async function bootstrap() {
   });
 
   app.use(morgan('dev'));
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
 
   app.useGlobalPipes(
     new ValidationPipe({

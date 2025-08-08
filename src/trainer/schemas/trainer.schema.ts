@@ -1,12 +1,12 @@
-  import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-  import { HydratedDocument } from 'mongoose';
-  import { VerificationStatus } from 'src/common/enums/verification-status.enum';
-  import { BaseModel } from 'src/common/model/base-model';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+import { VerificationStatus } from 'src/common/enums/verification-status.enum';
+import { BaseModel } from 'src/common/model/base-model';
 
-  export type TraninerDocument = HydratedDocument<Trainer>;
+export type TraninerDocument = HydratedDocument<Trainer>;
 
-  @Schema()
-  export class Trainer extends BaseModel {
+@Schema()
+export class Trainer extends BaseModel {
   @Prop({ enum: VerificationStatus, default: VerificationStatus.Pending })
   verificationStatus?: VerificationStatus;
 
