@@ -9,4 +9,5 @@ export interface IScheduleRepository {
     data: Partial<SchedulingRule>,
   ): Promise<SchedulingRule | null>;
   delete(id: string): Promise<boolean>;
+  findByTrainerId(id: string): Promise<SchedulingRule[] | null>;
 }

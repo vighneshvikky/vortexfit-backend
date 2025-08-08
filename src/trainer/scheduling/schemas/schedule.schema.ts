@@ -6,6 +6,8 @@ export type SchedulingRuleDocument = HydratedDocument<SchedulingRule>;
 
 @Schema()
 export class SchedulingRule {
+  _id: Types.ObjectId;
+
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Trainer', required: true })
   trainerId: Types.ObjectId;
 

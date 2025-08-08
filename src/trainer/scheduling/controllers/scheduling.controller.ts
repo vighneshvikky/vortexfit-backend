@@ -6,9 +6,9 @@ import {
   Post,
   Put,
   UsePipes,
-  Logger,
   Inject,
   UseGuards,
+  Get,
 } from '@nestjs/common';
 import {
   ISchedulingService,
@@ -20,6 +20,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { NotBlockedGuard } from 'src/common/guards/notBlocked.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
+
 
 @Controller('schedules')
 export class ScheduleController {
@@ -45,9 +46,21 @@ export class ScheduleController {
   async update(@Param('id') id: string, @Body() dto: UpdateScheduleDto) {
     return this.schedulingService.updateSchedule(id, dto);
   }
-
-  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('trainer')
+  @Delete('deleteSchedule/:id')
   async delete(@Param('id') id: string) {
+    console.log('rule is deleting');
     return this.schedulingService.deleteSchedule(id);
+  }
+
+
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('trainer')
+  @Get('getSchedules')
+  async getSchedules(@GetUser('sub') trainerId: string) {
+    console.log('trainerId', trainerId)
+    return this.schedulingService.getSchedulesOfTrainer(trainerId);
   }
 }
