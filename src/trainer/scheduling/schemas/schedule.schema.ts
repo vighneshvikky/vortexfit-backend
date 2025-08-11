@@ -41,6 +41,9 @@ export class SchedulingRule {
   @Prop()
   maxBookingsPerSlot?: number;
 
+   @Prop({ default: false })
+  isBooked: boolean;
+
   @Prop({ type: [String] })
   exceptionalDays: string[];
 }

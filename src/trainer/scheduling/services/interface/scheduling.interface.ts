@@ -14,5 +14,6 @@ export interface ISchedulingService {
     data: UpdateScheduleDto,
   ): Promise<SchedulingRule | null>;
   deleteSchedule(id: string): Promise<boolean>;
-  getSchedulesOfTrainer(id: string): Promise<ScheduleDto[]| null>;
+  getSchedulesOfTrainer(id: string): Promise<ScheduleDto[] | null>;
+
 }

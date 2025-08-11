@@ -36,6 +36,7 @@ export class CreateScheduleDto {
   @IsNumber()
   maxBookingsPerSlot?: number;
 
+
   @IsOptional()
   @IsArray()
   exceptionalDays?: string[];

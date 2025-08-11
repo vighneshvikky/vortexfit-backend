@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsArray,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 
 import { SessionType } from '../../enums/scheduling.enum';
@@ -42,6 +43,10 @@ export class ScheduleDto {
   @IsOptional()
   @IsNumber()
   maxBookingsPerSlot?: number;
+  
+   @IsOptional()
+ @IsBoolean()
+  isActive: boolean
 
   @IsOptional()
   @IsArray()

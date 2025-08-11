@@ -24,7 +24,7 @@ import { SchedulingRule } from '../../schemas/schedule.schema';
 import { ScheduleDto } from '../interface/schedule.mapper.interface';
 
 export class ScheduleMapper {
-  // For a single schedule
+  
   static toDto(schedule: SchedulingRule): ScheduleDto {
     return {
       id: schedule._id.toString(),
@@ -39,12 +39,12 @@ export class ScheduleMapper {
       slotDuration: schedule.slotDuration,
       maxBookingsPerSlot: schedule.maxBookingsPerSlot,
       exceptionalDays: schedule.exceptionalDays ?? [],
+      isActive: schedule.isActive,
     };
   }
 
-  // For an array of schedules
+
   static toDtoArray(schedules: SchedulingRule[]): ScheduleDto[] {
     return schedules.map((schedule) => this.toDto(schedule));
   }
 }
-

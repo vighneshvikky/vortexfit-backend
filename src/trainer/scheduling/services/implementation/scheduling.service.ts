@@ -1,4 +1,9 @@
-import { Inject, Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ISchedulingService } from '../interface/scheduling.interface';
 import { IScheduleRepository } from '../../repositories/interface/scheduling.repository.interface';
 import {
@@ -75,33 +80,29 @@ export class ScheduleService implements ISchedulingService {
       objectId.toString(),
     );
 
-if(existingRules) 
-this.validateScheduleRule(data, existingRules);
+    if (existingRules) this.validateScheduleRule(data, existingRules);
 
     const schedule = await this.scheduleRepository.create({
       ...data,
       trainerId: objectId,
     });
 
-    return ScheduleMapper.toDto(schedule)
+    return ScheduleMapper.toDto(schedule);
   }
 
   async updateSchedule(
     id: string,
     data: UpdateScheduleDto,
   ): Promise<SchedulingRule | null> {
-    
     const existingRule = await this.scheduleRepository.findByTrainerId(id);
- if (!existingRule) throw new NotFoundException('Schedule not found');
+    if (!existingRule) throw new NotFoundException('Schedule not found');
 
- const merged = { ...existingRule, ...data };
+    const merged = { ...existingRule, ...data };
 
- const existingRules = await this.scheduleRepository.findByTrainerId(id);
- if(existingRules)
-this.validateScheduleRule(merged, existingRules, id);
+    const existingRules = await this.scheduleRepository.findByTrainerId(id);
+    if (existingRules) this.validateScheduleRule(merged, existingRules, id);
 
- return await this.scheduleRepository.update(id, data);
-
+    return await this.scheduleRepository.update(id, data);
   }
 
   async deleteSchedule(id: string): Promise<boolean> {
@@ -116,119 +117,139 @@ this.validateScheduleRule(merged, existingRules, id);
     return ScheduleMapper.toDtoArray(data);
   }
 
-  private  validateScheduleRule(
-  data: Partial<SchedulingRule>,
-  existingRules: SchedulingRule[] = [],
-  currentRuleId?: string, 
-) {
-  const {
-    startTime,
-    endTime,
-    startDate,
-    endDate,
-    bufferTime = 0,
-    slotDuration,
-    daysOfWeek = [],
-    exceptionalDays = [],
-  } = data;
 
-  // Time validation
-  if (startTime && endTime) {
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [endHour, endMinute] = endTime.split(':').map(Number);
-    const startMinutes = startHour * 60 + startMinute;
-    const endMinutes = endHour * 60 + endMinute;
 
-    if (startMinutes >= endMinutes) {
-      throw new BadRequestException('startTime must be before endTime');
+  private validateScheduleRule(
+    data: Partial<SchedulingRule>,
+    existingRules: SchedulingRule[] = [],
+    currentRuleId?: string,
+  ) {
+    const {
+      startTime,
+      endTime,
+      startDate,
+      endDate,
+      bufferTime = 0,
+      slotDuration,
+      daysOfWeek = [],
+      exceptionalDays = [],
+    } = data;
+
+    if (startTime && endTime) {
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const [endHour, endMinute] = endTime.split(':').map(Number);
+      const startMinutes = startHour * 60 + startMinute;
+      const endMinutes = endHour * 60 + endMinute;
+
+      if (startMinutes >= endMinutes) {
+        throw new BadRequestException('startTime must be before endTime');
+      }
+
+      if (
+        slotDuration &&
+        endMinutes - startMinutes < slotDuration + bufferTime
+      ) {
+        throw new BadRequestException(
+          'Total slot time must fit in the working hours',
+        );
+      }
     }
 
-    if (slotDuration && (endMinutes - startMinutes < slotDuration + bufferTime)) {
-      throw new BadRequestException('Total slot time must fit in the working hours');
-    }
-  }
-
-  // Date range validation
-  if (startDate && endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (start > end) {
-      throw new BadRequestException('startDate must be before or equal to endDate');
-    }
-  }
-
-  // Slot duration and buffer
-  if (slotDuration != null && (!Number.isInteger(slotDuration) || slotDuration <= 0)) {
-    throw new BadRequestException('slotDuration must be a positive integer');
-  }
-
-  if (bufferTime < 0) {
-    throw new BadRequestException('bufferTime must be non-negative');
-  }
-
-  if (slotDuration != null && bufferTime > slotDuration) {
-    throw new BadRequestException('bufferTime should not exceed slotDuration');
-  }
-
-  // Exceptional days
-if (exceptionalDays && startDate && endDate) {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  for (const day of exceptionalDays) {
-    const date = new Date(day);
-
-    if (date < start || date > end) {
-      throw new BadRequestException('All exceptionalDays must be between startDate and endDate');
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (start > end) {
+        throw new BadRequestException(
+          'startDate must be before or equal to endDate',
+        );
+      }
     }
 
-    // 🚨 Check if exceptional day is the same as startDate
     if (
-      date.toDateString() === start.toDateString()
+      slotDuration != null &&
+      (!Number.isInteger(slotDuration) || slotDuration <= 0)
     ) {
+      throw new BadRequestException('slotDuration must be a positive integer');
+    }
+
+    if (bufferTime < 0) {
+      throw new BadRequestException('bufferTime must be non-negative');
+    }
+
+    if (slotDuration != null && bufferTime > slotDuration) {
       throw new BadRequestException(
-        `Exceptional day (${date.toDateString()}) cannot be the same as startDate`,
+        'bufferTime should not exceed slotDuration',
       );
     }
-  }
-}
 
+    if (exceptionalDays && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
 
-  // Overlap check
-  for (const rule of existingRules) {
-    if (currentRuleId && rule._id.toString() === currentRuleId) continue;
+      for (const day of exceptionalDays) {
+        const date = new Date(day);
 
-    const ruleStart = new Date(rule.startDate);
-    const ruleEnd = new Date(rule.endDate);
-    const newStart = new Date(startDate || rule.startDate);
-    const newEnd = new Date(endDate || rule.endDate);
+        if (date < start || date > end) {
+          throw new BadRequestException(
+            'All exceptionalDays must be between startDate and endDate',
+          );
+        }
 
-    if (ruleStart <= newEnd && newStart <= ruleEnd) {
-      const daysOverlap = rule.daysOfWeek.some((d: number) => daysOfWeek.includes(d));
-      if (daysOverlap) {
-        const [ruleStartHour, ruleStartMinute] = rule.startTime.split(':').map(Number);
-        const [ruleEndHour, ruleEndMinute] = rule.endTime.split(':').map(Number);
-        const ruleStartMin = ruleStartHour * 60 + ruleStartMinute;
-        const ruleEndMin = ruleEndHour * 60 + ruleEndMinute + (rule.bufferTime || 0);
-
-        const [newStartHour, newStartMinute] = (startTime || rule.startTime).split(':').map(Number);
-        const [newEndHour, newEndMinute] = (endTime || rule.endTime).split(':').map(Number);
-        const newStartMin = newStartHour * 60 + newStartMinute;
-        const newEndMin = newEndHour * 60 + newEndMinute + (bufferTime || 0);
-
-        if (ruleStartMin < newEndMin && newStartMin < ruleEndMin) {
-          throw new BadRequestException('Schedule overlaps with existing rule');
+        if (date.toDateString() === start.toDateString()) {
+          throw new BadRequestException(
+            `Exceptional day (${date.toDateString()}) cannot be the same as startDate`,
+          );
         }
       }
     }
-  }
 
-  // maxBookingsPerSlot
-  if (
-    data.maxBookingsPerSlot != null &&
-    (!Number.isInteger(data.maxBookingsPerSlot) || data.maxBookingsPerSlot < 1)
-  ) {
-    throw new BadRequestException('Invalid maxBookingsPerSlot');
+    for (const rule of existingRules) {
+      if (currentRuleId && rule._id.toString() === currentRuleId) continue;
+
+      const ruleStart = new Date(rule.startDate);
+      const ruleEnd = new Date(rule.endDate);
+      const newStart = new Date(startDate || rule.startDate);
+      const newEnd = new Date(endDate || rule.endDate);
+
+      if (ruleStart <= newEnd && newStart <= ruleEnd) {
+        const daysOverlap = rule.daysOfWeek.some((d: number) =>
+          daysOfWeek.includes(d),
+        );
+        if (daysOverlap) {
+          const [ruleStartHour, ruleStartMinute] = rule.startTime
+            .split(':')
+            .map(Number);
+          const [ruleEndHour, ruleEndMinute] = rule.endTime
+            .split(':')
+            .map(Number);
+          const ruleStartMin = ruleStartHour * 60 + ruleStartMinute;
+          const ruleEndMin =
+            ruleEndHour * 60 + ruleEndMinute + (rule.bufferTime || 0);
+
+          const [newStartHour, newStartMinute] = (startTime || rule.startTime)
+            .split(':')
+            .map(Number);
+          const [newEndHour, newEndMinute] = (endTime || rule.endTime)
+            .split(':')
+            .map(Number);
+          const newStartMin = newStartHour * 60 + newStartMinute;
+          const newEndMin = newEndHour * 60 + newEndMinute + (bufferTime || 0);
+
+          if (ruleStartMin < newEndMin && newStartMin < ruleEndMin) {
+            throw new BadRequestException(
+              'Schedule overlaps with existing rule',
+            );
+          }
+        }
+      }
+    }
+
+    if (
+      data.maxBookingsPerSlot != null &&
+      (!Number.isInteger(data.maxBookingsPerSlot) ||
+        data.maxBookingsPerSlot < 1)
+    ) {
+      throw new BadRequestException('Invalid maxBookingsPerSlot');
+    }
   }
-}
 }

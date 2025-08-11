@@ -49,7 +49,7 @@ export class ScheduleController {
   @Roles('trainer')
   @Delete('deleteSchedule/:id')
   async delete(@Param('id') id: string) {
-    console.log('rule is deleting');
+   
     return this.schedulingService.deleteSchedule(id);
   }
 
@@ -57,7 +57,10 @@ export class ScheduleController {
   @Roles('trainer')
   @Get('getSchedules')
   async getSchedules(@GetUser('sub') trainerId: string) {
-    console.log('trainerId', trainerId);
+    return this.schedulingService.getSchedulesOfTrainer(trainerId);
+  }
+  @Get('generateSlots/:trainerId')
+  async getSlots(@Param('trainerId') trainerId: string) {
     return this.schedulingService.getSchedulesOfTrainer(trainerId);
   }
 }
