@@ -31,7 +31,7 @@ export class TrainerController {
     @Req() req: Request,
     @GetUser('sub')
     trainerId: string,
-    @Body() dto: TrainerProfileDto,
+    @Body() dto: any,
   ) {
     return this.trainerService.updateTrainerProfile(trainerId, dto);
   }
