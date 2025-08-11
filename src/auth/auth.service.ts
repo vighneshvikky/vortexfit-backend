@@ -33,7 +33,10 @@ import { AUTH_SERVICE_REGISTRY } from './interfaces/auth-service-registry.interf
 import { UserRoleServiceRegistry } from 'src/common/services/user-role-service.registry';
 import { IOtpService, OTP_SERVICE } from './interfaces/otp-service.interface';
 import { SignupDto } from './dto/auth.dto';
-import { IPasswordUtil, PASSWORD_UTIL } from 'src/common/interface/IPasswordUtil.interface';
+import {
+  IPasswordUtil,
+  PASSWORD_UTIL,
+} from 'src/common/interface/IPasswordUtil.interface';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -49,7 +52,7 @@ export class AuthService implements IAuthService {
     private readonly trainerRepo: ITrainerRepository,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     @Inject(OTP_SERVICE) private readonly otpService: IOtpService,
-    @Inject(PASSWORD_UTIL) private readonly passwordUtil: IPasswordUtil
+    @Inject(PASSWORD_UTIL) private readonly passwordUtil: IPasswordUtil,
   ) {}
 
   private googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -87,7 +90,7 @@ export class AuthService implements IAuthService {
       data: {
         email,
         role,
-      },  
+      },
     };
   }
 
@@ -175,8 +178,6 @@ export class AuthService implements IAuthService {
     role: 'user' | 'trainer' | 'admin',
     userId: string,
   ): Promise<{ accessToken: string; newRefreshToken: string }> {
- 
-
     const accessToken = this.jwtService.signAccessToken({
       sub: userId,
       role: role,

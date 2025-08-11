@@ -8,10 +8,8 @@ import { FindApprovedTrainerQuery } from '../interfaces/user-interface';
 import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';
 
-
-
 @Injectable()
-export class UserService implements IUserService{
+export class UserService implements IUserService {
   constructor(
     @Inject(IUserRepository)
     private readonly userRepo: IUserRepository,
@@ -34,13 +32,13 @@ export class UserService implements IUserService{
     userId: string,
     data: Partial<UserProfileDto>,
   ): Promise<UserProfileDto> {
-    const user =  await this.userRepo.updateById(userId, {
+    const user = await this.userRepo.updateById(userId, {
       ...data,
       isVerified: true,
       image: data.image,
     });
 
-    return UserMapper.toUserProfileDto(user)
+    return UserMapper.toUserProfileDto(user);
   }
 
   async findTrainer(id: string): Promise<Trainer | null> {

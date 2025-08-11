@@ -55,12 +55,15 @@ export class AdminController {
     };
   }
 
-
-
   @Get('users')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
-  async getUsers(@Query() query: UserQueryDto & {filter?: UserFilter.ALL | UserFilter.USER | UserFilter.TRAINER}) {
+  async getUsers(
+    @Query()
+    query: UserQueryDto & {
+      filter?: UserFilter.ALL | UserFilter.USER | UserFilter.TRAINER;
+    },
+  ) {
     const { page = '1', limit = '10', ...rest } = query;
     return this.adminService.getUsers({
       ...rest,
@@ -108,5 +111,3 @@ export class AdminController {
     return await this.adminService.toggleBlockStatus(id, role);
   }
 }
-
-

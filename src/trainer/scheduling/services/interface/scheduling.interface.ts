@@ -3,7 +3,6 @@ import {
   UpdateScheduleDto,
 } from '../../dtos/scheduling.dto';
 import { ScheduleDto } from '../../mapper/interface/schedule.mapper.interface';
-import { SchedulingRule } from '../../schemas/schedule.schema';
 
 export const SCHEDULE_SERVICE = 'SCHEDULE_SERVICE';
 
@@ -12,8 +11,7 @@ export interface ISchedulingService {
   updateSchedule(
     id: string,
     data: UpdateScheduleDto,
-  ): Promise<SchedulingRule | null>;
+  ): Promise<ScheduleDto | null>;
   deleteSchedule(id: string): Promise<boolean>;
   getSchedulesOfTrainer(id: string): Promise<ScheduleDto[] | null>;
-
 }

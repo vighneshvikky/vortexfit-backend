@@ -15,7 +15,6 @@ import {
 import { TrainerProfileDto } from '../dtos/trainer.dto';
 import { TrainerMapper } from '../mapper/trainer.mapper';
 
-
 @Injectable()
 export class TrainerService implements ITrainerService {
   constructor(

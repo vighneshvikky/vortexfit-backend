@@ -33,9 +33,8 @@ export class UserRoleServiceRegistry implements IAuthServiceRegistry {
     }
     return service;
   }
- 
+
   // getRepository(role: string): IUserRepository | ITrainerRepository {
   //   if()
   // }
-  
 }

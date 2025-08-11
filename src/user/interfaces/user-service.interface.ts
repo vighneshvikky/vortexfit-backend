@@ -1,10 +1,9 @@
-import { User } from '../schemas/user.schema';
+
 import { UserProfileDto } from '../dtos/user.mapper.dto';
 import { Trainer } from 'src/trainer/schemas/trainer.schema';
 import { IUserRoleService } from 'src/common/interface/user-role-service.interface';
 
 export const USER_SERVICE = Symbol('USER_SERVICE');
-
 
 export interface FindApprovedTrainerQuery {
   category?: string;

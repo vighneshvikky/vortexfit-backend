@@ -86,7 +86,7 @@ export class AuthController {
   @Post('refresh/token')
   async refreshToken(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'];
-   console.log('refresh tokenn', refreshToken);
+    console.log('refresh tokenn', refreshToken);
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token missing');
     }
@@ -98,7 +98,11 @@ export class AuthController {
     }
 
     const { accessToken, newRefreshToken } =
-      await this.authService.rotateRefreshToken(refreshToken, payload.role, payload.sub);
+      await this.authService.rotateRefreshToken(
+        refreshToken,
+        payload.role,
+        payload.sub,
+      );
 
     setTokenCookies(res, accessToken, newRefreshToken);
 
@@ -146,12 +150,11 @@ export class AuthController {
   }
 
   @Post('logout')
-    @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async logOut(
-     @GetUser() user: TokenPayload,
+    @GetUser() user: TokenPayload,
     @Res() res: Response,
   ): Promise<void> {
-
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: true,

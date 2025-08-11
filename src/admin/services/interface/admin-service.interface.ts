@@ -10,7 +10,7 @@ export interface GetUsersOptions {
   role?: 'user' | 'trainer';
   page?: number;
   limit?: number;
-  filter?: 'all' | 'user' | 'trainer'
+  filter?: 'all' | 'user' | 'trainer';
 }
 
 export interface IAdminService {

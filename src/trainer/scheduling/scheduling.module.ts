@@ -22,26 +22,23 @@ import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
         schema: SchedulingRuleSchema,
       },
     ]),
-    JwtModule.register({})
+    JwtModule.register({}),
   ],
   controllers: [ScheduleController],
   providers: [
-    
     {
       provide: SCHEDULE_SERVICE,
       useClass: ScheduleService,
     },
     {
       provide: IScheduleRepository,
-      useClass: ScheduleRepository
+      useClass: ScheduleRepository,
     },
     {
       provide: IJwtTokenService,
-      useClass: JwtTokenService
-    }
+      useClass: JwtTokenService,
+    },
   ],
-  exports: [
-    SCHEDULE_SERVICE,
-  ],
+  exports: [SCHEDULE_SERVICE],
 })
 export class ScheduleModule {}

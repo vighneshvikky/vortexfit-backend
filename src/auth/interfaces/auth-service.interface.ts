@@ -4,7 +4,7 @@ import { BaseModel } from 'src/common/model/base-model';
 
 export interface IAuthService {
   signUp(body: SignupDto): Promise<{ message: string; data: { role: string } }>;
-  
+
   verifyLogin(body: LoginDto): Promise<{
     accessToken: string;
     refreshToken: string;
@@ -31,7 +31,7 @@ export interface IAuthService {
   rotateRefreshToken(
     oldToken: string,
     role: 'user' | 'trainer' | 'admin',
-    id: string
+    id: string,
   ): Promise<{
     accessToken: string;
     newRefreshToken: string;

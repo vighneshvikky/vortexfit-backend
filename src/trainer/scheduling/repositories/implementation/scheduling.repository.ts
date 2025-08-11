@@ -36,6 +36,4 @@ export class ScheduleRepository implements IScheduleRepository {
   async findByTrainerId(trainerId: string): Promise<SchedulingRule[]> {
     return await this.schedulingRuleModel.find({ trainerId }).exec();
   }
-
-
 }

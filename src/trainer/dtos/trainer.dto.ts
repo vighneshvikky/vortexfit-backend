@@ -49,7 +49,6 @@ export class TrainerProfileDto {
   @IsString()
   category?: string;
 
-  
   @IsOptional()
   isVerified?: boolean;
 
@@ -61,7 +60,7 @@ export class TrainerProfileDto {
   @IsString()
   certificationUrl?: string;
 
-   @IsOptional()
+  @IsOptional()
   @IsString()
   image?: string;
 
@@ -69,11 +68,9 @@ export class TrainerProfileDto {
   @IsString()
   idProofUrl?: string;
 
-    @IsOptional()
+  @IsOptional()
   @IsString()
   rejectionReason?: string;
-
-  
 
   @IsOptional()
   @ValidateNested()

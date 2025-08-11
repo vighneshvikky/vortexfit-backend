@@ -94,7 +94,6 @@ export class OtpService implements IOtpService {
 
     await this.generateOtp(data.email);
 
-
     return {
       message: 'OTP resent successfully',
       data: {

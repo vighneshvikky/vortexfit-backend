@@ -43,10 +43,10 @@ export class ScheduleDto {
   @IsOptional()
   @IsNumber()
   maxBookingsPerSlot?: number;
-  
-   @IsOptional()
- @IsBoolean()
-  isActive: boolean
+
+  @IsOptional()
+  @IsBoolean()
+  isActive: boolean;
 
   @IsOptional()
   @IsArray()

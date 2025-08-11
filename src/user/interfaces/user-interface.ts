@@ -1,5 +1,3 @@
-
-
 export interface FindApprovedTrainerQuery extends Record<string, unknown> {
   role: string;
   verificationStatus: string;
@@ -7,6 +5,3 @@ export interface FindApprovedTrainerQuery extends Record<string, unknown> {
   category?: string;
   name?: unknown;
 }
-
-
-

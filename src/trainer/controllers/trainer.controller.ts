@@ -4,7 +4,6 @@ import {
   Patch,
   UseGuards,
   Inject,
-  Post,
   Req,
 } from '@nestjs/common';
 
@@ -34,7 +33,6 @@ export class TrainerController {
     trainerId: string,
     @Body() dto: TrainerProfileDto,
   ) {
-    const user = req.user;
     return this.trainerService.updateTrainerProfile(trainerId, dto);
   }
 }

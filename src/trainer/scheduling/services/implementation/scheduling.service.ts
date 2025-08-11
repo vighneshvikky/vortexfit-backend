@@ -93,7 +93,7 @@ export class ScheduleService implements ISchedulingService {
   async updateSchedule(
     id: string,
     data: UpdateScheduleDto,
-  ): Promise<SchedulingRule | null> {
+  ): Promise<ScheduleDto | null> {
     const existingRule = await this.scheduleRepository.findByTrainerId(id);
     if (!existingRule) throw new NotFoundException('Schedule not found');
 
@@ -102,7 +102,9 @@ export class ScheduleService implements ISchedulingService {
     const existingRules = await this.scheduleRepository.findByTrainerId(id);
     if (existingRules) this.validateScheduleRule(merged, existingRules, id);
 
-    return await this.scheduleRepository.update(id, data);
+    const updatedSchedule = await this.scheduleRepository.update(id, data);
+    if (!updatedSchedule) throw new NotFoundException('Schedule Not found');
+    return ScheduleMapper.toDto(updatedSchedule);
   }
 
   async deleteSchedule(id: string): Promise<boolean> {
@@ -116,8 +118,6 @@ export class ScheduleService implements ISchedulingService {
     }
     return ScheduleMapper.toDtoArray(data);
   }
-
-
 
   private validateScheduleRule(
     data: Partial<SchedulingRule>,

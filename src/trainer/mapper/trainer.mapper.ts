@@ -1,7 +1,5 @@
-
 import { Trainer } from '../schemas/trainer.schema';
 import { TrainerProfileDto } from '../dtos/trainer.dto';
-
 
 export class TrainerMapper {
   static toProfileDto(trainer: Trainer): TrainerProfileDto {

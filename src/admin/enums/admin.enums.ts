@@ -1,4 +1,3 @@
-
 export enum UserFilter {
   ALL = 'all',
   USER = 'user',
