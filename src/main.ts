@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-import * as cookieParser from 'cookie-parser';
-import * as morgan from 'morgan';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 dotenv.config();

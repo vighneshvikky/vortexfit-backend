@@ -14,6 +14,8 @@ import { AwsS3Service } from './common/aws/services/aws-s3.service';
 import * as winston from 'winston';
 import { WinstonModule } from 'nest-winston';
 import { ScheduleModule } from './trainer/scheduling/scheduling.module';
+import { PaymentModule } from './payments/payments.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { ScheduleModule } from './trainer/scheduling/scheduling.module';
     AdminModule,
     UploadModule,
     ScheduleModule,
+    PaymentModule,
+    BookingModule
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],
