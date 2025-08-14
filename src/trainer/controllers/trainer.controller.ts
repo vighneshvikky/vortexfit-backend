@@ -5,6 +5,7 @@ import {
   UseGuards,
   Inject,
   Req,
+  Post,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -24,6 +25,8 @@ export class TrainerController {
     @Inject(TRAINER_SERVICE) private readonly trainerService: ITrainerService,
   ) {}
 
+
+
   @Patch('update-trainer-profile')
   @UseGuards(JwtAuthGuard, RolesGuard, NotBlockedGuard)
   @Roles('trainer')
@@ -31,8 +34,9 @@ export class TrainerController {
     @Req() req: Request,
     @GetUser('sub')
     trainerId: string,
-    @Body() dto: any,
+    @Body() dto: TrainerProfileDto,
   ) {
+    console.log('dto', dto)
     return this.trainerService.updateTrainerProfile(trainerId, dto);
   }
 }
