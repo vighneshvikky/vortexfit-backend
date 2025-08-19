@@ -1,28 +1,27 @@
 import { Module } from '@nestjs/common';
 import { ScheduleController } from './controllers/scheduling.controller';
 import { ScheduleService } from './services/implementation/scheduling.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { SCHEDULE_SERVICE } from './services/interface/scheduling.interface';
-import {
-  SchedulingRule,
-  SchedulingRuleSchema,
-} from './schemas/schedule.schema';
 import { IScheduleRepository } from './repositories/interface/scheduling.repository.interface';
 import { ScheduleRepository } from './repositories/implementation/scheduling.repository';
-import { ITrainerRepository } from '../interfaces/trainer-repository.interface';
 import { JwtModule } from '@nestjs/jwt';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
+import { IBookingRepository } from 'src/booking/repository/interface/booking-repository.interface';
+import { BookingRepository } from 'src/booking/repository/implementation/booking-repository';
+import { Booking, BookingSchema } from 'src/booking/schemas/booking.schema';
+import { BookingModule } from 'src/booking/booking.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { SchedulingRule, SchedulingRuleSchema } from './schemas/schedule.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      {
-        name: SchedulingRule.name,
-        schema: SchedulingRuleSchema,
-      },
-    ]),
+    BookingModule,
     JwtModule.register({}),
+      MongooseModule.forFeature([
+      { name: SchedulingRule.name, schema: SchedulingRuleSchema },
+    ]),
+  BookingModule
   ],
   controllers: [ScheduleController],
   providers: [
@@ -38,6 +37,10 @@ import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
       provide: IJwtTokenService,
       useClass: JwtTokenService,
     },
+    {
+      provide: IBookingRepository,
+      useClass: BookingRepository
+    }
   ],
   exports: [SCHEDULE_SERVICE],
 })

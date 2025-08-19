@@ -1,57 +1,53 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
+import { BookingStatus } from '../enums/booking.enum';
 
-export type BookingDocument = Booking & Document;
+export type BookingDocument = HydratedDocument<Booking>;
 
 @Schema({ timestamps: true })
 export class Booking {
-  @Prop({ required: true })
-  bookingId: string;
+  _id: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId | string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Trainer', required: true })
+  trainerId: Types.ObjectId | string;
 
   @Prop({ required: true })
-  userId: string;
+  date: string;
 
   @Prop({ required: true })
-  sessionType: string;
-
-  @Prop({ required: true })
-  date: Date;
+  timeSlot: string;
 
   @Prop({
-    type: {
-      time: String,
-      isBooked: Boolean,
-      isAvailable: Boolean,
-    },
-    required: true,
+    type: String,
+    enum: BookingStatus,
+    default: BookingStatus.PENDING,
   })
-  timeSlot: {
-    time: string;
-    isBooked: boolean;
-    isAvailable: boolean;
-  };
+  status: BookingStatus;
 
   @Prop({ required: true })
   amount: number;
 
-  @Prop({ required: true })
-  currency: string; // 'INR'
+  @Prop({ default: 'INR' })
+  currency: string;
 
   @Prop()
-  razorpayOrderId?: string;
+  paymentId?: string;
 
   @Prop()
-  razorpayPaymentId?: string;
+  orderId?: string;
+  @Prop()
+  sessionType?: string;
+  @Prop()
+  paymentSignature?: string;
 
   @Prop()
-  razorpaySignature?: string;
+  createdAt: Date
 
-  @Prop({
-    type: String,
-    enum: ['pending', 'paid', 'failed', 'cancelled'],
-    default: 'pending',
-  })
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'cancelled';
+  @Prop()
+  updatedAt: Date
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

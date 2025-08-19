@@ -15,6 +15,14 @@ import { Types } from 'mongoose';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger } from 'nest-winston';
 import { ScheduleMapper } from '../../mapper/implementation/schedule.mapper';
 import { ScheduleDto } from '../../mapper/interface/schedule.mapper.interface';
+import dayjs from 'dayjs';
+import { IBookingRepository } from 'src/booking/repository/interface/booking-repository.interface';
+
+export class SlotDto {
+  time: string;
+  isBooked: boolean;
+  isAvailable: boolean;
+}
 
 @Injectable()
 export class ScheduleService implements ISchedulingService {
@@ -23,6 +31,8 @@ export class ScheduleService implements ISchedulingService {
     private readonly scheduleRepository: IScheduleRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: WinstonLogger,
+    @Inject(IBookingRepository)
+    private readonly BookingRepository: IBookingRepository,
   ) {}
 
   async createSchedule(
@@ -118,6 +128,70 @@ export class ScheduleService implements ISchedulingService {
     }
     return ScheduleMapper.toDtoArray(data);
   }
+
+  //showing slots for users
+
+  async getAvailableSlots(trainerId: string, dateStr: string) {
+    const date = dayjs(dateStr, 'YYYY-MM-DD', true);
+    if (!date.isValid()) {
+      throw new BadRequestException('Invalid date format, expected YYYY-MM-DD');
+    }
+    if (date.isBefore(dayjs(), 'day')) {
+      throw new BadRequestException('Date cannot be in the past');
+    }
+
+    const rules = await this.scheduleRepository.findActiveRules(
+      trainerId,
+      dateStr,
+    );
+
+
+    if (!rules || rules.length === 0) {
+      throw new BadRequestException(
+        'No scheduling rules found for this trainer',
+      );
+    }
+    const dayOfWeek = date.day();
+
+    let availableSlots: string[] = [];
+
+    for (const rule of rules) {
+      if (!rule.daysOfWeek.includes(dayOfWeek)) continue;
+      if (rule.exceptionalDays?.includes(dateStr)) continue;
+
+      let start = dayjs(`${dateStr} ${rule.startTime}`, 'YYYY-MM-DD HH:mm');
+      const end = dayjs(`${dateStr} ${rule.endTime}`, 'YYYY-MM-DD HH:mm');
+
+      while(start.add(rule.slotDuration, 'minute').isBefore(end)){
+        const slotStart = start.format('HH:mm');
+        const slotEnd = start.add(rule.slotDuration, 'minute').format('HH:mm');
+
+        const existingBookings = await this.BookingRepository.countActiveBookings(trainerId, dateStr, slotStart, slotEnd);
+
+        if(rule.maxBookingsPerSlot && existingBookings >= rule.maxBookingsPerSlot){
+
+        }else{
+          availableSlots.push(`${slotStart}-${slotEnd}`)
+        }
+
+         start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
+      }
+    }
+
+      if (availableSlots.length === 0) {
+      return {
+        success: false,
+        message: 'No available slots for this date',
+      };
+    }
+
+    return {
+      success: true,
+      slots: availableSlots,
+    };
+  }
+
+  //showing slots for users ends
 
   private validateScheduleRule(
     data: Partial<SchedulingRule>,

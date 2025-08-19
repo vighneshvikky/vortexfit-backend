@@ -33,6 +33,7 @@ import { USER_SERVICE } from './interfaces/user-service.interface';
       provide: USER_SERVICE,
       useClass: UserService,
     },
+
   ],
   exports: [
     { provide: IUserRepository, useClass: UserRepository },

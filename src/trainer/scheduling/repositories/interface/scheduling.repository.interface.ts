@@ -10,4 +10,5 @@ export interface IScheduleRepository {
   ): Promise<SchedulingRule | null>;
   delete(id: string): Promise<boolean>;
   findByTrainerId(id: string): Promise<SchedulingRule[] | null>;
+  findActiveRules(id: string, date: string):  Promise<SchedulingRule[] | null>;
 }

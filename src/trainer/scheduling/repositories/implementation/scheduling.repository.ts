@@ -36,4 +36,13 @@ export class ScheduleRepository implements IScheduleRepository {
   async findByTrainerId(trainerId: string): Promise<SchedulingRule[]> {
     return await this.schedulingRuleModel.find({ trainerId }).exec();
   }
+
+    async findActiveRules(trainerId: string, dateStr: string) {
+    return this.schedulingRuleModel.find({
+      trainerId,
+      isActive: true,
+      startDate: { $lte: dateStr },
+      $or: [{ endDate: null }, { endDate: { $gte: dateStr } }],
+    });
+  }
 }

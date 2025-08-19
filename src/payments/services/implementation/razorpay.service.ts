@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ObjectId } from 'mongoose';
 import Razorpay from 'razorpay';
 
 @Injectable()
@@ -12,13 +13,14 @@ export class RazorpayService {
     });
   }
 
-  async createOrder(amount: number, receipt: string) {
+  async createOrder(amount: number ) {
     const options = {
       amount: amount * 100,
       currency: 'INR',
-      receipt: receipt,
     };
 
     return this.razorpay.orders.create(options)
   }
+
+
 }

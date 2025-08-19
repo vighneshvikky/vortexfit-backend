@@ -57,8 +57,13 @@ export class ScheduleController {
   async getSchedules(@GetUser('sub') trainerId: string) {
     return this.schedulingService.getSchedulesOfTrainer(trainerId);
   }
-  @Get('generateSlots/:trainerId')
-  async getSlots(@Param('trainerId') trainerId: string) {
-    return this.schedulingService.getSchedulesOfTrainer(trainerId);
+
+  @Get('generateSlots/:trainerId/:date')
+  async getSlots(@Param('trainerId') trainerId: string, @Param('date') date: string) {
+    console.log('trainerId', trainerId);
+    console.log('date', date);
+    const data = await  this.schedulingService.getAvailableSlots(trainerId, date);
+    console.log('data to send to the frontend', data)
+    return data;
   }
 }
