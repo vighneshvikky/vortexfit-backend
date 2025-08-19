@@ -26,17 +26,18 @@ export class UserController {
   constructor(
     @Inject(USER_SERVICE) private readonly userService: IUserService,
   ) {}
-  @UseGuards(JwtAuthGuard, RolesGuard, NotBlockedGuard)
+  @UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Patch('update-profile')
   async updateUser(
     @GetUser('sub') userId: string,
     @Body() updateData: UpdateUserDto,
   ) {
+    console.log('userId', userId);
     return await this.userService.findByIdAndUpdate(userId, updateData);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard, NotBlockedGuard)
+  @UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Get('approved-trainer')
   async getApprovedTrainer(
@@ -46,7 +47,7 @@ export class UserController {
     return await this.userService.findApprovedTrainer({ category, name });
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard, NotBlockedGuard)
+  @UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Get('getTrainerData/:id')
   getTrainerData(@Param('id') id: string): Promise<Trainer | null> {

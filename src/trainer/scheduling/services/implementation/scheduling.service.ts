@@ -132,6 +132,7 @@ export class ScheduleService implements ISchedulingService {
   //showing slots for users
 
   async getAvailableSlots(trainerId: string, dateStr: string) {
+    
     const date = dayjs(dateStr, 'YYYY-MM-DD', true);
     if (!date.isValid()) {
       throw new BadRequestException('Invalid date format, expected YYYY-MM-DD');
@@ -161,6 +162,30 @@ export class ScheduleService implements ISchedulingService {
 
       let start = dayjs(`${dateStr} ${rule.startTime}`, 'YYYY-MM-DD HH:mm');
       const end = dayjs(`${dateStr} ${rule.endTime}`, 'YYYY-MM-DD HH:mm');
+
+      const now = dayjs(); // current date and time
+
+while (start.add(rule.slotDuration, 'minute').isBefore(end)) {
+    const slotStart = start.format('HH:mm');
+    const slotEnd = start.add(rule.slotDuration, 'minute').format('HH:mm');
+
+    // Skip slots that are in the past
+    if (date.isSame(now, 'day') && start.isBefore(now)) {
+        start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
+        continue;
+    }
+
+    const existingBookings = await this.BookingRepository.countActiveBookings(
+        trainerId, dateStr, slotStart, slotEnd
+    );
+
+    if (!rule.maxBookingsPerSlot || existingBookings < rule.maxBookingsPerSlot) {
+        availableSlots.push(`${slotStart}-${slotEnd}`);
+    }
+
+    start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
+}
+
 
       while(start.add(rule.slotDuration, 'minute').isBefore(end)){
         const slotStart = start.format('HH:mm');

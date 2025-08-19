@@ -9,7 +9,7 @@ import {
   ITrainerService,
   TRAINER_SERVICE,
 } from 'src/trainer/interfaces/trainer-service.interface';
-import { TrainerService } from 'src/trainer/services/trainer.service';
+
 import {
   IUserService,
   USER_SERVICE,

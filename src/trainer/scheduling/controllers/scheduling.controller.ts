@@ -26,7 +26,7 @@ export class ScheduleController {
     @Inject(SCHEDULE_SERVICE)
     private readonly schedulingService: ISchedulingService,
   ) {}
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards( RolesGuard)
   @Roles('trainer')
   @Post('create')
   @UsePipes()
@@ -44,20 +44,20 @@ export class ScheduleController {
   async update(@Param('id') id: string, @Body() dto: UpdateScheduleDto) {
     return this.schedulingService.updateSchedule(id, dto);
   }
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards( RolesGuard)
   @Roles('trainer')
   @Delete('deleteSchedule/:id')
   async delete(@Param('id') id: string) {
     return this.schedulingService.deleteSchedule(id);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards( RolesGuard)
   @Roles('trainer')
   @Get('getSchedules')
   async getSchedules(@GetUser('sub') trainerId: string) {
     return this.schedulingService.getSchedulesOfTrainer(trainerId);
   }
-
+// for users
   @Get('generateSlots/:trainerId/:date')
   async getSlots(@Param('trainerId') trainerId: string, @Param('date') date: string) {
     console.log('trainerId', trainerId);

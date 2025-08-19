@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -16,6 +21,7 @@ import { WinstonModule } from 'nest-winston';
 import { ScheduleModule } from './trainer/scheduling/scheduling.module';
 import { PaymentModule } from './payments/payments.module';
 import { BookingModule } from './booking/booking.module';
+import { JwtMiddleware } from './common/middleware/jwt-auth.middleware';
 
 @Module({
   imports: [
@@ -48,9 +54,25 @@ import { BookingModule } from './booking/booking.module';
     UploadModule,
     ScheduleModule,
     PaymentModule,
-    BookingModule
+    BookingModule,
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(JwtMiddleware)
+      .exclude(
+        { path: 'auth/login', method: RequestMethod.POST },
+        { path: 'auth/signup', method: RequestMethod.POST },
+        { path: 'auth/verify-otp', method: RequestMethod.POST },
+        { path: 'auth/resend-otp', method: RequestMethod.POST },
+        { path: 'auth/forgot-password', method: RequestMethod.POST },
+        { path: 'auth/reset-password', method: RequestMethod.POST },
+        { path: 'admin/login', method: RequestMethod.POST },
+        { path: 'auth/google/*', method: RequestMethod.ALL },
+      )
+      .forRoutes('*');
+  }
+}

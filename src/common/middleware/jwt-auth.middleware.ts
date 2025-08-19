@@ -1,7 +1,7 @@
-import { Inject, Injectable, NestMiddleware } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { NextFunction, Request } from "express";
-import { IJwtTokenService } from "src/auth/interfaces/ijwt-token-service.interface";
+import { Injectable, NestMiddleware, UnauthorizedException, Inject } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { ConfigService } from '@nestjs/config';
+import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
@@ -12,18 +12,25 @@ export class JwtMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const token = req.cookies?.['access_token'];
+
     if (!token) {
-      return next(); 
+      throw new UnauthorizedException('Access token not found');
     }
 
     try {
-      const payload = this.jwtService.verifyToken(token);
-      req['user'] = payload;
-    } catch (err) {
-     
-      console.error('JWT error:', err.message);
-    }
+      const secret = this.configService.get<string>('ACCESS_TOKEN_SECRET');
+      if (!secret) throw new Error('ACCESS_TOKEN_SECRET is not defined');
 
-    next();
+      const payload = this.jwtService.verifyToken(token);
+
+
+      req['user'] = payload;
+
+      next();
+    } catch (err) {
+      throw new UnauthorizedException(
+        err.message.includes('jwt expired') ? 'Access token expired' : `Invalid access token: ${err.message}`,
+      );
+    }
   }
 }

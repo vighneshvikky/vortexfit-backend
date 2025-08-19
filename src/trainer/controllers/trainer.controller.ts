@@ -28,7 +28,7 @@ export class TrainerController {
 
 
   @Patch('update-trainer-profile')
-  @UseGuards(JwtAuthGuard, RolesGuard, NotBlockedGuard)
+  @UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('trainer')
   async updateTrainerProfile(
     @Req() req: Request,

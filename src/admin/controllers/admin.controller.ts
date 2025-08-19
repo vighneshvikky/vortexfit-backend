@@ -56,7 +56,7 @@ export class AdminController {
   }
 
   @Get('users')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   async getUsers(
     @Query()
@@ -72,7 +72,7 @@ export class AdminController {
     });
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @Get('listTrainers')
   async listTrainers(@Query() query: GetUnverifiedTrainersQueryDto) {
@@ -80,14 +80,14 @@ export class AdminController {
     return data;
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @Patch('verify-trainer/:trainerId')
   async approveTrainer(@Param('trainerId') trainerId: string) {
     return this.adminService.approveTrainer(trainerId);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @Patch('reject-trainer/:trainerId')
   async rejectTrainer(
@@ -101,7 +101,7 @@ export class AdminController {
     return this.adminService.rejectTrainer(trainerId, reason);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles('admin')
   @Patch('users/:id/toggle-block')
   async toggleBlockStatus(
