@@ -14,4 +14,9 @@ export class AwsS3Controller {
       body.contentType,
     );
   }
+
+    @Post('generate-download-url')
+  generateDownloadUrl(@Body() body: { key: string; fileName: string }) {
+    return this.awsS3Service.generateDownloadUrl(body.key, body.fileName);
+  }
 }

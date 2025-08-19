@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -29,5 +29,16 @@ export class AwsS3Service implements IAwsS3Service {
 
     const url = await getSignedUrl(this.s3, command, { expiresIn: 300 });
     return { url, key };
+  }
+
+    async generateDownloadUrl(key: string, fileName: string) {
+    const command = new GetObjectCommand({
+      Bucket: process.env.BUCKET_NAME!,
+      Key: key,
+      ResponseContentDisposition: `attachment; filename="${fileName}"`, 
+    });
+
+    const url = await getSignedUrl(this.s3, command, { expiresIn: 300 });
+    return { url };
   }
 }
