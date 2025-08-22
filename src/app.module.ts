@@ -69,6 +69,7 @@ export class AppModule implements NestModule {
         { path: 'auth/verify-otp', method: RequestMethod.POST },
         { path: 'auth/resend-otp', method: RequestMethod.POST },
         { path: 'auth/forgot-password', method: RequestMethod.POST },
+        { path: 'auth/refresh/token', method: RequestMethod.POST },
         { path: 'auth/reset-password', method: RequestMethod.POST },
         { path: 'admin/login', method: RequestMethod.POST },
         { path: 'auth/google/*', method: RequestMethod.ALL },
