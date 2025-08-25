@@ -1,7 +1,7 @@
 import { User } from '../schemas/user.schema';
 import { UserProfileDto } from '../dtos/user.mapper.dto';
 export class UserMapper {
-  static toUserProfileDto(user: User): UserProfileDto {
+  static toUserProfileDto(user: User ): UserProfileDto {
     return {
       id: user._id.toString(),
       name: user.name,
@@ -20,6 +20,7 @@ export class UserMapper {
       equipments: user.equipments,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      isBlocked: user.isBlocked
     };
   }
 }

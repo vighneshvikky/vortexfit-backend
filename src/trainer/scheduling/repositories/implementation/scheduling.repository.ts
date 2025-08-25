@@ -37,7 +37,7 @@ export class ScheduleRepository implements IScheduleRepository {
     return await this.schedulingRuleModel.find({ trainerId }).exec();
   }
 
-    async findActiveRules(trainerId: string, dateStr: string) {
+  async findActiveRules(trainerId: string, dateStr: string) {
     return this.schedulingRuleModel.find({
       trainerId,
       isActive: true,

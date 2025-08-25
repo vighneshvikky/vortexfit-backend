@@ -1,3 +1,4 @@
+import { BookingStatus } from 'src/booking/enums/booking.enum';
 import { Booking } from 'src/booking/schemas/booking.schema';
 
 export const IBookingRepository = 'IBookingRepository';
@@ -5,19 +6,10 @@ export const IBookingRepository = 'IBookingRepository';
 export interface IBookingRepository {
   create(data: Partial<Booking>): Promise<Booking>;
 
-  //   findByUser(userId: string): Promise<Booking[]>;
+  bookingOfTrainerId(trainerId: string): Promise<Booking[] | null>;
 
-  //   findByTrainer(trainerId: string, date?: string): Promise<Booking[]>;
+  update(id: string, data: Partial<Booking>): Promise<Booking| null>;
 
-  //   findBySlot(
-  //     trainerId: string,
-  //     date: string,
-  //     timeSlot: string,
-  //   ): Promise<Booking | null>;
-
-  update(id: string, data: Partial<Booking>): Promise<Booking | null>;
-
-  //   delete(id: string): Promise<boolean>;
 
   countActiveBookings(
     trainerId: string,
@@ -30,4 +22,6 @@ export interface IBookingRepository {
     orderId: string,
     data: Partial<Booking | null>,
   ): Promise<Booking | null>;
+
+  changeStatus(bookingId: string, status: BookingStatus): Promise<Booking | null>;
 }

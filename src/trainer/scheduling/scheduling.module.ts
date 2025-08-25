@@ -9,19 +9,26 @@ import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interfa
 import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
 import { IBookingRepository } from 'src/booking/repository/interface/booking-repository.interface';
 import { BookingRepository } from 'src/booking/repository/implementation/booking-repository';
-import { Booking, BookingSchema } from 'src/booking/schemas/booking.schema';
 import { BookingModule } from 'src/booking/booking.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SchedulingRule, SchedulingRuleSchema } from './schemas/schedule.schema';
+import {
+  SchedulingRule,
+  SchedulingRuleSchema,
+} from './schemas/schedule.schema';
+
+import { UserModule } from 'src/user/user.module';
+import { TrainerModule } from '../trainer.module';
 
 @Module({
   imports: [
     BookingModule,
     JwtModule.register({}),
-      MongooseModule.forFeature([
+    MongooseModule.forFeature([
       { name: SchedulingRule.name, schema: SchedulingRuleSchema },
     ]),
-  BookingModule
+    UserModule,
+    TrainerModule,
+    BookingModule,
   ],
   controllers: [ScheduleController],
   providers: [
@@ -39,8 +46,8 @@ import { SchedulingRule, SchedulingRuleSchema } from './schemas/schedule.schema'
     },
     {
       provide: IBookingRepository,
-      useClass: BookingRepository
-    }
+      useClass: BookingRepository,
+    },
   ],
   exports: [SCHEDULE_SERVICE],
 })

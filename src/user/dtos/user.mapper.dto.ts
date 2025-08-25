@@ -25,6 +25,9 @@ export class UserProfileDto {
   @IsBoolean()
   isVerified: boolean;
 
+    @IsBoolean()
+  isBlocked: boolean;
+
   @IsOptional()
   @IsString()
   dob?: string;

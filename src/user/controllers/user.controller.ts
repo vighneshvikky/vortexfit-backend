@@ -11,7 +11,7 @@ import {
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { UpdateUserDto } from '../dtos/user.dto';
 
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+
 import { Roles } from 'src/common/decorator/role.decorator';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Trainer } from 'src/trainer/schemas/trainer.schema';
@@ -20,11 +20,17 @@ import {
   IUserService,
   USER_SERVICE,
 } from '../interfaces/user-service.interface';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { ILogger } from 'src/common/logger/log.interface';
+import { User } from '../schemas/user.schema';
+import { UserProfileDto } from '../dtos/user.mapper.dto';
+import { TrainerProfileDto } from 'src/trainer/dtos/trainer.dto';
 
 @Controller('user')
 export class UserController {
   constructor(
     @Inject(USER_SERVICE) private readonly userService: IUserService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: ILogger
   ) {}
   @UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('user')
@@ -33,7 +39,7 @@ export class UserController {
     @GetUser('sub') userId: string,
     @Body() updateData: UpdateUserDto,
   ) {
-    console.log('userId', userId);
+   this.logger.log(userId);
     return await this.userService.findByIdAndUpdate(userId, updateData);
   }
 
@@ -53,4 +59,7 @@ export class UserController {
   getTrainerData(@Param('id') id: string): Promise<Trainer | null> {
     return this.userService.findTrainer(id);
   }
+
+
+
 }

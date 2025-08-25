@@ -22,4 +22,5 @@ export interface ITrainerService extends IUserRoleService {
     trainerId: string,
     dto: TrainerProfileDto,
   ): Promise<TrainerProfileDto>;
+  findById(id: string): Promise<Trainer | null>;
 }

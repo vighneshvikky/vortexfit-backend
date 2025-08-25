@@ -31,12 +31,12 @@ export class NotBlockedGuard implements CanActivate {
 
     if (user.role === 'user') {
       const dbUser = await this.userService.findById(user.sub);
-
       if (!dbUser || dbUser.isBlocked) {
         throw new ForbiddenException('User is blocked or not found');
       }
     } else if (user.role === 'trainer') {
       const dbTrainer = await this.trainerService.findById(user.sub);
+
       if (!dbTrainer || dbTrainer.isBlocked) {
         throw new ForbiddenException('Trainer is blocked or not found');
       }

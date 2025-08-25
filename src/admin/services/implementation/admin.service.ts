@@ -75,7 +75,7 @@ export class AdminService implements IAdminService {
     search,
     page = 1,
     limit = 10,
-    filter = 'all',
+    filter,
   }: GetUsersOptions): Promise<PaginatedResult<AdminUserDto>> {
     page = Number(page);
     limit = Number(limit);
@@ -93,6 +93,11 @@ export class AdminService implements IAdminService {
 
     if (filter === UserFilter.ALL || filter === UserFilter.TRAINER) {
       trainers = await this.trainerRepository.findTrainersBySearch(search);
+    }
+
+    if(filter === UserFilter.ALL || filter === UserFilter.BLOCKED){
+      users = await this.userRepository.find({isBlocked: true})
+      trainers = await this.trainerRepository.find({isBlocked: true})
     }
 
     const combined = [...users, ...trainers].sort(

@@ -16,17 +16,20 @@ import {
 } from '../services/interface/scheduling.interface';
 import { CreateScheduleDto, UpdateScheduleDto } from '../dtos/scheduling.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
+import { NotBlockedGuard } from 'src/common/guards/notBlocked.guard';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { AppLoggerService } from 'src/common/logger/log.service';
 
 @Controller('schedules')
 export class ScheduleController {
   constructor(
     @Inject(SCHEDULE_SERVICE)
     private readonly schedulingService: ISchedulingService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private logger: AppLoggerService
   ) {}
-  @UseGuards( RolesGuard)
+  @UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('trainer')
   @Post('create')
   @UsePipes()
@@ -39,26 +42,30 @@ export class ScheduleController {
     return this.schedulingService.createSchedule(dto, trainerId);
   }
 
+  @UseGuards( RolesGuard, NotBlockedGuard)
   @Put(':id/toggle')
   @UsePipes()
   async update(@Param('id') id: string, @Body() dto: UpdateScheduleDto) {
+
     return this.schedulingService.updateSchedule(id, dto);
   }
-  @UseGuards( RolesGuard)
+@UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('trainer')
   @Delete('deleteSchedule/:id')
   async delete(@Param('id') id: string) {
     return this.schedulingService.deleteSchedule(id);
   }
 
-  @UseGuards( RolesGuard)
+  @UseGuards( RolesGuard, NotBlockedGuard)
   @Roles('trainer')
   @Get('getSchedules')
   async getSchedules(@GetUser('sub') trainerId: string) {
     return this.schedulingService.getSchedulesOfTrainer(trainerId);
   }
 // for users
-  @Get('generateSlots/:trainerId/:date')
+ @UseGuards( RolesGuard, NotBlockedGuard)
+ @Roles('user')
+ @Get('generateSlots/:trainerId/:date')
   async getSlots(@Param('trainerId') trainerId: string, @Param('date') date: string) {
     console.log('trainerId', trainerId);
     console.log('date', date);

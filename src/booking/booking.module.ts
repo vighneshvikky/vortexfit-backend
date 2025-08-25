@@ -7,11 +7,15 @@ import { BookingService } from './services/implementation/booking-service';
 import { BOOKING_SERVICE } from './services/interface/booking-service.interface';
 import { IBookingRepository } from './repository/interface/booking-repository.interface';
 import { BookingRepository } from './repository/implementation/booking-repository';
+import { UserModule } from 'src/user/user.module';
+import { TrainerModule } from 'src/trainer/trainer.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }]),
-    JwtModule.register({})
+    JwtModule.register({}),
+    UserModule,
+    TrainerModule
   ],
   providers: [
     BookingService,

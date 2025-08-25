@@ -22,6 +22,16 @@ import { ScheduleModule } from './trainer/scheduling/scheduling.module';
 import { PaymentModule } from './payments/payments.module';
 import { BookingModule } from './booking/booking.module';
 import { JwtMiddleware } from './common/middleware/jwt-auth.middleware';
+import { ChatModule } from './common/chat/chat.module';
+import { MessageModule } from './messages/message.module';
+import { TrainerModule } from './trainer/trainer.module';
+
+winston.addColors({
+  info: 'green',
+  warn: 'yellow',
+  error: 'red',
+  debug: 'blue',
+});
 
 @Module({
   imports: [
@@ -30,6 +40,7 @@ import { JwtMiddleware } from './common/middleware/jwt-auth.middleware';
       transports: [
         new winston.transports.Console({
           format: winston.format.combine(
+            winston.format.colorize({all: true}),
             winston.format.timestamp(),
             winston.format.printf(
               ({ timestamp, level, message }) =>
@@ -55,6 +66,9 @@ import { JwtMiddleware } from './common/middleware/jwt-auth.middleware';
     ScheduleModule,
     PaymentModule,
     BookingModule,
+    ChatModule,
+    MessageModule,
+  
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],

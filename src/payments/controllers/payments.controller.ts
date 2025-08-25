@@ -9,18 +9,23 @@ import {
 } from 'src/booking/services/interface/booking-service.interface';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { AppLoggerService } from 'src/common/logger/log.service';
+import { ILogger } from 'src/common/logger/log.interface';
+import { CreateOrderDto, VerifyPaymentDto } from '../dtos/payment.dto';
 
 @Controller('payments')
 export class PaymentsController {
   constructor(
     private readonly razorpayService: RazorpayService,
     @Inject(BOOKING_SERVICE) private readonly bookingService: IBookingService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) readonly logger: ILogger
   ) {}
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('create-order')
-  async createOrder(@Body() body: any) {
-    console.log('body for create-order', body);
-
+  async createOrder(@Body() body: CreateOrderDto) {
+    this.logger.log(body);
+    console.log('body from creating a order', body)
     const { amount } = body;
 
     const order = await this.razorpayService.createOrder(amount);
@@ -30,8 +35,9 @@ export class PaymentsController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('verify-payment')
-  async verifyPayment(@GetUser('sub') userId: string, @Body() body: any) {
-    console.log('body for verify-payment', body);
+  async verifyPayment(@GetUser('sub') userId: string, @Body() body: VerifyPaymentDto) {
+    this.logger.log(body);
+    console.log('verifying body', body)
      const { trainerId, sessionType, date, timeSlot, amount, razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
     const crypto = require('crypto');
 

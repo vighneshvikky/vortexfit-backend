@@ -13,20 +13,19 @@ import {
 import { Response } from 'express';
 import { GetUnverifiedTrainersQueryDto } from 'src/common/helpers/dtos/get-user-query.dto';
 import { BadRequestException } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { setTokenCookies } from 'src/common/helpers/token.setter';
 import { LoginAdminDto } from 'src/auth/dto/admin.dto';
 import { UserQueryDto } from '../dtos/user-query.dto';
-import { Trainer } from 'src/trainer/schemas/trainer.schema';
-import { User } from 'aws-sdk/clients/budgets';
+
 import {
   ADMIN_SERVICE,
   IAdminService,
 } from '../services/interface/admin-service.interface';
 import { AdminUserDto } from '../dtos/admin-user.dto';
 import { UserFilter } from '../enums/admin.enums';
+
 
 @Controller('admin')
 export class AdminController {
@@ -61,7 +60,7 @@ export class AdminController {
   async getUsers(
     @Query()
     query: UserQueryDto & {
-      filter?: UserFilter.ALL | UserFilter.USER | UserFilter.TRAINER;
+      filter?: UserFilter.ALL | UserFilter.USER | UserFilter.TRAINER | UserFilter.BLOCKED;
     },
   ) {
     const { page = '1', limit = '10', ...rest } = query;
@@ -69,6 +68,7 @@ export class AdminController {
       ...rest,
       page: parseInt(page),
       limit: parseInt(limit),
+      filter: query.filter
     });
   }
 
@@ -76,8 +76,8 @@ export class AdminController {
   @Roles('admin')
   @Get('listTrainers')
   async listTrainers(@Query() query: GetUnverifiedTrainersQueryDto) {
-    const data = await this.adminService.getUnverifiedTrainers(query);
-    return data;
+    return await this.adminService.getUnverifiedTrainers(query);
+    
   }
 
   @UseGuards(RolesGuard)

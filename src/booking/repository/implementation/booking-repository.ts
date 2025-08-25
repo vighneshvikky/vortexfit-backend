@@ -3,6 +3,7 @@ import { IBookingRepository } from '../interface/booking-repository.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { BookingStatus } from 'src/booking/enums/booking.enum';
 
 @Injectable()
 export class BookingRepository implements IBookingRepository {
@@ -34,12 +35,6 @@ export class BookingRepository implements IBookingRepository {
     });
   }
 
-  async findByTrainer(trainerId: string, date?: string): Promise<Booking[]> {
-    const filter: any = { trainerId: new Types.ObjectId(trainerId) };
-    if (date) filter.date = date;
-    return this.bookingModel.find(filter).exec();
-  }
-
   async findByUser(userId: string): Promise<Booking[]> {
     return this.bookingModel
       .find({ userId: new Types.ObjectId(userId) })
@@ -67,9 +62,28 @@ export class BookingRepository implements IBookingRepository {
     });
   }
 
-  async updateByOrderId(orderId: string, data: Partial<Booking>):Promise<Booking | null> {
+  async updateByOrderId(
+    orderId: string,
+    data: Partial<Booking>,
+  ): Promise<Booking | null> {
     return this.bookingModel
       .findOneAndUpdate({ orderId }, { $set: data }, { new: true })
+      .exec();
+  }
+
+  async bookingOfTrainerId(trainerId: string): Promise<Booking[] | null> {
+    return this.bookingModel
+      .find({ trainerId: trainerId })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async changeStatus(
+    bookingId: string,
+    bookingStatus: BookingStatus,
+  ): Promise<Booking | null> {
+    return this.bookingModel
+      .findByIdAndUpdate(bookingId, { status: bookingStatus }, { new: true })
       .exec();
   }
 }

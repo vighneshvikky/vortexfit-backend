@@ -32,3 +32,8 @@ export class BookingDto {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export class ChangeBookingStatusDto {
+  bookingId: string;
+  bookingStatus: BookingStatus
+}
