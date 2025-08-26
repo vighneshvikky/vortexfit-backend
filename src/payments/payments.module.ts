@@ -11,6 +11,7 @@ import { BookingRepository } from 'src/booking/repository/implementation/booking
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
+import { RAZORPAY_SERVICE } from './services/interface/IRazorpay.service.interface';
 
 @Module({
   imports: [
@@ -20,19 +21,14 @@ import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
   ],
   controllers: [PaymentsController],
   providers: [
-    RazorpayService,
-    {
-      provide: BOOKING_SERVICE,
-      useClass: BookingService,
-    },
-    {
-      provide: IBookingRepository,
-      useClass: BookingRepository,
-    },
-    {
+     {
       provide: IJwtTokenService,
       useClass: JwtTokenService
     },
+    {
+      provide:RAZORPAY_SERVICE,
+      useClass: RazorpayService
+    }
   ],
 })
 export class PaymentModule {}

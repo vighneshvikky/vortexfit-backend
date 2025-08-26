@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Inject, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { NotBlockedGuard } from 'src/common/guards/notBlocked.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
@@ -6,8 +13,7 @@ import {
   BOOKING_SERVICE,
   IBookingService,
 } from '../services/interface/booking-service.interface';
-;
-
+import { ChangeBookingStatusDto } from '../dtos/booking-dto.interface';
 @Controller('bookings')
 export class BookingController {
   constructor(
@@ -18,11 +24,12 @@ export class BookingController {
   async getBookings(@GetUser('sub') trainerId: string) {
     return await this.bookingService.getBookings(trainerId);
   }
- @UseGuards(RolesGuard, NotBlockedGuard)
- @Patch('changeStatus')
- async changeStatus(@Body() dto: any){
-    console.log('dto', dto)
-    return await this.bookingService.changeStatus(dto.bookingId, dto.bookingStatus);
- }
-  
+  @UseGuards(RolesGuard, NotBlockedGuard)
+  @Patch('changeStatus')
+  async changeStatus(@Body() dto: ChangeBookingStatusDto) {
+    return await this.bookingService.changeStatus(
+      dto.bookingId,
+      dto.bookingStatus,
+    );
+  }
 }

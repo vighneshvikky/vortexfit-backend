@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ObjectId } from 'mongoose';
 import Razorpay from 'razorpay';
+import { IRazorpayService, RazorpayOrder } from '../interface/IRazorpay.service.interface';
+
 
 @Injectable()
-export class RazorpayService {
+export class RazorpayService implements IRazorpayService{
   private razorpay: Razorpay;
 
   constructor() {
@@ -13,13 +14,14 @@ export class RazorpayService {
     });
   }
 
-  async createOrder(amount: number ) {
+  async createOrder(amount: number ): Promise<RazorpayOrder> {
     const options = {
       amount: amount * 100,
       currency: 'INR',
     };
 
-    return this.razorpay.orders.create(options)
+    return this.razorpay.orders.create(options) as unknown as RazorpayOrder; 
+
   }
 
 

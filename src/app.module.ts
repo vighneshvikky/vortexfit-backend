@@ -40,7 +40,7 @@ winston.addColors({
       transports: [
         new winston.transports.Console({
           format: winston.format.combine(
-            winston.format.colorize({all: true}),
+            winston.format.colorize({ all: true }),
             winston.format.timestamp(),
             winston.format.printf(
               ({ timestamp, level, message }) =>
@@ -52,9 +52,11 @@ winston.addColors({
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGODB_URI');
+        console.log('Mongo URI:', uri);
+        return { uri };
+      },
       inject: [ConfigService],
     }),
     RedisModule,
@@ -68,7 +70,6 @@ winston.addColors({
     BookingModule,
     ChatModule,
     MessageModule,
-  
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],

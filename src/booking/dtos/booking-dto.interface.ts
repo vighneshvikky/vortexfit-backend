@@ -34,6 +34,9 @@ export class BookingDto {
 }
 
 export class ChangeBookingStatusDto {
+  @IsString()
   bookingId: string;
-  bookingStatus: BookingStatus
+
+  @IsEnum(BookingStatus, { message: 'bookingStatus must be a valid enum value' })
+  bookingStatus: BookingStatus;
 }

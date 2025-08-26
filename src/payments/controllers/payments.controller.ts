@@ -13,11 +13,12 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppLoggerService } from 'src/common/logger/log.service';
 import { ILogger } from 'src/common/logger/log.interface';
 import { CreateOrderDto, VerifyPaymentDto } from '../dtos/payment.dto';
+import { IRazorpayService, RAZORPAY_SERVICE } from '../services/interface/IRazorpay.service.interface';
 
 @Controller('payments')
 export class PaymentsController {
   constructor(
-    private readonly razorpayService: RazorpayService,
+    @Inject(RAZORPAY_SERVICE) private readonly razorpayService: IRazorpayService,
     @Inject(BOOKING_SERVICE) private readonly bookingService: IBookingService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) readonly logger: ILogger
   ) {}
@@ -29,7 +30,7 @@ export class PaymentsController {
     const { amount } = body;
 
     const order = await this.razorpayService.createOrder(amount);
-
+    console.log('order', order)
     return { order };
   }
 
