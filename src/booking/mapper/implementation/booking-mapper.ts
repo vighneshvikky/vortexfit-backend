@@ -1,13 +1,8 @@
-
-
 import { Booking } from '../../schemas/booking.schema';
 import { BookingDto } from 'src/booking/dtos/booking-dto.interface';
 
-
-export class BookingMapper  {
-  static toDto(booking: Booking ): BookingDto {
-
-
+export class BookingMapper {
+  static toDto(booking: Booking): BookingDto {
     return {
       id: booking._id.toString(),
       userId: booking.userId.toString(),

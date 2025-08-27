@@ -11,13 +11,11 @@ export class CreateOrderDto {
   sessionType: string;
 
   @IsDateString()
-  date: string; 
+  date: string;
 
   @IsString()
   timeSlot: string;
 }
-
-
 
 export class VerifyPaymentDto {
   @IsString()

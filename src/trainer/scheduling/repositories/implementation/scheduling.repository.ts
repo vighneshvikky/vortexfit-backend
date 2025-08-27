@@ -11,11 +11,11 @@ import { Model } from 'mongoose';
 export class ScheduleRepository implements IScheduleRepository {
   constructor(
     @InjectModel(SchedulingRule.name)
-    private readonly schedulingRuleModel: Model<SchedulingRuleDocument>,
+    private readonly _schedulingRuleModel: Model<SchedulingRuleDocument>,
   ) {}
 
   async create(data: Partial<SchedulingRule>): Promise<SchedulingRule> {
-    const created = new this.schedulingRuleModel(data);
+    const created = new this._schedulingRuleModel(data);
     return created.save();
   }
 
@@ -23,22 +23,24 @@ export class ScheduleRepository implements IScheduleRepository {
     id: string,
     data: Partial<SchedulingRule>,
   ): Promise<SchedulingRule | null> {
-    return this.schedulingRuleModel
+    return this._schedulingRuleModel
       .findByIdAndUpdate(id, data, { new: true })
       .exec();
   }
 
   async delete(id: string): Promise<boolean> {
-    const result = await this.schedulingRuleModel.deleteOne({ _id: id }).exec();
+    const result = await this._schedulingRuleModel
+      .deleteOne({ _id: id })
+      .exec();
     return result.deletedCount === 1;
   }
 
   async findByTrainerId(trainerId: string): Promise<SchedulingRule[]> {
-    return await this.schedulingRuleModel.find({ trainerId }).exec();
+    return await this._schedulingRuleModel.find({ trainerId }).exec();
   }
 
   async findActiveRules(trainerId: string, dateStr: string) {
-    return this.schedulingRuleModel.find({
+    return this._schedulingRuleModel.find({
       trainerId,
       isActive: true,
       startDate: { $lte: dateStr },

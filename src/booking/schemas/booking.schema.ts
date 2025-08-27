@@ -44,10 +44,10 @@ export class Booking {
   paymentSignature?: string;
 
   @Prop()
-  createdAt: Date
+  createdAt: Date;
 
   @Prop()
-  updatedAt: Date
+  updatedAt: Date;
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);

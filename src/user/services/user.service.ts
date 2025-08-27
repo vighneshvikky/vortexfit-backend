@@ -23,10 +23,9 @@ export class UserService implements IUserService {
     return this.userRepo.findByEmail(email);
   }
   async findById(id: string): Promise<UserProfileDto | null> {
-const userData = await this.userRepo.findById(id);
+    const userData = await this.userRepo.findById(id);
 
-return UserMapper.toUserProfileDto(userData);
-
+    return UserMapper.toUserProfileDto(userData);
   }
 
   async updatePassword(userId: string, newPassword: string): Promise<void> {

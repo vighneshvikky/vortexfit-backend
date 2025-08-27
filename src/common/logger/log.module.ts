@@ -21,10 +21,10 @@ import DailyRotateFile from 'winston-daily-rotate-file';
         }),
       ],
     }),
-      new winston.transports.File({
-          filename: 'logs/error.log',
-          level: 'error',
-        }),
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+    }),
   ],
 })
 export class LoggerModule {

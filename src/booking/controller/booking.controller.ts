@@ -17,17 +17,17 @@ import { ChangeBookingStatusDto } from '../dtos/booking-dto.interface';
 @Controller('bookings')
 export class BookingController {
   constructor(
-    @Inject(BOOKING_SERVICE) private readonly bookingService: IBookingService,
+    @Inject(BOOKING_SERVICE) private readonly _bookingService: IBookingService,
   ) {}
   @UseGuards(RolesGuard, NotBlockedGuard)
   @Get('getBookings')
   async getBookings(@GetUser('sub') trainerId: string) {
-    return await this.bookingService.getBookings(trainerId);
+    return await this._bookingService.getBookings(trainerId);
   }
   @UseGuards(RolesGuard, NotBlockedGuard)
   @Patch('changeStatus')
   async changeStatus(@Body() dto: ChangeBookingStatusDto) {
-    return await this.bookingService.changeStatus(
+    return await this._bookingService.changeStatus(
       dto.bookingId,
       dto.bookingStatus,
     );

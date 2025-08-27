@@ -21,14 +21,14 @@ import { RAZORPAY_SERVICE } from './services/interface/IRazorpay.service.interfa
   ],
   controllers: [PaymentsController],
   providers: [
-     {
+    {
       provide: IJwtTokenService,
-      useClass: JwtTokenService
+      useClass: JwtTokenService,
     },
     {
-      provide:RAZORPAY_SERVICE,
-      useClass: RazorpayService
-    }
+      provide: RAZORPAY_SERVICE,
+      useClass: RazorpayService,
+    },
   ],
 })
 export class PaymentModule {}

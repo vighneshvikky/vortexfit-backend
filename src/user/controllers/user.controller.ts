@@ -11,7 +11,6 @@ import {
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { UpdateUserDto } from '../dtos/user.dto';
 
-
 import { Roles } from 'src/common/decorator/role.decorator';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Trainer } from 'src/trainer/schemas/trainer.schema';
@@ -30,20 +29,20 @@ import { TrainerProfileDto } from 'src/trainer/dtos/trainer.dto';
 export class UserController {
   constructor(
     @Inject(USER_SERVICE) private readonly userService: IUserService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: ILogger
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: ILogger,
   ) {}
-  @UseGuards( RolesGuard, NotBlockedGuard)
+  @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Patch('update-profile')
   async updateUser(
     @GetUser('sub') userId: string,
     @Body() updateData: UpdateUserDto,
   ) {
-   this.logger.log(userId);
+    this.logger.log(userId);
     return await this.userService.findByIdAndUpdate(userId, updateData);
   }
 
-  @UseGuards( RolesGuard, NotBlockedGuard)
+  @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Get('approved-trainer')
   async getApprovedTrainer(
@@ -53,13 +52,10 @@ export class UserController {
     return await this.userService.findApprovedTrainer({ category, name });
   }
 
-  @UseGuards( RolesGuard, NotBlockedGuard)
+  @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Get('getTrainerData/:id')
   getTrainerData(@Param('id') id: string): Promise<Trainer | null> {
     return this.userService.findTrainer(id);
   }
-
-
-
 }

@@ -1,4 +1,9 @@
-import { Injectable, NestMiddleware, UnauthorizedException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NestMiddleware,
+  UnauthorizedException,
+  Inject,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
@@ -23,13 +28,14 @@ export class JwtMiddleware implements NestMiddleware {
 
       const payload = this.jwtService.verifyToken(token);
 
-
       req['user'] = payload;
 
       next();
     } catch (err) {
       throw new UnauthorizedException(
-        err.message.includes('jwt expired') ? 'Access token expired' : `Invalid access token: ${err.message}`,
+        err.message.includes('jwt expired')
+          ? 'Access token expired'
+          : `Invalid access token: ${err.message}`,
       );
     }
   }

@@ -8,8 +8,7 @@ export interface IBookingRepository {
 
   bookingOfTrainerId(trainerId: string): Promise<Booking[] | null>;
 
-  update(id: string, data: Partial<Booking>): Promise<Booking| null>;
-
+  update(id: string, data: Partial<Booking>): Promise<Booking | null>;
 
   countActiveBookings(
     trainerId: string,
@@ -23,5 +22,8 @@ export interface IBookingRepository {
     data: Partial<Booking | null>,
   ): Promise<Booking | null>;
 
-  changeStatus(bookingId: string, status: BookingStatus): Promise<Booking | null>;
+  changeStatus(
+    bookingId: string,
+    status: BookingStatus,
+  ): Promise<Booking | null>;
 }

@@ -8,11 +8,7 @@ export const SCHEDULE_SERVICE = 'SCHEDULE_SERVICE';
 
 export interface ISchedulingService {
   createSchedule(data: CreateScheduleDto, id: string): Promise<ScheduleDto>;
-  updateSchedule(
-    id: string,
-    data: UpdateScheduleDto,
-  ): Promise<ScheduleDto | null>;
   deleteSchedule(id: string): Promise<boolean>;
   getSchedulesOfTrainer(id: string): Promise<ScheduleDto[] | null>;
-  getAvailableSlots(trainerId: string, date: string)
+  getAvailableSlots(trainerId: string, date: string);
 }

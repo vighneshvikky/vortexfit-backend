@@ -2,7 +2,7 @@ export const IJwtTokenService = Symbol('IJwtTokenService');
 
 import { TokenPayload } from '../interfaces/token-payload.interface';
 
-export const JWT_SERVICE = Symbol('JWT_SERVICE')
+export const JWT_SERVICE = Symbol('JWT_SERVICE');
 
 export interface IJwtTokenService {
   signAccessToken(payload: TokenPayload): string;

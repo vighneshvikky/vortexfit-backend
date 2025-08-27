@@ -6,7 +6,11 @@ export class MessageService {
   constructor(private readonly messageRepository: MessageRepository) {}
 
   async saveMessage(senderId: string, receiverId: string, content: string) {
-    return await this.messageRepository.saveMessage(senderId, receiverId, content);
+    return await this.messageRepository.saveMessage(
+      senderId,
+      receiverId,
+      content,
+    );
   }
 
   async getHistory(

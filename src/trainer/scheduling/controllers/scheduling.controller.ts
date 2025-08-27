@@ -26,10 +26,10 @@ import { AppLoggerService } from 'src/common/logger/log.service';
 export class ScheduleController {
   constructor(
     @Inject(SCHEDULE_SERVICE)
-    private readonly schedulingService: ISchedulingService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private logger: AppLoggerService
+    private readonly _schedulingService: ISchedulingService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private logger: AppLoggerService,
   ) {}
-  @UseGuards( RolesGuard, NotBlockedGuard)
+  @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('trainer')
   @Post('create')
   @UsePipes()
@@ -39,37 +39,32 @@ export class ScheduleController {
     trainerId: string,
   ) {
     console.log('dto', dto);
-    return this.schedulingService.createSchedule(dto, trainerId);
+    return this._schedulingService.createSchedule(dto, trainerId);
   }
 
-  @UseGuards( RolesGuard, NotBlockedGuard)
-  @Put(':id/toggle')
-  @UsePipes()
-  async update(@Param('id') id: string, @Body() dto: UpdateScheduleDto) {
-
-    return this.schedulingService.updateSchedule(id, dto);
-  }
-@UseGuards( RolesGuard, NotBlockedGuard)
+  @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('trainer')
   @Delete('deleteSchedule/:id')
   async delete(@Param('id') id: string) {
-    return this.schedulingService.deleteSchedule(id);
+    return this._schedulingService.deleteSchedule(id);
   }
 
-  @UseGuards( RolesGuard, NotBlockedGuard)
+  @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('trainer')
   @Get('getSchedules')
   async getSchedules(@GetUser('sub') trainerId: string) {
-    return this.schedulingService.getSchedulesOfTrainer(trainerId);
+    return this._schedulingService.getSchedulesOfTrainer(trainerId);
   }
-// for users
- @UseGuards( RolesGuard, NotBlockedGuard)
- @Roles('user')
- @Get('generateSlots/:trainerId/:date')
-  async getSlots(@Param('trainerId') trainerId: string, @Param('date') date: string) {
+  // for users
+  @UseGuards(RolesGuard, NotBlockedGuard)
+  @Roles('user')
+  @Get('generateSlots/:trainerId/:date')
+  async getSlots(
+    @Param('trainerId') trainerId: string,
+    @Param('date') date: string,
+  ) {
     console.log('trainerId', trainerId);
     console.log('date', date);
-    return await  this.schedulingService.getAvailableSlots(trainerId, date);
-
+    return await this._schedulingService.getAvailableSlots(trainerId, date);
   }
 }

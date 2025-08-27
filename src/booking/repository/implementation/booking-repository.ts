@@ -9,17 +9,17 @@ import { BookingStatus } from 'src/booking/enums/booking.enum';
 export class BookingRepository implements IBookingRepository {
   constructor(
     @InjectModel(Booking.name)
-    private readonly bookingModel: Model<BookingDocument>,
+    private readonly _bookingModel: Model<BookingDocument>,
   ) {}
 
   async create(data: Partial<Booking>): Promise<Booking> {
-    const booking = new this.bookingModel(data);
+    const booking = new this._bookingModel(data);
     return booking.save();
   }
 
   async delete(id: string): Promise<boolean> {
     if (!Types.ObjectId.isValid(id)) return false;
-    const result = await this.bookingModel.deleteOne({ _id: id });
+    const result = await this._bookingModel.deleteOne({ _id: id });
     return result.deletedCount > 0;
   }
 
@@ -28,7 +28,7 @@ export class BookingRepository implements IBookingRepository {
     date: string,
     timeSlot: string,
   ): Promise<Booking | null> {
-    return this.bookingModel.findOne({
+    return this._bookingModel.findOne({
       trainerId: new Types.ObjectId(trainerId),
       date,
       timeSlot,
@@ -36,14 +36,14 @@ export class BookingRepository implements IBookingRepository {
   }
 
   async findByUser(userId: string): Promise<Booking[]> {
-    return this.bookingModel
+    return this._bookingModel
       .find({ userId: new Types.ObjectId(userId) })
       .exec();
   }
 
   async update(id: string, data: Partial<Booking>): Promise<Booking | null> {
     if (!Types.ObjectId.isValid(id)) return null;
-    return this.bookingModel
+    return this._bookingModel
       .findByIdAndUpdate(id, { $set: data }, { new: true })
       .exec();
   }
@@ -54,7 +54,7 @@ export class BookingRepository implements IBookingRepository {
     slotStart: string,
     slotEnd: string,
   ): Promise<number> {
-    return this.bookingModel.countDocuments({
+    return this._bookingModel.countDocuments({
       trainerId,
       date: dateStr,
       timeSlot: `${slotStart}-${slotEnd}`,
@@ -66,13 +66,13 @@ export class BookingRepository implements IBookingRepository {
     orderId: string,
     data: Partial<Booking>,
   ): Promise<Booking | null> {
-    return this.bookingModel
+    return this._bookingModel
       .findOneAndUpdate({ orderId }, { $set: data }, { new: true })
       .exec();
   }
 
   async bookingOfTrainerId(trainerId: string): Promise<Booking[] | null> {
-    return this.bookingModel
+    return this._bookingModel
       .find({ trainerId: trainerId })
       .sort({ createdAt: -1 })
       .exec();
@@ -82,7 +82,7 @@ export class BookingRepository implements IBookingRepository {
     bookingId: string,
     bookingStatus: BookingStatus,
   ): Promise<Booking | null> {
-    return this.bookingModel
+    return this._bookingModel
       .findByIdAndUpdate(bookingId, { status: bookingStatus }, { new: true })
       .exec();
   }

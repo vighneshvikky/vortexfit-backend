@@ -95,9 +95,9 @@ export class AdminService implements IAdminService {
       trainers = await this.trainerRepository.findTrainersBySearch(search);
     }
 
-    if(filter === UserFilter.ALL || filter === UserFilter.BLOCKED){
-      users = await this.userRepository.find({isBlocked: true})
-      trainers = await this.trainerRepository.find({isBlocked: true})
+    if (filter === UserFilter.ALL || filter === UserFilter.BLOCKED) {
+      users = await this.userRepository.find({ isBlocked: true });
+      trainers = await this.trainerRepository.find({ isBlocked: true });
     }
 
     const combined = [...users, ...trainers].sort(

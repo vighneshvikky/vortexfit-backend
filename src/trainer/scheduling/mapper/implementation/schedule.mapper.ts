@@ -1,5 +1,3 @@
-
-
 import { SchedulingRule } from '../../schemas/schedule.schema';
 import { ScheduleDto } from '../interface/schedule.mapper.interface';
 

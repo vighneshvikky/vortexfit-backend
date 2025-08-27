@@ -9,7 +9,6 @@ import { JwtModule } from '@nestjs/jwt';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
-
   ],
   controllers: [MessageController],
   providers: [MessageService, MessageRepository],

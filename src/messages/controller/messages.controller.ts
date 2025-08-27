@@ -11,6 +11,4 @@ export class MessageController {
   async history(@GetUser('sub') userId: string, @Query() q: FetchHistoryDto) {
     return this.messageService.getHistory(userId, q.peerId, q.skip, q.limit);
   }
-
-  
 }

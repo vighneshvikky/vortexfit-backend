@@ -28,11 +28,11 @@ export class SlotDto {
 export class ScheduleService implements ISchedulingService {
   constructor(
     @Inject(IScheduleRepository)
-    private readonly scheduleRepository: IScheduleRepository,
+    private readonly _scheduleRepository: IScheduleRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: WinstonLogger,
     @Inject(IBookingRepository)
-    private readonly BookingRepository: IBookingRepository,
+    private readonly _bookingRepository: IBookingRepository,
   ) {}
 
   async createSchedule(
@@ -86,13 +86,13 @@ export class ScheduleService implements ISchedulingService {
       }
     }
 
-    const existingRules = await this.scheduleRepository.findByTrainerId(
+    const existingRules = await this._scheduleRepository.findByTrainerId(
       objectId.toString(),
     );
 
     if (existingRules) this.validateScheduleRule(data, existingRules);
 
-    const schedule = await this.scheduleRepository.create({
+    const schedule = await this._scheduleRepository.create({
       ...data,
       trainerId: objectId,
     });
@@ -100,29 +100,12 @@ export class ScheduleService implements ISchedulingService {
     return ScheduleMapper.toDto(schedule);
   }
 
-  async updateSchedule(
-    id: string,
-    data: UpdateScheduleDto,
-  ): Promise<ScheduleDto | null> {
-    const existingRule = await this.scheduleRepository.findByTrainerId(id);
-    if (!existingRule) throw new NotFoundException('Schedule not found');
-
-    const merged = { ...existingRule, ...data };
-
-    const existingRules = await this.scheduleRepository.findByTrainerId(id);
-    if (existingRules) this.validateScheduleRule(merged, existingRules, id);
-
-    const updatedSchedule = await this.scheduleRepository.update(id, data);
-    if (!updatedSchedule) throw new NotFoundException('Schedule Not found');
-    return ScheduleMapper.toDto(updatedSchedule);
-  }
-
   async deleteSchedule(id: string): Promise<boolean> {
-    return this.scheduleRepository.delete(id);
+    return this._scheduleRepository.delete(id);
   }
 
   async getSchedulesOfTrainer(id: string): Promise<ScheduleDto[] | null> {
-    const data = await this.scheduleRepository.findByTrainerId(id);
+    const data = await this._scheduleRepository.findByTrainerId(id);
     if (!data || data.length === 0) {
       return null;
     }
@@ -132,7 +115,6 @@ export class ScheduleService implements ISchedulingService {
   //showing slots for users
 
   async getAvailableSlots(trainerId: string, dateStr: string) {
-    
     const date = dayjs(dateStr, 'YYYY-MM-DD', true);
     if (!date.isValid()) {
       throw new BadRequestException('Invalid date format, expected YYYY-MM-DD');
@@ -141,11 +123,10 @@ export class ScheduleService implements ISchedulingService {
       throw new BadRequestException('Date cannot be in the past');
     }
 
-    const rules = await this.scheduleRepository.findActiveRules(
+    const rules = await this._scheduleRepository.findActiveRules(
       trainerId,
       dateStr,
     );
-
 
     if (!rules || rules.length === 0) {
       throw new BadRequestException(
@@ -154,7 +135,7 @@ export class ScheduleService implements ISchedulingService {
     }
     const dayOfWeek = date.day();
 
-    let availableSlots: string[] = [];
+    const availableSlots: string[] = [];
 
     for (const rule of rules) {
       if (!rule.daysOfWeek.includes(dayOfWeek)) continue;
@@ -165,45 +146,59 @@ export class ScheduleService implements ISchedulingService {
 
       const now = dayjs(); // current date and time
 
-while (start.add(rule.slotDuration, 'minute').isBefore(end)) {
-    const slotStart = start.format('HH:mm');
-    const slotEnd = start.add(rule.slotDuration, 'minute').format('HH:mm');
-
-    // Skip slots that are in the past
-    if (date.isSame(now, 'day') && start.isBefore(now)) {
-        start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
-        continue;
-    }
-
-    const existingBookings = await this.BookingRepository.countActiveBookings(
-        trainerId, dateStr, slotStart, slotEnd
-    );
-
-    if (!rule.maxBookingsPerSlot || existingBookings < rule.maxBookingsPerSlot) {
-        availableSlots.push(`${slotStart}-${slotEnd}`);
-    }
-
-    start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
-}
-
-
-      while(start.add(rule.slotDuration, 'minute').isBefore(end)){
+      while (start.add(rule.slotDuration, 'minute').isBefore(end)) {
         const slotStart = start.format('HH:mm');
         const slotEnd = start.add(rule.slotDuration, 'minute').format('HH:mm');
 
-        const existingBookings = await this.BookingRepository.countActiveBookings(trainerId, dateStr, slotStart, slotEnd);
-
-        if(rule.maxBookingsPerSlot && existingBookings >= rule.maxBookingsPerSlot){
-
-        }else{
-          availableSlots.push(`${slotStart}-${slotEnd}`)
+        // Skip slots that are in the past
+        if (date.isSame(now, 'day') && start.isBefore(now)) {
+          start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
+          continue;
         }
 
-         start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
+        const existingBookings =
+          await this._bookingRepository.countActiveBookings(
+            trainerId,
+            dateStr,
+            slotStart,
+            slotEnd,
+          );
+
+        if (
+          !rule.maxBookingsPerSlot ||
+          existingBookings < rule.maxBookingsPerSlot
+        ) {
+          availableSlots.push(`${slotStart}-${slotEnd}`);
+        }
+
+        start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
+      }
+
+      while (start.add(rule.slotDuration, 'minute').isBefore(end)) {
+        const slotStart = start.format('HH:mm');
+        const slotEnd = start.add(rule.slotDuration, 'minute').format('HH:mm');
+
+        const existingBookings =
+          await this._bookingRepository.countActiveBookings(
+            trainerId,
+            dateStr,
+            slotStart,
+            slotEnd,
+          );
+
+        if (
+          rule.maxBookingsPerSlot &&
+          existingBookings >= rule.maxBookingsPerSlot
+        ) {
+        } else {
+          availableSlots.push(`${slotStart}-${slotEnd}`);
+        }
+
+        start = start.add(rule.slotDuration + rule.bufferTime, 'minute');
       }
     }
 
-      if (availableSlots.length === 0) {
+    if (availableSlots.length === 0) {
       return {
         success: false,
         message: 'No available slots for this date',
@@ -216,8 +211,6 @@ while (start.add(rule.slotDuration, 'minute').isBefore(end)) {
     };
   }
 
-  //showing slots for users ends
-
   private validateScheduleRule(
     data: Partial<SchedulingRule>,
     existingRules: SchedulingRule[] = [],
@@ -229,78 +222,8 @@ while (start.add(rule.slotDuration, 'minute').isBefore(end)) {
       startDate,
       endDate,
       bufferTime = 0,
-      slotDuration,
       daysOfWeek = [],
-      exceptionalDays = [],
     } = data;
-
-    if (startTime && endTime) {
-      const [startHour, startMinute] = startTime.split(':').map(Number);
-      const [endHour, endMinute] = endTime.split(':').map(Number);
-      const startMinutes = startHour * 60 + startMinute;
-      const endMinutes = endHour * 60 + endMinute;
-
-      if (startMinutes >= endMinutes) {
-        throw new BadRequestException('startTime must be before endTime');
-      }
-
-      if (
-        slotDuration &&
-        endMinutes - startMinutes < slotDuration + bufferTime
-      ) {
-        throw new BadRequestException(
-          'Total slot time must fit in the working hours',
-        );
-      }
-    }
-
-    if (startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      if (start > end) {
-        throw new BadRequestException(
-          'startDate must be before or equal to endDate',
-        );
-      }
-    }
-
-    if (
-      slotDuration != null &&
-      (!Number.isInteger(slotDuration) || slotDuration <= 0)
-    ) {
-      throw new BadRequestException('slotDuration must be a positive integer');
-    }
-
-    if (bufferTime < 0) {
-      throw new BadRequestException('bufferTime must be non-negative');
-    }
-
-    if (slotDuration != null && bufferTime > slotDuration) {
-      throw new BadRequestException(
-        'bufferTime should not exceed slotDuration',
-      );
-    }
-
-    if (exceptionalDays && startDate && endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-
-      for (const day of exceptionalDays) {
-        const date = new Date(day);
-
-        if (date < start || date > end) {
-          throw new BadRequestException(
-            'All exceptionalDays must be between startDate and endDate',
-          );
-        }
-
-        if (date.toDateString() === start.toDateString()) {
-          throw new BadRequestException(
-            `Exceptional day (${date.toDateString()}) cannot be the same as startDate`,
-          );
-        }
-      }
-    }
 
     for (const rule of existingRules) {
       if (currentRuleId && rule._id.toString() === currentRuleId) continue;

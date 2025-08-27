@@ -11,7 +11,6 @@ export interface FindApprovedTrainerQuery {
 }
 
 export interface IUserService extends IUserRoleService {
-   
   findByIdAndUpdate(
     userId: string,
     data: Partial<UserProfileDto>,

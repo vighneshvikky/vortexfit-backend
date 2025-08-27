@@ -9,27 +9,26 @@ import { BookingStatus } from 'src/booking/enums/booking.enum';
 export class BookingService implements IBookingService {
   constructor(
     @Inject(IBookingRepository)
-    private readonly bookingRepostory: IBookingRepository,
+    private readonly _bookingRepository: IBookingRepository,
   ) {}
 
   async create(data: Partial<Booking>): Promise<Booking> {
-    return this.bookingRepostory.create(data);
+    return this._bookingRepository.create(data);
   }
 
-
   update(id: string, data: Partial<Booking>): Promise<Booking | null> {
-    return this.bookingRepostory.update(id, data);
+    return this._bookingRepository.update(id, data);
   }
 
   updateByOrderId(id: string, data: Partial<Booking>): Promise<Booking | null> {
-    return this.bookingRepostory.updateByOrderId(id, data);
+    return this._bookingRepository.updateByOrderId(id, data);
   }
 
-  getBookings(trainerId: string): Promise<Booking[] | null>{
-    return this.bookingRepostory.bookingOfTrainerId(trainerId);
+  getBookings(trainerId: string): Promise<Booking[] | null> {
+    return this._bookingRepository.bookingOfTrainerId(trainerId);
   }
 
   changeStatus(id: string, status: BookingStatus): Promise<Booking | null> {
-    return this.bookingRepostory.changeStatus(id, status);
+    return this._bookingRepository.changeStatus(id, status);
   }
 }

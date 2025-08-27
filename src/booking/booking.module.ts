@@ -15,23 +15,20 @@ import { TrainerModule } from 'src/trainer/trainer.module';
     MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }]),
     JwtModule.register({}),
     UserModule,
-    TrainerModule
+    TrainerModule,
   ],
   providers: [
     BookingService,
     {
       provide: BOOKING_SERVICE,
-      useClass: BookingService, 
+      useClass: BookingService,
     },
     {
-
       provide: IBookingRepository,
-      useClass: BookingRepository
-    }
+      useClass: BookingRepository,
+    },
   ],
   controllers: [BookingController],
-  exports: [BOOKING_SERVICE, IBookingRepository, MongooseModule], 
+  exports: [BOOKING_SERVICE, IBookingRepository, MongooseModule],
 })
 export class BookingModule {}
-
-

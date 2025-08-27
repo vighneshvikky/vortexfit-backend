@@ -26,7 +26,6 @@ import {
 import { AdminUserDto } from '../dtos/admin-user.dto';
 import { UserFilter } from '../enums/admin.enums';
 
-
 @Controller('admin')
 export class AdminController {
   constructor(
@@ -60,7 +59,11 @@ export class AdminController {
   async getUsers(
     @Query()
     query: UserQueryDto & {
-      filter?: UserFilter.ALL | UserFilter.USER | UserFilter.TRAINER | UserFilter.BLOCKED;
+      filter?:
+        | UserFilter.ALL
+        | UserFilter.USER
+        | UserFilter.TRAINER
+        | UserFilter.BLOCKED;
     },
   ) {
     const { page = '1', limit = '10', ...rest } = query;
@@ -68,7 +71,7 @@ export class AdminController {
       ...rest,
       page: parseInt(page),
       limit: parseInt(limit),
-      filter: query.filter
+      filter: query.filter,
     });
   }
 
@@ -77,7 +80,6 @@ export class AdminController {
   @Get('listTrainers')
   async listTrainers(@Query() query: GetUnverifiedTrainersQueryDto) {
     return await this.adminService.getUnverifiedTrainers(query);
-    
   }
 
   @UseGuards(RolesGuard)

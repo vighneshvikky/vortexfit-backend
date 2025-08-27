@@ -14,14 +14,13 @@ export class UserRepository
     super(model);
   }
 
-async findById(id: string): Promise<UserDocument> {
-  const user = await this.model.findById(id).exec();
-  if (!user) {
-    throw new Error(`User with id ${id} not found`);
+  async findById(id: string): Promise<UserDocument> {
+    const user = await this.model.findById(id).exec();
+    if (!user) {
+      throw new Error(`User with id ${id} not found`);
+    }
+    return user;
   }
-  return user;
-}
-
 
   async findUsersBySearch(search?: string): Promise<UserDocument[]> {
     const query = search
