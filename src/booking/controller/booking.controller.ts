@@ -14,6 +14,8 @@ import {
   IBookingService,
 } from '../services/interface/booking-service.interface';
 import { ChangeBookingStatusDto } from '../dtos/booking-dto.interface';
+
+
 @Controller('bookings')
 export class BookingController {
   constructor(

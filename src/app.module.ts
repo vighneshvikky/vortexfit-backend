@@ -24,7 +24,8 @@ import { BookingModule } from './booking/booking.module';
 import { JwtMiddleware } from './common/middleware/jwt-auth.middleware';
 import { ChatModule } from './common/chat/chat.module';
 import { MessageModule } from './messages/message.module';
-import { TrainerModule } from './trainer/trainer.module';
+import { LoggerModule } from './common/logger/log.module';
+
 
 winston.addColors({
   info: 'green',
@@ -36,20 +37,6 @@ winston.addColors({
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    WinstonModule.forRoot({
-      transports: [
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.colorize({ all: true }),
-            winston.format.timestamp(),
-            winston.format.printf(
-              ({ timestamp, level, message }) =>
-                `${timestamp} ${level}: ${message}`,
-            ),
-          ),
-        }),
-      ],
-    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -70,6 +57,7 @@ winston.addColors({
     BookingModule,
     ChatModule,
     MessageModule,
+    LoggerModule
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],

@@ -1,6 +1,6 @@
 import { Booking, BookingDocument } from 'src/booking/schemas/booking.schema';
 import { IBookingRepository } from '../interface/booking-repository.interface';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { BookingStatus } from 'src/booking/enums/booking.enum';
@@ -14,6 +14,7 @@ export class BookingRepository implements IBookingRepository {
 
   async create(data: Partial<Booking>): Promise<Booking> {
     const booking = new this._bookingModel(data);
+
     return booking.save();
   }
 
@@ -74,6 +75,7 @@ export class BookingRepository implements IBookingRepository {
   async bookingOfTrainerId(trainerId: string): Promise<Booking[] | null> {
     return this._bookingModel
       .find({ trainerId: trainerId })
+      .populate('userId', 'name')
       .sort({ createdAt: -1 })
       .exec();
   }
