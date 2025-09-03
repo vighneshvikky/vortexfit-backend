@@ -7,8 +7,7 @@ import { Trainer } from 'src/trainer/schemas/trainer.schema';
 import { FindApprovedTrainerQuery } from '../interfaces/user-interface';
 import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';
-import { TrainerMapper } from 'src/trainer/mapper/trainer.mapper';
-import { TrainerProfileDto } from 'src/trainer/dtos/trainer.dto';
+
 
 @Injectable()
 export class UserService implements IUserService {
