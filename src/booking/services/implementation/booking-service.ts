@@ -13,9 +13,6 @@ export class BookingService implements IBookingService {
   ) {}
 
   async create(data: Partial<Booking>): Promise<Booking> {
-    // const userBookingCount = this._
-    // weekly two bookings
-    
     return this._bookingRepository.create(data);
   }
 
