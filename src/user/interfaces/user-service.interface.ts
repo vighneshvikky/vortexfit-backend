@@ -1,6 +1,7 @@
 import { UserProfileDto } from '../dtos/user.mapper.dto';
 import { Trainer } from 'src/trainer/schemas/trainer.schema';
 import { User } from '../schemas/user.schema';
+import { UserModel } from '../model/user.model';
 
 export const USER_SERVICE = Symbol('USER_SERVICE');
 
@@ -17,6 +18,6 @@ export interface IUserService  {
   findTrainer(id: string): Promise<Trainer | null>;
   findApprovedTrainer(filters: FindApprovedTrainerQuery): Promise<Trainer[]>;
   findById(id: string): Promise<UserProfileDto | null>;
-  findByEmail(email: string): Promise<User | null>;
+  findByEmail(email: string): Promise<UserModel  | null>;
   updatePassword(userId: string, newPassword: string): Promise<void>;
 }

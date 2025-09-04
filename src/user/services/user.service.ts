@@ -7,6 +7,7 @@ import { Trainer } from 'src/trainer/schemas/trainer.schema';
 import { FindApprovedTrainerQuery } from '../interfaces/user-interface';
 import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';
+import { UserModel } from '../model/user.model';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -17,8 +18,9 @@ export class UserService implements IUserService {
     private readonly trainerRepo: ITrainerRepository,
   ) {}
 
-  async findByEmail(email: string): Promise<User | null> {
-    return await this.userRepo.findByEmail(email);
+  async findByEmail(email: string): Promise<UserModel | null> {
+    const userDoc = await this.userRepo.findByEmail(email);
+    return userDoc ? UserMapper.toDomain(userDoc) : null;
   }
 
   async findById(id: string): Promise<UserProfileDto | null> {

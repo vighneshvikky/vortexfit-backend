@@ -10,3 +10,4 @@ export interface IBookingService {
   updateByOrderId(id: string, data: Partial<Booking>): Promise<Booking | null>;
   changeStatus(id: string, status: string): Promise<Booking | null>;
 }
+
