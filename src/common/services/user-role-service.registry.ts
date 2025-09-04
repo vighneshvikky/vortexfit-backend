@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IUserRoleService } from '../interface/user-role-service.interface';
+
 import {
   IUserService,
   USER_SERVICE,
@@ -14,19 +14,19 @@ import { IUserRepository } from 'src/user/interfaces/user-repository.interface';
 
 @Injectable()
 export class UserRoleServiceRegistry implements IAuthServiceRegistry {
-  private readonly services: Map<string, IUserRoleService>;
+  private readonly services: Map<string, IUserService | ITrainerService>;
 
   constructor(
     @Inject(USER_SERVICE) private readonly userService: IUserService,
     @Inject(TRAINER_SERVICE) private readonly trainerService: ITrainerService,
   ) {
-    this.services = new Map<string, IUserRoleService>([
+    this.services = new Map<string, IUserService | ITrainerService>([
       ['user', this.userService],
       ['trainer', this.trainerService],
     ]);
   }
 
-  getServiceByRole(role: string): IUserRoleService {
+  getServiceByRole(role: string): IUserService | ITrainerService {
     const service = this.services.get(role);
     if (!service) {
       throw new Error(`No service found for role: ${role}`);
@@ -34,7 +34,5 @@ export class UserRoleServiceRegistry implements IAuthServiceRegistry {
     return service;
   }
 
-  // getRepository(role: string): IUserRepository | ITrainerRepository {
-  //   if()
-  // }
+
 }

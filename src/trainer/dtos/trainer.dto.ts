@@ -52,6 +52,10 @@ export class TrainerProfileDto {
   @IsOptional()
   isVerified?: boolean;
 
+    @IsOptional()
+  isBlocked?: boolean;
+
+
   @IsOptional()
   @IsString()
   specialization?: string;

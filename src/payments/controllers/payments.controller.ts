@@ -1,4 +1,11 @@
-import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  NotFoundException,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { RazorpayService } from '../services/implementation/razorpay.service';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { BookingService } from 'src/booking/services/implementation/booking-service';
@@ -76,6 +83,10 @@ export class PaymentsController {
         paymentId: razorpay_payment_id,
         paymentSignature: razorpay_signature,
       });
+
+      if (!booking) {
+        throw new NotFoundException('Booking not found');
+      }
 
       return { status: 'success', bookingId: booking._id };
     } else {

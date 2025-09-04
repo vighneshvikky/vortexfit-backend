@@ -20,13 +20,13 @@ export class UserProfileDto {
   email: string;
 
   @IsString()
-  image: string;
+  image? : string;
 
   @IsBoolean()
-  isVerified: boolean;
+  isVerified?: boolean;
 
   @IsBoolean()
-  isBlocked: boolean;
+  isBlocked?: boolean;
 
   @IsOptional()
   @IsString()
@@ -75,9 +75,9 @@ export class UserProfileDto {
 
   @IsDate()
   @Type(() => Date)
-  createdAt: Date;
+  createdAt?: Date;
 
   @IsDate()
   @Type(() => Date)
-  updatedAt: Date;
+  updatedAt?: Date;
 }

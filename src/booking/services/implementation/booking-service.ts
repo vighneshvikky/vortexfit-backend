@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Model, Types } from 'mongoose';
-import { Booking, BookingDocument } from 'src/booking/schemas/booking.schema';
 import { IBookingService } from '../interface/booking-service.interface';
 import { IBookingRepository } from 'src/booking/repository/interface/booking-repository.interface';
 import { BookingStatus } from 'src/booking/enums/booking.enum';
+import { BookingMapper } from 'src/booking/mapper/booking.mapper';
+import { BookingModel } from 'src/booking/models/booking.model';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -12,23 +12,32 @@ export class BookingService implements IBookingService {
     private readonly _bookingRepository: IBookingRepository,
   ) {}
 
-  async create(data: Partial<Booking>): Promise<Booking> {
-    return this._bookingRepository.create(data);
+
+  async create(data: Partial<BookingModel>): Promise<BookingModel | null> {
+    const bookingDoc = await this._bookingRepository.create(data);
+    return BookingMapper.toDomain(bookingDoc);
   }
 
-  update(id: string, data: Partial<Booking>): Promise<Booking | null> {
-    return this._bookingRepository.update(id, data);
+  async update(id: string, data: Partial<BookingModel>): Promise<BookingModel | null> {
+    const bookingDoc = await this._bookingRepository.update(id, data);
+    return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }
 
-  updateByOrderId(id: string, data: Partial<Booking>): Promise<Booking | null> {
-    return this._bookingRepository.updateByOrderId(id, data);
+  async updateByOrderId(id: string, data: Partial<BookingModel>): Promise<BookingModel | null> {
+    const bookingDoc = await this._bookingRepository.updateByOrderId(id, data);
+    return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }
 
-  getBookings(trainerId: string): Promise<Booking[] | null> {
-    return this._bookingRepository.bookingOfTrainerId(trainerId);
+  async getBookings(trainerId: string): Promise<BookingModel []| null> {
+    const bookingDocs = await this._bookingRepository.bookingOfTrainerId(trainerId);
+   return bookingDocs
+  ? bookingDocs.map(b => BookingMapper.toDomain(b)!).filter(Boolean) as BookingModel[]
+  : [];
+
   }
 
-  changeStatus(id: string, status: BookingStatus): Promise<Booking | null> {
-    return this._bookingRepository.changeStatus(id, status);
+  async changeStatus(id: string, status: BookingStatus): Promise<BookingModel | null> {
+    const bookingDoc = await this._bookingRepository.changeStatus(id, status);
+    return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }
 }
