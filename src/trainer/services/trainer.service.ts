@@ -14,6 +14,7 @@ import {
 } from 'src/common/aws/interface/aws-s3-service.interface';
 import { TrainerProfileDto } from '../dtos/trainer.dto';
 import { TrainerMapper } from '../mapper/trainer.mapper';
+import { TrainerModel } from '../models/trainer.model';
 
 @Injectable()
 export class TrainerService implements ITrainerService {
@@ -23,19 +24,21 @@ export class TrainerService implements ITrainerService {
     @Inject(AWS_S3_SERVICE) readonly awsS3Service: IAwsS3Service,
   ) {}
 
-  async findByEmail(email: string): Promise<Trainer | null> {
-    return this.trainerRepo.findByEmail(email);
+  async findByEmail(email: string): Promise<TrainerModel | null> {
+    const trainerDoc = await this.trainerRepo.findByEmail(email);
+    return trainerDoc ? TrainerMapper.toDomain(trainerDoc) : null;
   }
 
   async updatePassword(userId: string, newPassword: string): Promise<void> {
     await this.trainerRepo.updatePassword(userId, newPassword);
   }
 
-  async create(payload: Partial<Trainer>): Promise<Trainer> {
+  async create(payload: Partial<Trainer>): Promise<TrainerModel | null> {
     if (payload.password) {
       payload.password = await PasswordUtil.hashPassword(payload.password);
     }
-    return this.trainerRepo.create(payload);
+    const trainerDoc = await this.trainerRepo.create(payload);
+    return TrainerMapper.toDomain(trainerDoc);
   }
 
   async createTrainerWithFiles(data: {
@@ -47,20 +50,25 @@ export class TrainerService implements ITrainerService {
     bio: string;
     idProofUrl: string;
     certificationUrl: string;
-  }): Promise<Trainer> {
-    return this.trainerRepo.createTrainerWithFiles(data);
+  }): Promise<TrainerModel | null> {
+    const trainerDoc = await this.trainerRepo.createTrainerWithFiles(data);
+    return TrainerMapper.toDomain(trainerDoc);
   }
 
-  async findById(id: string): Promise<Trainer | null> {
-    return this.trainerRepo.findById(id);
+  async findById(id: string): Promise<TrainerProfileDto | null> {
+    const trainerDoc = await this.trainerRepo.findById(id);
+    if (!trainerDoc) return null;
+
+    const trainerDomain = TrainerMapper.toDomain(trainerDoc);
+    return TrainerMapper.toProfileDto(trainerDomain);
   }
 
   async updateTrainerProfile(
     trainerId: string,
     dto: TrainerProfileDto,
-  ): Promise<TrainerProfileDto> {
-    const trainer = await this.trainerRepo.findById(trainerId);
-    if (!trainer) {
+  ): Promise<TrainerProfileDto | null> {
+    const trainerDoc = await this.trainerRepo.findById(trainerId);
+    if (!trainerDoc) {
       throw new NotFoundException('Trainer not found');
     }
 
@@ -70,18 +78,17 @@ export class TrainerService implements ITrainerService {
         ? {
             oneToOneSession:
               dto.pricing.oneToOneSession ??
-              trainer.pricing?.oneToOneSession ??
+              trainerDoc.pricing?.oneToOneSession ??
               0,
             workoutPlan:
-              dto.pricing.workoutPlan ?? trainer.pricing?.workoutPlan ?? 0,
+              dto.pricing.workoutPlan ?? trainerDoc.pricing?.workoutPlan ?? 0,
           }
-        : trainer.pricing,
+        : trainerDoc.pricing,
     };
 
-    const updatedTrainer = await this.trainerRepo.updateById(
-      trainerId,
-      updatePayload,
-    );
-    return TrainerMapper.toProfileDto(updatedTrainer);
+    const updatedDoc = await this.trainerRepo.updateById(trainerId, updatePayload);
+    const updatedDomain = TrainerMapper.toDomain(updatedDoc);
+
+    return TrainerMapper.toProfileDto(updatedDomain);
   }
 }

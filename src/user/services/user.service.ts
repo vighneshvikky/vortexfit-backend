@@ -8,7 +8,6 @@ import { FindApprovedTrainerQuery } from '../interfaces/user-interface';
 import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';
 
-
 @Injectable()
 export class UserService implements IUserService {
   constructor(
@@ -19,12 +18,14 @@ export class UserService implements IUserService {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepo.findByEmail(email);
+    return await this.userRepo.findByEmail(email);
   }
+
   async findById(id: string): Promise<UserProfileDto | null> {
     const userData = await this.userRepo.findById(id);
 
-    return UserMapper.toUserProfileDto(userData);
+    const userDomain = UserMapper.toDomain(userData);
+    return UserMapper.toDto(userDomain);
   }
 
   async updatePassword(userId: string, newPassword: string): Promise<void> {
@@ -34,14 +35,16 @@ export class UserService implements IUserService {
   async findByIdAndUpdate(
     userId: string,
     data: Partial<UserProfileDto>,
-  ): Promise<UserProfileDto> {
+  ): Promise<UserProfileDto | null> {
     const user = await this.userRepo.updateById(userId, {
       ...data,
       isVerified: true,
       image: data.image,
     });
 
-    return UserMapper.toUserProfileDto(user);
+    const userDomain = UserMapper.toDomain(user);
+
+    return UserMapper.toDto(userDomain);
   }
 
   async findTrainer(id: string): Promise<Trainer | null> {
