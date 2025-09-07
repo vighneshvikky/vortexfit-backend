@@ -6,9 +6,7 @@ export class UserMapper {
   static toDomain(userDoc: UserDocument | User): UserModel | null {
     if (!userDoc) return null;
 
-    return new UserModel(
-      userDoc._id.toString(),
-      userDoc.name,
+    const user = new UserModel(
       userDoc.dob,
       userDoc.height,
       userDoc.heightUnit,
@@ -20,17 +18,30 @@ export class UserMapper {
       userDoc.preferredTime,
       userDoc.equipments,
     );
+    user._id = userDoc._id;
+    user.name = userDoc.name;
+    user.email = userDoc.email;
+    user.password = userDoc.password;
+    user.role = 'user';
+    user.provider = userDoc.provider;
+    user.isBlocked = userDoc.isBlocked;
+    user.isVerified = userDoc.isVerified;
+    user.image = userDoc.image;
+    user.createdAt = userDoc.createdAt;
+    user.updatedAt = userDoc.updatedAt;
+
+    return user;
   }
 
   static toDto(user: UserModel | null): UserProfileDto | null {
     if (!user) return null;
 
     return {
-      id: user.id,
-      name: user['name'], 
-      email: user['email'],
-      isVerified: user['isVerified'],
-      image: user['image'],
+      id: user._id?.toString() ?? '',
+      name: user.name,
+      email: user.email,
+      isVerified: user.isVerified,
+      image: user.image,
       dob: user.dob,
       height: user.height,
       heightUnit: user.heightUnit,
@@ -41,6 +52,7 @@ export class UserMapper {
       trainingTypes: user.trainingTypes,
       preferredTime: user.preferredTime,
       equipments: user.equipments,
+      isBlocked: user.isBlocked,
     };
   }
 }

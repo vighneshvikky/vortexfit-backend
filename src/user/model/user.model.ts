@@ -2,8 +2,6 @@ import { BaseModel } from 'src/common/model/base-model';
 
 export class  UserModel extends BaseModel {
   constructor(
-    public readonly id: string,
-    public readonly name: string,
     public readonly dob?: string,
     public readonly height?: number,
     public readonly heightUnit?: string,

@@ -1,13 +1,34 @@
 import { Booking } from '../schemas/booking.schema';
-import { BookingModel } from '../models/booking.model';
+import { BookingModel, UserRef } from '../models/booking.model';
+import { Types } from 'mongoose';
+
+type PopulatedUser = { _id: Types.ObjectId; name: string };
+
+function isPopulatedUser(user: unknown): user is PopulatedUser {
+  return (
+    typeof user === 'object' && user !== null && '_id' in user && 'name' in user
+  );
+}
 
 export class BookingMapper {
   static toDomain(bookingDoc: Booking): BookingModel | null {
     if (!bookingDoc) return null;
 
-    const booking = new BookingModel(
-      bookingDoc.userId.toString(),
-      bookingDoc.trainerId.toString(),
+    let user: Types.ObjectId | UserRef;
+
+    if (isPopulatedUser(bookingDoc.userId)) {
+      user = {
+        _id: bookingDoc.userId._id.toString(),
+        name: bookingDoc.userId.name,
+      };
+    } else {
+      user = new Types.ObjectId(bookingDoc.userId as string);
+    }
+
+    return new BookingModel(
+      bookingDoc._id,
+      user,
+      bookingDoc.trainerId,
       bookingDoc.date,
       bookingDoc.timeSlot,
       bookingDoc.status,
@@ -18,11 +39,6 @@ export class BookingMapper {
       bookingDoc.sessionType,
       bookingDoc.paymentSignature,
     );
-
-    booking.createdAt = bookingDoc.createdAt;
-    booking.updatedAt = bookingDoc.updatedAt;
-
-    return booking;
   }
 
   static toDto(domain: BookingModel) {
@@ -39,8 +55,6 @@ export class BookingMapper {
       orderId: domain.orderId,
       sessionType: domain.sessionType,
       paymentSignature: domain.paymentSignature,
-      createdAt: domain.createdAt,
-      updatedAt: domain.updatedAt,
     };
   }
 }

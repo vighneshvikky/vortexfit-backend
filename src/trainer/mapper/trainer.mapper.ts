@@ -48,6 +48,7 @@ export class TrainerMapper {
       certificationUrl: domain.certificationUrl,
       idProofUrl: domain.idProofUrl,
       pricing: domain.pricing,
+      isBlocked: domain.isBlocked
     };
   }
 }
