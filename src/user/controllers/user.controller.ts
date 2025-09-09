@@ -48,14 +48,14 @@ export class UserController {
   async getApprovedTrainer(
     @Query('category') category?: string,
     @Query('name') name?: string,
-  ): Promise<Trainer[]> {
+  ) {
     return await this.userService.findApprovedTrainer({ category, name });
   }
 
   @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Get('getTrainerData/:id')
-  getTrainerData(@Param('id') id: string): Promise<Trainer | null> {
+  getTrainerData(@Param('id') id: string){
     return this.userService.findTrainer(id);
   }
 }

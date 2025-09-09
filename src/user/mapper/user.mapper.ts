@@ -37,7 +37,7 @@ export class UserMapper {
     if (!user) return null;
 
     return {
-      id: user._id?.toString() ?? '',
+      _id: user._id?.toString() ?? '',
       name: user.name,
       email: user.email,
       isVerified: user.isVerified,

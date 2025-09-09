@@ -8,6 +8,7 @@ import { FindApprovedTrainerQuery } from '../interfaces/user-interface';
 import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';
 import { UserModel } from '../model/user.model';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -40,6 +41,7 @@ export class UserService implements IUserService {
   ): Promise<UserProfileDto | null> {
     const user = await this.userRepo.updateById(userId, {
       ...data,
+      _id: data._id ? new Types.ObjectId(data._id) : undefined,
       isVerified: true,
       image: data.image,
     });

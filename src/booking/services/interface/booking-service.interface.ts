@@ -1,5 +1,5 @@
 import { BookingModel } from 'src/booking/models/booking.model';
-import { Booking } from 'src/booking/schemas/booking.schema';
+
 
 export const BOOKING_SERVICE = 'BOOKING_SERVICE';
 

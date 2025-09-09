@@ -11,7 +11,7 @@ import { Type } from 'class-transformer';
 
 export class UserProfileDto {
   @IsString()
-  id: string;
+  _id: string;
 
   @IsString()
   name: string;
