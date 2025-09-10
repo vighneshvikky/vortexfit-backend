@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type LogDocument = HydratedDocument<Log>;
 
-@Schema({ timestamps: true, expireAfterSeconds: 60 * 60 * 24 * 14 })
+@Schema({ timestamps: true })
 export class Log {
   @Prop()
   level: string;
@@ -11,7 +11,7 @@ export class Log {
   @Prop()
   message: string;
 
-  @Prop({ default: Date.now })
+  @Prop({ default: Date.now, expires: 60 * 60 * 24 * 2 })
   timestamp: Date;
 }
 

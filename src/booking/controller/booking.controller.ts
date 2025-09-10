@@ -32,8 +32,6 @@ async getBookings(
   @Query('limit') limit: string
 ) {
 
-  console.log('limit', limit);
-  console.log('page', page)
   const pageNumber = Number(page) || 1;
   const limitNumber = Number(limit) || 5;
 

@@ -58,4 +58,6 @@ export class UserController {
   getTrainerData(@Param('id') id: string){
     return this.userService.findTrainer(id);
   }
+
+
 }
