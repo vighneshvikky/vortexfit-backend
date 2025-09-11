@@ -56,7 +56,7 @@ export class BookingRepository implements IBookingRepository {
   async getFilteredBookings(
     trainerId: string,
     filters: BookingFilterDto,
-  ): Promise<{bookings: Booking[]; totalRecords: number}>{
+  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
     const {
       clientId,
       status,
@@ -91,7 +91,7 @@ export class BookingRepository implements IBookingRepository {
       [sortBy]: sortOrder === 'desc' ? -1 : 1,
     };
 
-    const bookings = await  this._bookingModel
+    const bookings = await this._bookingModel
       .find(query)
       .populate('userId', 'name email')
       .populate('trainerId', 'name')
@@ -100,10 +100,9 @@ export class BookingRepository implements IBookingRepository {
       .limit(limit)
       .exec();
 
+    const totalRecords = await this._bookingModel.countDocuments(query);
 
-      const totalRecords = await this._bookingModel.countDocuments(query);
-
-      return {bookings, totalRecords}
+    return { bookings, totalRecords };
   }
 
   async countActiveBookings(
@@ -129,28 +128,25 @@ export class BookingRepository implements IBookingRepository {
       .exec();
   }
 
-async bookingOfTrainerId(
-  trainerId: string,
-  page: number = 1,
-  limit: number = 3
-): Promise<{ bookings: Booking[]; totalRecords: number }> {
-  const skip = (page - 1) * limit;
-  console.log('limit', limit);
-  console.log('page', page)
-  const [bookings, totalRecords] = await Promise.all([
-    this._bookingModel
-      .find({ trainerId })
-      .populate('userId', '_id name')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .exec(),
-    this._bookingModel.countDocuments({ trainerId }),
-  ]);
+  async bookingOfTrainerId(
+    trainerId: string,
+    page: number = 1,
+    limit: number = 5,
+  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
+    const skip = (page - 1) * limit;
+    const [bookings, totalRecords] = await Promise.all([
+      this._bookingModel
+        .find({ trainerId })
+        .populate('userId', '_id name')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._bookingModel.countDocuments({ trainerId }),
+    ]);
 
-  return { bookings, totalRecords };
-}
-
+    return { bookings, totalRecords };
+  }
 
   async changeStatus(
     bookingId: string,

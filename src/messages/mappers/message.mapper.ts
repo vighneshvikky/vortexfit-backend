@@ -1,7 +1,10 @@
+import { Injectable } from '@nestjs/common';
 import { ChatMessage } from "../schemas/message.schema";
+import { MessageResponseDto } from "../dtos/send-message.dto";
 
+@Injectable()
 export class MessageMapper {
-  static toDomain(raw: any): ChatMessage {
+  static toDomain(raw: ChatMessage): ChatMessage {
     return {
       content: raw.content,
       senderId: raw.senderId,
@@ -23,5 +26,25 @@ export class MessageMapper {
       isRead: message.isRead ?? false,
       isDelivered: message.isDelivered ?? false,
     };
+  }
+
+  
+  toDto(entity: ChatMessage): MessageResponseDto {
+    const dto = new MessageResponseDto();
+    dto.id = entity['_id']?.toString();
+    dto.content = entity.content;
+    dto.senderId = entity.senderId;
+    dto.receiverId = entity.receiverId;
+    dto.roomId = entity.roomId;
+    dto.messageType = entity.messageType;
+    dto.isRead = entity.isRead;
+    dto.isDelivered = entity.isDelivered;
+    dto.createdAt = entity['createdAt'];
+    dto.updatedAt = entity['updatedAt'];
+    return dto;
+  }
+
+  toDtoList(entities: ChatMessage[]): MessageResponseDto[] {
+    return entities.map(entity => this.toDto(entity));
   }
 }

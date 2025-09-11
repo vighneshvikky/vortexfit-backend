@@ -1,21 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
-import { MessageService } from '../service/messages.service';
-import { FetchHistoryDto } from '../dtos/fetch-history.dto';
-import { GetUser } from 'src/common/decorator/get-user.decorator';
-import { ChatMessage } from '../schemas/message.schema';
-import { CreateMessageDto } from '../interfaces/message.interface';
+import { Body, Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { MessageService } from '../service/implementation/messages.service';
+import { IMessageService, MESSAGE_SERVICE } from '../service/interface/message.service.interface';
 
 @Controller('chat')
 export class MessageController {
-  constructor(private readonly messageService: MessageService) {}
-
-@Post('messages')
-async sendMessage(@Body() messageData: CreateMessageDto) {
-  console.log('messageData', messageData)
-  const { senderId, receiverId, content } = messageData;
-  return this.messageService.saveMessage(senderId, receiverId, content);
-}
-
+  constructor(@Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService) {}
 
   @Get('messages/:roomId')
   async getMessages(
@@ -23,8 +12,12 @@ async sendMessage(@Body() messageData: CreateMessageDto) {
     @Query('page') page = '1',
     @Query('limit') limit = '50',
   ) {
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const data = await this.messageService.getHistory(roomId, skip, parseInt(limit));
+    const skip = (Number(page) - 1) * Number(limit);
+    const data = await this.messageService.getHistory(
+      roomId,
+      skip,
+      parseInt(limit),
+    );
 
     return data;
   }
