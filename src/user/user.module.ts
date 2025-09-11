@@ -37,6 +37,7 @@ import { USER_SERVICE } from './interfaces/user-service.interface';
   exports: [
     { provide: IUserRepository, useClass: UserRepository },
     USER_SERVICE,
+    MongooseModule
   ],
 })
 export class UserModule {}

@@ -1,11 +1,12 @@
+import { Types } from 'mongoose';
+import { ObjectId } from 'mongoose';
+import { BookingStatus } from '../enums/booking.enum';
 
-import { BaseModel } from "src/common/model/base-model";
-import { BookingStatus } from "../enums/booking.enum";
-
-export class BookingModel extends BaseModel {
+export class BookingModel {
   constructor(
-    public readonly userId: string,
-    public readonly trainerId: string,
+    public readonly _id: Types.ObjectId,
+    public readonly userId: Types.ObjectId | UserRef,
+    public readonly trainerId: Types.ObjectId | UserRef| string,
     public readonly date: string,
     public readonly timeSlot: string,
     public readonly status: BookingStatus,
@@ -15,7 +16,11 @@ export class BookingModel extends BaseModel {
     public readonly orderId?: string,
     public readonly sessionType?: string,
     public readonly paymentSignature?: string,
-  ) {
-    super();
-  }
+  ) {}
+}
+
+
+export type UserRef = {
+  _id: string;
+  name: string
 }
