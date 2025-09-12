@@ -32,22 +32,22 @@ import { TokenPayload } from './interfaces/token-payload.interface';
 @Controller('auth')
 export class AuthController {
   constructor(
-    @Inject(OTP_SERVICE) private readonly otpService: IOtpService,
-    @Inject(AUTH_SERVICE) private readonly authService: IAuthService,
-    @Inject(IJwtTokenService) private readonly jwtService: IJwtTokenService,
+    @Inject(OTP_SERVICE) private readonly _otpService: IOtpService,
+    @Inject(AUTH_SERVICE) private readonly _authService: IAuthService,
+    @Inject(IJwtTokenService) private readonly _jwtService: IJwtTokenService,
   ) {}
   @Post('signup')
   async signUp(@Body() body: SignupDto) {
-    return this.authService.signUp(body);
+    return this._authService.signUp(body);
   }
   @Post('verify-otp')
   async verifyOtp(@Body() body: VerifyOtpDto) {
-    return await this.otpService.verifyOtp(body);
+    return await this._otpService.verifyOtp(body);
   }
 
   @Post('resend-otp')
   async resendOtp(@Body() body: ResendOtpDto) {
-    return await this.otpService.resendOtp(body);
+    return await this._otpService.resendOtp(body);
   }
 
   @Post('login')
@@ -56,7 +56,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const { accessToken, refreshToken, user } =
-      await this.authService.verifyLogin(body);
+      await this._authService.verifyLogin(body);
 
     setTokenCookies(res, accessToken, refreshToken);
     return {
@@ -69,12 +69,12 @@ export class AuthController {
 
   @Post('forgot-password')
   async forgotPassword(@Body() { email, role }: ForgotPasswordDto) {
-    return this.authService.initiatePasswordReset(email, role);
+    return this._authService.initiatePasswordReset(email, role);
   }
 
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    const data = await this.authService.resetPassword(
+    const data = await this._authService.resetPassword(
       dto.token,
       dto.role,
       dto.newPassword,
@@ -91,14 +91,14 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const payload = this.jwtService.decodeToken(refreshToken);
+    const payload = this._jwtService.decodeToken(refreshToken);
 
     if (!payload?.sub || !payload?.role) {
       throw new UnauthorizedException('Invalid refresh token payload');
     }
 
     const { accessToken, newRefreshToken } =
-      await this.authService.rotateRefreshToken(
+      await this._authService.rotateRefreshToken(
         refreshToken,
         payload.role,
         payload.sub,
@@ -134,7 +134,7 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const { accessToken, refreshToken, user } =
-      await this.authService.googleLogin(code, role);
+      await this._authService.googleLogin(code, role);
 
     setTokenCookies(res, accessToken, refreshToken);
 

@@ -41,14 +41,14 @@ export class ChatGateway {
   ) {
     console.log('Received message:', message);
 
-    // save in DB
+   
     const saved = await this.messageService.saveMessage(
       message.senderId,
       message.receiverId,
       message.content,
     );
 
-    // broadcast to room (both sender & receiver)
+
     const roomId = [message.senderId, message.receiverId].sort().join('_');
      console.log('Broadcasting message to room:', roomId);
     this.server.to(message.roomId).emit('message', saved);

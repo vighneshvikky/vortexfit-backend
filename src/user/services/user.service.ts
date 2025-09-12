@@ -1,5 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { User } from '../schemas/user.schema';
+import { Inject, Injectable } from '@nestjs/common';    
 import { IUserRepository } from '../interfaces/user-repository.interface';
 import { UserProfileDto } from '../dtos/user.mapper.dto';
 import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
@@ -9,37 +8,39 @@ import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';
 import { UserModel } from '../model/user.model';
 import { Types } from 'mongoose';
+import { TrainerModel } from 'src/trainer/models/trainer.model';
+import { TrainerMapper } from 'src/trainer/mapper/trainer.mapper';
 
 @Injectable()
 export class UserService implements IUserService {
   constructor(
     @Inject(IUserRepository)
-    private readonly userRepo: IUserRepository,
+    private readonly _userRepo: IUserRepository,
     @Inject(ITrainerRepository)
-    private readonly trainerRepo: ITrainerRepository,
+    private readonly _trainerRepo: ITrainerRepository,
   ) {}
 
   async findByEmail(email: string): Promise<UserModel | null> {
-    const userDoc = await this.userRepo.findByEmail(email);
+    const userDoc = await this._userRepo.findByEmail(email);
     return userDoc ? UserMapper.toDomain(userDoc) : null;
   }
 
   async findById(id: string): Promise<UserProfileDto | null> {
-    const userData = await this.userRepo.findById(id);
+    const userData = await this._userRepo.findById(id);
 
     const userDomain = UserMapper.toDomain(userData);
     return UserMapper.toDto(userDomain);
   }
 
   async updatePassword(userId: string, newPassword: string): Promise<void> {
-    await this.userRepo.updatePassword(userId, newPassword);
+    await this._userRepo.updatePassword(userId, newPassword);
   }
 
   async findByIdAndUpdate(
     userId: string,
     data: Partial<UserProfileDto>,
   ): Promise<UserProfileDto | null> {
-    const user = await this.userRepo.updateById(userId, {
+    const user = await this._userRepo.updateById(userId, {
       ...data,
       _id: data._id ? new Types.ObjectId(data._id) : undefined,
       isVerified: true,
@@ -51,8 +52,9 @@ export class UserService implements IUserService {
     return UserMapper.toDto(userDomain);
   }
 
-  async findTrainer(id: string): Promise<Trainer | null> {
-    return await this.trainerRepo.findById(id);
+  async findTrainer(id: string): Promise<TrainerModel | null> {
+    const trainerDoc =  await this._trainerRepo.findById(id);
+  return trainerDoc? TrainerMapper.toDomain(trainerDoc):null
   }
 
   async findApprovedTrainer(filters: {
@@ -72,6 +74,6 @@ export class UserService implements IUserService {
       query.name = { $regex: filters.name, $options: 'i' };
     }
 
-    return await this.trainerRepo.findAll(query);
+    return await this._trainerRepo.findAll(query);
   }
 }

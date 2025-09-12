@@ -41,18 +41,18 @@ import {
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
-    @Inject(USER_SERVICE) private userService: IUserService,
-    @Inject(TRAINER_SERVICE) private trainerService: ITrainerService,
-    @Inject(IJwtTokenService) private readonly jwtService: IJwtTokenService,
-    @Inject(MAIL_SERVICE) private readonly mailService: IMailService,
-    @Inject(IUserRepository) private readonly userRepo: IUserRepository,
+    @Inject(USER_SERVICE) private _userService: IUserService,
+    @Inject(TRAINER_SERVICE) private _trainerService: ITrainerService,
+    @Inject(IJwtTokenService) private readonly _jwtService: IJwtTokenService,
+    @Inject(MAIL_SERVICE) private readonly _mailService: IMailService,
+    @Inject(IUserRepository) private readonly _userRepo: IUserRepository,
     @Inject(AUTH_SERVICE_REGISTRY)
-    private readonly roleServiceRegistry: UserRoleServiceRegistry,
+    private readonly _roleServiceRegistry: UserRoleServiceRegistry,
     @Inject(ITrainerRepository)
-    private readonly trainerRepo: ITrainerRepository,
-    @Inject('REDIS_CLIENT') private readonly redis: Redis,
-    @Inject(OTP_SERVICE) private readonly otpService: IOtpService,
-    @Inject(PASSWORD_UTIL) private readonly passwordUtil: IPasswordUtil,
+    private readonly _trainerRepo: ITrainerRepository,
+    @Inject('REDIS_CLIENT') private readonly _redis: Redis,
+    @Inject(OTP_SERVICE) private readonly _otpService: IOtpService,
+    @Inject(PASSWORD_UTIL) private readonly _passwordUtil: IPasswordUtil,
   ) {}
 
   private googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -61,29 +61,29 @@ export class AuthService implements IAuthService {
   async signUp(data: SignupDto) {
     const { role, email, password } = data;
 
-    const userRepo = role === 'trainer' ? this.trainerRepo : this.userRepo;
+    const userRepo = role === 'trainer' ? this._trainerRepo : this._userRepo;
 
     const existing = await userRepo.findByEmail(email);
     if (existing) {
       throw new ConflictException('User already exists');
     }
 
-    const hashPassword = await this.passwordUtil.hashPassword(password);
+    const hashPassword = await this._passwordUtil.hashPassword(password);
 
     const tempUser = {
       ...data,
       password: hashPassword,
     };
 
-    await this.redis.set(
+    await this._redis.set(
       `temp_${role}:${email}`,
       JSON.stringify(tempUser),
       'EX',
       300,
     );
 
-    const otp = await this.otpService.generateOtp(email);
-    await this.mailService.sendOtp(email, otp);
+    const otp = await this._otpService.generateOtp(email);
+    await this._mailService.sendOtp(email, otp);
 
     return {
       message: 'OTP sent to your email',
@@ -95,7 +95,7 @@ export class AuthService implements IAuthService {
   }
 
   async verifyLogin(body: LoginDto) {
-    const userService = this.roleServiceRegistry.getServiceByRole(body.role);
+    const userService = this._roleServiceRegistry.getServiceByRole(body.role);
     const user = await userService.findByEmail(body.email);
 
     if (
@@ -115,12 +115,12 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     const userId = user._id.toString();
-    const accessToken = this.jwtService.signAccessToken({
+    const accessToken = this._jwtService.signAccessToken({
       sub: userId,
       role: user.role,
       isBlocked: false,
     });
-    const refreshToken = this.jwtService.signRefreshToken({
+    const refreshToken = this._jwtService.signRefreshToken({
       sub: userId,
       role: user.role,
       isBlocked: false,
@@ -130,14 +130,14 @@ export class AuthService implements IAuthService {
   }
 
   async initiatePasswordReset(email: string, role: string) {
-    const userService = this.roleServiceRegistry.getServiceByRole(role);
+    const userService = this._roleServiceRegistry.getServiceByRole(role);
     const user = await userService.findByEmail(email);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const token = this.jwtService.signPasswordResetToken({
+    const token = this._jwtService.signPasswordResetToken({
       sub: user._id.toString(),
       role: user.role,
       isBlocked: false,
@@ -145,7 +145,7 @@ export class AuthService implements IAuthService {
 
     const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}&role=${role}`;
 
-    await this.mailService.sendResetLink(user.email, resetUrl);
+    await this._mailService.sendResetLink(user.email, resetUrl);
 
     return {
       message: 'Password reset link sent to your email',
@@ -158,13 +158,13 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Password is required');
     }
 
-    const payload = this.jwtService.verifyPasswordResetToken(token);
+    const payload = this._jwtService.verifyPasswordResetToken(token);
 
     const userId = payload.sub;
 
     const hashedPassword = await PasswordUtil.hashPassword(password);
 
-    const userService = this.roleServiceRegistry.getServiceByRole(role);
+    const userService = this._roleServiceRegistry.getServiceByRole(role);
     await userService.updatePassword(userId, hashedPassword);
 
     return {
@@ -178,13 +178,13 @@ export class AuthService implements IAuthService {
     role: 'user' | 'trainer' | 'admin',
     userId: string,
   ): Promise<{ accessToken: string; newRefreshToken: string }> {
-    const accessToken = this.jwtService.signAccessToken({
+    const accessToken = this._jwtService.signAccessToken({
       sub: userId,
       role: role,
       isBlocked: false,
     });
 
-    const newRefreshToken = this.jwtService.signRefreshToken({
+    const newRefreshToken = this._jwtService.signRefreshToken({
       sub: userId,
       role,
       isBlocked: false,
@@ -200,10 +200,10 @@ export class AuthService implements IAuthService {
     let user;
     const refreshTokenTTL = 7 * 24 * 60 * 60;
     if (role === 'trainer') {
-      user = await this.trainerService.findByEmail(googleUser.email);
+      user = await this._trainerService.findByEmail(googleUser.email);
 
       if (!user) {
-        user = await this.trainerRepo.create({
+        user = await this._trainerRepo.create({
           name: googleUser.name,
           email: googleUser.email,
           role: 'trainer',
@@ -214,9 +214,9 @@ export class AuthService implements IAuthService {
         });
       }
     } else if (role === 'user') {
-      user = await this.userService.findByEmail(googleUser.email);
+      user = await this._userService.findByEmail(googleUser.email);
       if (!user) {
-        user = await this.userRepo.create({
+        user = await this._userRepo.create({
           name: googleUser.name,
           email: googleUser.email,
           role: 'user',
@@ -228,17 +228,17 @@ export class AuthService implements IAuthService {
       }
     }
 
-    const accessToken = this.jwtService.signAccessToken({
+    const accessToken = this._jwtService.signAccessToken({
       sub: user._id,
       role: user.role,
       isBlocked: false,
     });
-    const refreshToken = this.jwtService.signRefreshToken({
+    const refreshToken = this._jwtService.signRefreshToken({
       sub: user._id,
       role: user.role,
       isBlocked: false,
     });
-    await this.redis.set(
+    await this._redis.set(
       refreshToken,
       user._id.toString(),
       'EX',
@@ -281,10 +281,10 @@ export class AuthService implements IAuthService {
     let user;
     const refreshTokenTTL = 7 * 24 * 60 * 60;
     if (role === 'trainer') {
-      user = await this.trainerService.findByEmail(email);
+      user = await this._trainerService.findByEmail(email);
 
       if (!user) {
-        user = await this.trainerRepo.create({
+        user = await this._trainerRepo.create({
           name: name,
           email: email,
           role: 'trainer',
@@ -296,9 +296,9 @@ export class AuthService implements IAuthService {
         });
       }
     } else if (role === 'user') {
-      user = await this.userService.findByEmail(email);
+      user = await this._userService.findByEmail(email);
       if (!user) {
-        user = await this.userRepo.create({
+        user = await this._userRepo.create({
           name: name,
           email: email,
           role: 'user',
@@ -311,17 +311,17 @@ export class AuthService implements IAuthService {
       }
     }
 
-    const accessToken = this.jwtService.signAccessToken({
+    const accessToken = this._jwtService.signAccessToken({
       sub: user._id,
       role: user.role,
       isBlocked: false,
     });
-    const refreshToken = this.jwtService.signRefreshToken({
+    const refreshToken = this._jwtService.signRefreshToken({
       sub: user._id,
       role: user.role,
       isBlocked: false,
     });
-    await this.redis.set(
+    await this._redis.set(
       refreshToken,
       user._id.toString(),
       'EX',
@@ -331,6 +331,6 @@ export class AuthService implements IAuthService {
   }
 
   async getUser(id: string) {
-    return this.trainerRepo.findById(id);
+    return this._trainerRepo.findById(id);
   }
 }

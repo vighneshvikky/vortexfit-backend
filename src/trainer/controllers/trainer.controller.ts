@@ -28,8 +28,8 @@ import {
 @Controller('trainers')
 export class TrainerController {
   constructor(
-    @Inject(TRAINER_SERVICE) private readonly trainerService: ITrainerService,
-    @Inject(USER_SERVICE) private readonly userService: IUserService,
+    @Inject(TRAINER_SERVICE) private readonly _trainerService: ITrainerService,
+    @Inject(USER_SERVICE) private readonly _userService: IUserService,
   ) {}
 
   @Patch('update-trainer-profile')
@@ -40,7 +40,7 @@ export class TrainerController {
     trainerId: string,
     @Body() dto: TrainerProfileDto,
   ) {
-    return this.trainerService.updateTrainerProfile(trainerId, dto);
+    return this._trainerService.updateTrainerProfile(trainerId, dto);
   }
 
   @UseGuards(RolesGuard, NotBlockedGuard)
@@ -49,6 +49,6 @@ export class TrainerController {
   async getUserData(
     @Param('id') id: string,
   ): Promise<UserProfileDto | TrainerProfileDto | null> {
-    return await this.userService.findById(id);
+    return await this._userService.findById(id);
   }
 }

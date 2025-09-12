@@ -18,6 +18,7 @@ export interface IBookingRepository {
     slotEnd: string,
   ): Promise<number>;
 
+  findOne(trainerId: string, date: string, timeSlot: string): Promise<Booking | null>;
   
   getFilteredBookings(trainerId: string, filters: BookingFilterDto): Promise<{bookings: Booking[]; totalRecords: number}>;
 

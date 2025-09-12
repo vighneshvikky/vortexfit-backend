@@ -105,6 +105,16 @@ export class BookingRepository implements IBookingRepository {
     return { bookings, totalRecords };
   }
 
+
+async findOne(trainerId: string, date: string, timeSlot: string) {
+  return this._bookingModel.findOne({
+    trainerId,
+    date,
+    timeSlot,
+    status: { $ne: BookingStatus.CANCELLED }, 
+  });
+}
+
   async countActiveBookings(
     trainerId: string,
     dateStr: string,

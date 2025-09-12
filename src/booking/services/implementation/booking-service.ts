@@ -72,4 +72,10 @@ async getFilteredBookings(
     const bookingDoc = await this._bookingRepository.changeStatus(id, status);
     return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }
+
+async findOne(trainerId: string, date: string, timeSlot: string): Promise<BookingModel | null> {
+  const bookingDoc = await this._bookingRepository.findOne(trainerId, date, timeSlot);
+  return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
+}
+
 }

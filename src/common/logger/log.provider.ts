@@ -21,8 +21,7 @@ export const loggerProvider: Provider = {
           ),
         ),
       }),
-      new MongoWinstonTransport({ logModel, level: 'silly' }),
+      new MongoWinstonTransport({ logModel, level: 'warn' }),
     ],
   }),
 };
-
