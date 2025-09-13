@@ -9,6 +9,8 @@ export interface IBookingRepository {
 
   bookingOfTrainerId(trainerId: string, page: number, limit: number): Promise<{ bookings: Booking[]; totalRecords: number }>;
 
+  bookingOfUserId(userId: string, page: number, limit: number): Promise<{ bookings: Booking[]; totalRecords: number }>;
+
   update(id: string, data: Partial<Booking>): Promise<Booking | null>;
 
   countActiveBookings(
@@ -21,6 +23,8 @@ export interface IBookingRepository {
   findOne(trainerId: string, date: string, timeSlot: string): Promise<Booking | null>;
   
   getFilteredBookings(trainerId: string, filters: BookingFilterDto): Promise<{bookings: Booking[]; totalRecords: number}>;
+
+  getUserFilteredBookings(userId: string, filters: BookingFilterDto): Promise<{bookings: Booking[]; totalRecords: number}>
 
   updateByOrderId(
     orderId: string,

@@ -24,39 +24,59 @@ export class BookingController {
   constructor(
     @Inject(BOOKING_SERVICE) private readonly _bookingService: IBookingService,
   ) {}
-@UseGuards(RolesGuard, NotBlockedGuard)
-@Get('getBookings')
-async getBookings(
-  @GetUser('sub') trainerId: string,
-  @Query('page') page: string,
-  @Query('limit') limit: string
-) {
+  @UseGuards(RolesGuard, NotBlockedGuard)
+  @Get('getBookings')
+  async getBookings(
+    @GetUser('sub') trainerId: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 5;
 
-  const pageNumber = Number(page) || 1;
-  const limitNumber = Number(limit) || 5;
+    return await this._bookingService.getBookings(
+      trainerId,
+      pageNumber,
+      limitNumber,
+    );
+  }
 
-  return await this._bookingService.getBookings(trainerId, pageNumber, limitNumber);
-}
+  @UseGuards(RolesGuard, NotBlockedGuard)
+  @Get('getUserBookings')
+  async getUserBookings(
+    @GetUser('sub') userId: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ) {
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 5;
 
+    return await this._bookingService.getUserBookings(
+      userId,
+      pageNumber,
+      limitNumber,
+    );
+  }
 
-@Get('getFilteredBookings')
-async getFilteredBookings(
-  @GetUser('sub') trainerId: string,
-  @Query('page') page: string,
-  @Query('limit') limit: string,
-  @Query() filters: BookingFilterDto,
-) {
-  const pageNumber = Number(page) || 1;
-  const limitNumber = Number(limit) || 5;
+  @Get('getFilteredBookings')
+  async getFilteredBookings(
+    @GetUser('sub') trainerId: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query() filters: BookingFilterDto,
+  ) {
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 5;
 
-  const { bookings, totalRecords } = await this._bookingService.getFilteredBookings(trainerId, {
-    ...filters,
-    page: pageNumber,
-    limit: limitNumber,
-  });
+    const { bookings, totalRecords } =
+      await this._bookingService.getFilteredBookings(trainerId, {
+        ...filters,
+        page: pageNumber,
+        limit: limitNumber,
+      });
 
-  return { bookings, totalRecords }; 
-}
+    return { bookings, totalRecords };
+  }
 
   @UseGuards(RolesGuard, NotBlockedGuard)
   @Patch('changeStatus')
@@ -65,5 +85,27 @@ async getFilteredBookings(
       dto.bookingId,
       dto.bookingStatus,
     );
+  }
+
+  @Get('getUserFilteredBookings')
+  async getUserFilteredBookings(
+    @GetUser('sub') userId: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query() filters: BookingFilterDto,
+  ) {
+    const pageNumber = Number(page) || 1;
+    const limitNumber = Number(limit) || 5;
+    console.log('userId', userId);
+    console.log('filters', filters);
+    const { bookings, totalRecords } =
+      await this._bookingService.getUserFilteredBookings(userId, {
+        ...filters,
+        page: pageNumber,
+        limit: limitNumber,
+        clientId: userId,
+      });
+
+    return { bookings, totalRecords };
   }
 }

@@ -1,5 +1,13 @@
 import { Transform, Type } from 'class-transformer';
-import { IsDateString, IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { BookingStatus } from 'src/booking/enums/booking.enum';
 
 export class CreateBookingDto {
@@ -44,16 +52,15 @@ export class ChangeBookingStatusDto {
   bookingStatus: BookingStatus;
 }
 
-
-
 export interface CreateBookingDto {
   // Your existing CreateBookingDto properties
 }
 
-
-
-
 export class BookingFilterDto {
+  @IsOptional()
+  @IsString()
+  trainerId?: string;
+  
   @IsOptional()
   @IsString()
   clientId?: string;
@@ -89,4 +96,3 @@ export class BookingFilterDto {
   @IsIn(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc';
 }
-

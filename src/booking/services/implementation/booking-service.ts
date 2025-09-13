@@ -39,10 +39,20 @@ export class BookingService implements IBookingService {
 
 async getBookings(
   trainerId: string,
-  page: number = 1,
-  limit: number = 3
+  page: number ,
+  limit: number
 ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
   const result = await this._bookingRepository.bookingOfTrainerId(trainerId, page, limit);
+  const mappedBookings = result.bookings.map(b => BookingMapper.toDomain(b)!);
+  return { bookings: mappedBookings, totalRecords: result.totalRecords };
+}
+
+async getUserBookings(
+  userId: string,
+  page: number,
+  limit: number 
+): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+  const result = await this._bookingRepository.bookingOfUserId(userId, page, limit);
   const mappedBookings = result.bookings.map(b => BookingMapper.toDomain(b)!);
   return { bookings: mappedBookings, totalRecords: result.totalRecords };
 }
@@ -63,6 +73,19 @@ async getFilteredBookings(
   return { bookings: mappedBookings, totalRecords };
 }
 
+
+async getUserFilteredBookings(userId: string, filters: BookingFilterDto): Promise<{ bookings: BookingModel[]; totalRecords: number }>{
+  const result = await this._bookingRepository.getUserFilteredBookings(userId, filters);
+  if (!result) return { bookings: [], totalRecords: 0 };
+
+  const { bookings, totalRecords } = result;
+
+  const mappedBookings = bookings
+    .map((b) => BookingMapper.toDomain(b)!)
+    .filter(Boolean) as BookingModel[];
+
+  return { bookings: mappedBookings, totalRecords };
+}
   
 
   async changeStatus(

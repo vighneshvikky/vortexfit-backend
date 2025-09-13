@@ -105,6 +105,56 @@ export class BookingRepository implements IBookingRepository {
     return { bookings, totalRecords };
   }
 
+    async getUserFilteredBookings(
+    userId: string,
+    filters: BookingFilterDto,
+  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
+    const {
+      trainerId,
+      status,
+      dateFrom,
+      dateTo,
+      page = 1,
+      limit = 3,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = filters;
+console.log('qury', filters)
+    const query: FilterQuery<BookingDocument> = {
+      userId: userId,
+    };
+
+    if(status){
+      query.status = status;
+    }
+
+    if (dateFrom || dateTo) {
+      query.date = {};
+      if (dateFrom) query.date.$gte = dateFrom;
+      if (dateTo) query.date.$lte = dateTo;
+    }
+
+
+
+    const skip = (page - 1) * limit;
+    const sort: Record<string, 1 | -1> = {
+      [sortBy]: sortOrder === 'desc' ? -1 : 1,
+    };
+
+    const bookings = await this._bookingModel
+      .find(query)
+      .populate('trainerId', 'name email')
+      .populate('userId', 'name')
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const totalRecords = await this._bookingModel.countDocuments(query);
+
+    return { bookings, totalRecords };
+  }
+
 
 async findOne(trainerId: string, date: string, timeSlot: string) {
   return this._bookingModel.findOne({
@@ -153,6 +203,27 @@ async findOne(trainerId: string, date: string, timeSlot: string) {
         .limit(limit)
         .exec(),
       this._bookingModel.countDocuments({ trainerId }),
+    ]);
+
+    return { bookings, totalRecords };
+  }
+
+
+   async bookingOfUserId(
+    userId: string,
+    page: number = 1,
+    limit: number = 5,
+  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
+    const skip = (page - 1) * limit;
+    const [bookings, totalRecords] = await Promise.all([
+      this._bookingModel
+        .find({ userId })
+        .populate('trainerId', '_id name')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._bookingModel.countDocuments({ userId }),
     ]);
 
     return { bookings, totalRecords };

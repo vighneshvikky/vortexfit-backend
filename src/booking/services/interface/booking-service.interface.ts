@@ -12,6 +12,13 @@ export interface IBookingService {
     page: number,
     limit: number,
   ): Promise<{ bookings: BookingModel[]; totalRecords: number }>;
+
+    getUserBookings(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number }>;
+  
   update(
     id: string,
     data: Partial<CreateBookingDto>,
@@ -27,6 +34,8 @@ export interface IBookingService {
   ): Promise<{ bookings: BookingModel[]; totalRecords: number }>;
 
   changeStatus(id: string, status: BookingStatus): Promise<BookingModel | null>;
+
+  getUserFilteredBookings(userId:string, filters: BookingFilterDto): Promise<{ bookings: BookingModel[]; totalRecords: number}>
 
   findOne(
     trainerId: string,
