@@ -21,7 +21,6 @@ import {
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ILogger } from 'src/common/logger/log.interface';
 
-
 @Controller('user')
 export class UserController {
   constructor(
@@ -52,9 +51,7 @@ export class UserController {
   @UseGuards(RolesGuard, NotBlockedGuard)
   @Roles('user')
   @Get('getTrainerData/:id')
-  getTrainerData(@Param('id') id: string){
+  getTrainerData(@Param('id') id: string) {
     return this._userService.findTrainer(id);
   }
-
-
 }

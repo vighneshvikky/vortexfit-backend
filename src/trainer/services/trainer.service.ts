@@ -15,6 +15,7 @@ import {
 import { TrainerProfileDto } from '../dtos/trainer.dto';
 import { TrainerMapper } from '../mapper/trainer.mapper';
 import { TrainerModel } from '../models/trainer.model';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class TrainerService implements ITrainerService {
@@ -72,19 +73,25 @@ export class TrainerService implements ITrainerService {
       throw new NotFoundException('Trainer not found');
     }
 
-    const updatePayload: Partial<Trainer> = {
-      ...dto,
-      pricing: dto.pricing
-        ? {
-            oneToOneSession:
-              dto.pricing.oneToOneSession ??
-              trainerDoc.pricing?.oneToOneSession ??
-              0,
-            workoutPlan:
-              dto.pricing.workoutPlan ?? trainerDoc.pricing?.workoutPlan ?? 0,
-          }
-        : trainerDoc.pricing,
-    };
+
+
+const updatePayload: Partial<Trainer> = {
+  ...dto,
+  _id: dto._id ? new Types.ObjectId(dto._id) : undefined,
+  pricing: dto.pricing
+    ? {
+        oneToOneSession:
+          dto.pricing.oneToOneSession ??
+          trainerDoc.pricing?.oneToOneSession ??
+          0,
+        workoutPlan:
+          dto.pricing.workoutPlan ??
+          trainerDoc.pricing?.workoutPlan ??
+          0,
+      }
+    : trainerDoc.pricing,
+};
+
 
     const updatedDoc = await this._trainerRepo.updateById(trainerId, updatePayload);
     const updatedDomain = TrainerMapper.toDomain(updatedDoc);

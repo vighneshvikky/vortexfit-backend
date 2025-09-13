@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';    
+import { Inject, Injectable } from '@nestjs/common';
 import { IUserRepository } from '../interfaces/user-repository.interface';
 import { UserProfileDto } from '../dtos/user.mapper.dto';
 import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
@@ -10,6 +10,7 @@ import { UserModel } from '../model/user.model';
 import { Types } from 'mongoose';
 import { TrainerModel } from 'src/trainer/models/trainer.model';
 import { TrainerMapper } from 'src/trainer/mapper/trainer.mapper';
+import { TrainerProfileDto } from 'src/trainer/dtos/trainer.dto';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -53,14 +54,14 @@ export class UserService implements IUserService {
   }
 
   async findTrainer(id: string): Promise<TrainerModel | null> {
-    const trainerDoc =  await this._trainerRepo.findById(id);
-  return trainerDoc? TrainerMapper.toDomain(trainerDoc):null
+    const trainerDoc = await this._trainerRepo.findById(id);
+    return trainerDoc ? TrainerMapper.toDomain(trainerDoc) : null;
   }
 
   async findApprovedTrainer(filters: {
     category?: string;
     name?: string;
-  }): Promise<Trainer[]> {
+  }): Promise<(TrainerProfileDto | null)[]> {
     const query: FindApprovedTrainerQuery = {
       role: 'trainer',
       verificationStatus: 'approved',
@@ -74,6 +75,10 @@ export class UserService implements IUserService {
       query.name = { $regex: filters.name, $options: 'i' };
     }
 
-    return await this._trainerRepo.findAll(query);
+    const trainerDocs = await this._trainerRepo.findAll(query);
+
+    const trainers = trainerDocs.map((doc) => TrainerMapper.toDomain(doc));
+
+    return trainers.map((trainer) => TrainerMapper.toProfileDto(trainer));
   }
 }
