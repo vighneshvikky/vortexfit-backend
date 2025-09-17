@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -6,9 +7,8 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
-import { MessageService } from 'src/messages/service/implementation/messages.service';
 import { ChatMessage } from 'src/messages/schemas/message.schema';
+import { IMessageService, MESSAGE_SERVICE } from 'src/messages/service/interface/message.service.interface';
 @WebSocketGateway({
   namespace: '/chat',
   cors: {
@@ -19,7 +19,7 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly messageService: MessageService) {}
+  constructor(@Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService) {}
 
   @SubscribeMessage('join-room')
   handleJoinRoom(

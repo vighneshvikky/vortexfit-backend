@@ -25,6 +25,7 @@ import { VerificationStatus } from 'src/common/enums/verification-status.enum';
 import { AdminUserMapper } from '../../mappers/admin-user.mapper';
 import { AdminUserDto } from '../../dtos/admin-user.dto';
 import { UserFilter } from 'src/admin/enums/admin.enums';
+import { IPasswordUtil, PASSWORD_UTIL } from 'src/common/interface/IPasswordUtil.interface';
 
 @Injectable()
 export class AdminService implements IAdminService {
@@ -39,6 +40,7 @@ export class AdminService implements IAdminService {
     @Inject(MAIL_SERVICE) private readonly mailService: IMailService,
     @Inject(ITrainerRepository)
     private readonly trainerRepository: ITrainerRepository,
+    @Inject(PASSWORD_UTIL) private readonly _passwordUtil: IPasswordUtil
   ) {}
 
   async verifyAdminLogin(
@@ -49,7 +51,7 @@ export class AdminService implements IAdminService {
       throw new UnauthorizedException('Invalid admin credentials');
     }
 
-    if (!(await PasswordUtil.comparePassword(password, this.adminPassword))) {
+    if (!(await this._passwordUtil.comparePassword(password, this.adminPassword))) {
       throw new UnauthorizedException('Invalid admin credentials');
     }
 

@@ -12,6 +12,8 @@ import { ADMIN_SERVICE } from '../admin/services/interface/admin-service.interfa
 import { MailModule } from 'src/common/helpers/mailer/mailer.module';
 import { MAIL_SERVICE } from 'src/common/helpers/mailer/mail-service.interface';
 import { MailService } from 'src/common/helpers/mailer/mailer.service';
+import { PASSWORD_UTIL } from 'src/common/interface/IPasswordUtil.interface';
+import { PasswordUtil } from 'src/common/helpers/password.util';
 
 @Module({
   imports: [
@@ -35,6 +37,10 @@ import { MailService } from 'src/common/helpers/mailer/mailer.service';
     },
     { provide: IJwtTokenService, useClass: JwtTokenService },
     { provide: MAIL_SERVICE, useClass: MailService },
+    {
+      provide: PASSWORD_UTIL,
+      useClass: PasswordUtil,
+    },
   ],
 })
 export class AdminModule {}

@@ -16,6 +16,10 @@ import { TrainerProfileDto } from '../dtos/trainer.dto';
 import { TrainerMapper } from '../mapper/trainer.mapper';
 import { TrainerModel } from '../models/trainer.model';
 import { Types } from 'mongoose';
+import {
+  IPasswordUtil,
+  PASSWORD_UTIL,
+} from 'src/common/interface/IPasswordUtil.interface';
 
 @Injectable()
 export class TrainerService implements ITrainerService {
@@ -23,6 +27,7 @@ export class TrainerService implements ITrainerService {
     @Inject(ITrainerRepository)
     private readonly _trainerRepo: ITrainerRepository,
     @Inject(AWS_S3_SERVICE) readonly _awsS3Service: IAwsS3Service,
+    @Inject(PASSWORD_UTIL) readonly _passwordUtil: IPasswordUtil,
   ) {}
 
   async findByEmail(email: string): Promise<TrainerModel | null> {
@@ -36,7 +41,9 @@ export class TrainerService implements ITrainerService {
 
   async create(payload: Partial<Trainer>): Promise<TrainerModel | null> {
     if (payload.password) {
-      payload.password = await PasswordUtil.hashPassword(payload.password);
+      payload.password = await this._passwordUtil.hashPassword(
+        payload.password,
+      );
     }
     const trainerDoc = await this._trainerRepo.create(payload);
     return TrainerMapper.toDomain(trainerDoc);
@@ -73,27 +80,25 @@ export class TrainerService implements ITrainerService {
       throw new NotFoundException('Trainer not found');
     }
 
+    const updatePayload: Partial<Trainer> = {
+      ...dto,
+      _id: dto._id ? new Types.ObjectId(dto._id) : undefined,
+      pricing: dto.pricing
+        ? {
+            oneToOneSession:
+              dto.pricing.oneToOneSession ??
+              trainerDoc.pricing?.oneToOneSession ??
+              0,
+            workoutPlan:
+              dto.pricing.workoutPlan ?? trainerDoc.pricing?.workoutPlan ?? 0,
+          }
+        : trainerDoc.pricing,
+    };
 
-
-const updatePayload: Partial<Trainer> = {
-  ...dto,
-  _id: dto._id ? new Types.ObjectId(dto._id) : undefined,
-  pricing: dto.pricing
-    ? {
-        oneToOneSession:
-          dto.pricing.oneToOneSession ??
-          trainerDoc.pricing?.oneToOneSession ??
-          0,
-        workoutPlan:
-          dto.pricing.workoutPlan ??
-          trainerDoc.pricing?.workoutPlan ??
-          0,
-      }
-    : trainerDoc.pricing,
-};
-
-
-    const updatedDoc = await this._trainerRepo.updateById(trainerId, updatePayload);
+    const updatedDoc = await this._trainerRepo.updateById(
+      trainerId,
+      updatePayload,
+    );
     const updatedDomain = TrainerMapper.toDomain(updatedDoc);
 
     return TrainerMapper.toProfileDto(updatedDomain);

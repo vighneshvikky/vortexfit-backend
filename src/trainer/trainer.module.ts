@@ -12,6 +12,8 @@ import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
 import { UserModule } from 'src/user/user.module';
 import { TRAINER_SERVICE } from './interfaces/trainer-service.interface';
 import { AWS_S3_SERVICE } from 'src/common/aws/interface/aws-s3-service.interface';
+import { PASSWORD_UTIL } from 'src/common/interface/IPasswordUtil.interface';
+import { PasswordUtil } from 'src/common/helpers/password.util';
 
 @Module({
   imports: [
@@ -43,6 +45,10 @@ import { AWS_S3_SERVICE } from 'src/common/aws/interface/aws-s3-service.interfac
       provide: AWS_S3_SERVICE,
       useClass: AwsS3Service,
     },
+    {
+      provide: PASSWORD_UTIL,
+      useClass: PasswordUtil
+    }
   ],
   exports: [
     { provide: ITrainerRepository, useClass: TrainerRepository },

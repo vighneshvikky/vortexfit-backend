@@ -106,7 +106,7 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isValid = await PasswordUtil.comparePassword(
+    const isValid = await this._passwordUtil.comparePassword(
       body.password,
       user.password,
     );
@@ -162,7 +162,7 @@ export class AuthService implements IAuthService {
 
     const userId = payload.sub;
 
-    const hashedPassword = await PasswordUtil.hashPassword(password);
+    const hashedPassword = await this._passwordUtil.hashPassword(password);
 
     const userService = this._roleServiceRegistry.getServiceByRole(role);
     await userService.updatePassword(userId, hashedPassword);
