@@ -38,7 +38,6 @@ export class ScheduleController {
     @GetUser('sub')
     trainerId: string,
   ) {
-    console.log('dto', dto);
     return this._schedulingService.createSchedule(dto, trainerId);
   }
 
@@ -63,8 +62,6 @@ export class ScheduleController {
     @Param('trainerId') trainerId: string,
     @Param('date') date: string,
   ) {
-    console.log('trainerId', trainerId);
-    console.log('date', date);
     return await this._schedulingService.getAvailableSlots(trainerId, date);
   }
 }

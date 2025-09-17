@@ -22,5 +22,6 @@ export class BookingModel {
 
 export type UserRef = {
   _id: string;
-  name: string
+  name: string;
+  image: string;
 }

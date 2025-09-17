@@ -38,11 +38,10 @@
     @Post('create-order')
     async createOrder(@Body() body: CreateOrderDto) {
       this.logger.log(body);
-      console.log('body from creating a order', body);
+  
       const { amount } = body;
 
       const order = await this._razorpayService.createOrder(amount);
-      console.log('order', order);
       return { order };
     }
 
@@ -53,7 +52,6 @@
       @Body() body: VerifyPaymentDto,
     ) {
       this.logger.log(body);
-      console.log('verifying body', body);
       const {
         trainerId,
         sessionType,

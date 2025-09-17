@@ -93,8 +93,8 @@ export class BookingRepository implements IBookingRepository {
 
     const bookings = await this._bookingModel
       .find(query)
-      .populate('userId', 'name email')
-      .populate('trainerId', 'name')
+      .populate('userId', 'name email image')
+      .populate('trainerId', 'name image')
       .sort(sort)
       .skip(skip)
       .limit(limit)
@@ -119,7 +119,7 @@ export class BookingRepository implements IBookingRepository {
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = filters;
-console.log('qury', filters)
+
     const query: FilterQuery<BookingDocument> = {
       userId: userId,
     };
@@ -143,8 +143,8 @@ console.log('qury', filters)
 
     const bookings = await this._bookingModel
       .find(query)
-      .populate('trainerId', 'name email')
-      .populate('userId', 'name')
+      .populate('trainerId', 'name email image')
+      .populate('userId', 'name _id image')
       .sort(sort)
       .skip(skip)
       .limit(limit)
@@ -197,7 +197,7 @@ async findOne(trainerId: string, date: string, timeSlot: string) {
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
         .find({ trainerId })
-        .populate('userId', '_id name')
+        .populate('userId', '_id name image')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -218,7 +218,8 @@ async findOne(trainerId: string, date: string, timeSlot: string) {
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
         .find({ userId })
-        .populate('trainerId', '_id name')
+        .populate('trainerId', '_id name image')
+        .populate('userId', '_id name image')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)

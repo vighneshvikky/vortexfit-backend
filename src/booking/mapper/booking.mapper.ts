@@ -2,7 +2,7 @@ import { Booking } from '../schemas/booking.schema';
 import { BookingModel, UserRef } from '../models/booking.model';
 import { Types } from 'mongoose';
 
-type PopulatedUser = { _id: Types.ObjectId; name: string };
+type PopulatedUser = { _id: Types.ObjectId; name: string; image: string };
 
 function isPopulatedUser(user: unknown): user is PopulatedUser {
   return (
@@ -20,6 +20,7 @@ export class BookingMapper {
       user = {
         _id: bookingDoc.userId._id.toString(),
         name: bookingDoc.userId.name,
+        image: bookingDoc.userId.image
       };
     } else {
       user = new Types.ObjectId(bookingDoc.userId as string);

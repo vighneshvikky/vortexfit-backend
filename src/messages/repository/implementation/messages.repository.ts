@@ -25,7 +25,7 @@ export class MessageRepository implements IMessageRepository {
   async getHistory(roomId: string, skip = 0, limit = 50) {
     return this._messageModel
       .find({ roomId })
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: 1 })
       .skip(skip)
       .limit(Math.min(limit, 200))
       .lean();
