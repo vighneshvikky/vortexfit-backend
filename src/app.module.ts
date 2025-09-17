@@ -25,6 +25,7 @@ import { JwtMiddleware } from './common/middleware/jwt-auth.middleware';
 import { ChatModule } from './common/chat/chat.module';
 import { MessageModule } from './messages/message.module';
 import { LoggerModule } from './common/logger/log.module';
+import { VideoModule } from './common/video/video.module';
 
 
 winston.addColors({
@@ -56,8 +57,9 @@ winston.addColors({
     PaymentModule,
     BookingModule,
     ChatModule,
+    VideoModule,
     MessageModule,
-    LoggerModule
+    LoggerModule,
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],

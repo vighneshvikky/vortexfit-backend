@@ -39,6 +39,7 @@ export class TrainerMapper {
   static toProfileDto(domain: TrainerModel | null): TrainerProfileDto | null{
       if (!domain) return null;
     return {
+      _id: domain._id.toString(),
       name: domain.name,
       email: domain.email,
       phoneNumber: domain.phoneNumber,
@@ -48,6 +49,7 @@ export class TrainerMapper {
       certificationUrl: domain.certificationUrl,
       idProofUrl: domain.idProofUrl,
       pricing: domain.pricing,
+      isBlocked: domain.isBlocked
     };
   }
 }

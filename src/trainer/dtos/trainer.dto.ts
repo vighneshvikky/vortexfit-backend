@@ -21,6 +21,9 @@ class PricingDto {
 }
 
 export class TrainerProfileDto {
+
+    @IsString()
+  _id?: string;
   @IsOptional()
   @IsString()
   name?: string;

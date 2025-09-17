@@ -1,14 +1,24 @@
-import { Controller, Get, Query, Req } from '@nestjs/common';
-import { MessageService } from '../service/messages.service';
-import { FetchHistoryDto } from '../dtos/fetch-history.dto';
-import { GetUser } from 'src/common/decorator/get-user.decorator';
+import { Body, Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import { MessageService } from '../service/implementation/messages.service';
+import { IMessageService, MESSAGE_SERVICE } from '../service/interface/message.service.interface';
 
-@Controller('messages')
+@Controller('chat')
 export class MessageController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(@Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService) {}
 
-  @Get('history')
-  async history(@GetUser('sub') userId: string, @Query() q: FetchHistoryDto) {
-    return this.messageService.getHistory(userId, q.peerId, q.skip, q.limit);
+  @Get('messages/:roomId')
+  async getMessages(
+    @Param('roomId') roomId: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '50',
+  ) {
+    const skip = (Number(page) - 1) * Number(limit);
+    const data = await this.messageService.getHistory(
+      roomId,
+      skip,
+      parseInt(limit),
+    );
+
+    return data;
   }
 }

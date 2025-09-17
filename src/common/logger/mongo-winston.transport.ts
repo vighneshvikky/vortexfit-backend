@@ -16,7 +16,7 @@ export class MongoWinstonTransport extends Transport {
 
   async log(info: LogInfo,  callback: () => void) {
     
-    setImmediate(() => this.emit('logged', info));
+    setImmediate(() => this.emit('logged', info));  
 
     try {
       await this.logModel.create({

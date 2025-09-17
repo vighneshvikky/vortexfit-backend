@@ -1,4 +1,13 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsEnum,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { BookingStatus } from 'src/booking/enums/booking.enum';
 
 export class CreateBookingDto {
@@ -41,4 +50,49 @@ export class ChangeBookingStatusDto {
     message: 'bookingStatus must be a valid enum value',
   })
   bookingStatus: BookingStatus;
+}
+
+export interface CreateBookingDto {
+  // Your existing CreateBookingDto properties
+}
+
+export class BookingFilterDto {
+  @IsOptional()
+  @IsString()
+  trainerId?: string;
+  
+  @IsOptional()
+  @IsString()
+  clientId?: string;
+
+  @IsOptional()
+  @IsEnum(BookingStatus)
+  status?: BookingStatus;
+
+  @IsOptional()
+  @IsDateString()
+  dateFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dateTo?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit?: number;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }
