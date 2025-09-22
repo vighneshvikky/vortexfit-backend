@@ -20,7 +20,6 @@ export class TrainerMapper {
       trainerDoc.pricing,
     );
 
-   
     trainer._id = trainerDoc._id;
     trainer.name = trainerDoc.name;
     trainer.email = trainerDoc.email;
@@ -36,8 +35,8 @@ export class TrainerMapper {
     return trainer;
   }
 
-  static toProfileDto(domain: TrainerModel | null): TrainerProfileDto | null{
-      if (!domain) return null;
+  static toProfileDto(domain: TrainerModel | null): TrainerProfileDto | null {
+    if (!domain) return null;
     return {
       _id: domain._id.toString(),
       name: domain.name,
@@ -49,7 +48,7 @@ export class TrainerMapper {
       certificationUrl: domain.certificationUrl,
       idProofUrl: domain.idProofUrl,
       pricing: domain.pricing,
-      isBlocked: domain.isBlocked
+      isBlocked: domain.isBlocked,
     };
   }
 }

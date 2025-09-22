@@ -37,56 +37,75 @@ export class BookingService implements IBookingService {
     return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }
 
-async getBookings(
-  trainerId: string,
-  page: number ,
-  limit: number
-): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
-  const result = await this._bookingRepository.bookingOfTrainerId(trainerId, page, limit);
-  const mappedBookings = result.bookings.map(b => BookingMapper.toDomain(b)!);
-  return { bookings: mappedBookings, totalRecords: result.totalRecords };
-}
+  async getBookings(
+    trainerId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+    const result = await this._bookingRepository.bookingOfTrainerId(
+      trainerId,
+      page,
+      limit,
+    );
+    const mappedBookings = result.bookings.map(
+      (b) => BookingMapper.toDomain(b)!,
+    );
+    return { bookings: mappedBookings, totalRecords: result.totalRecords };
+  }
 
-async getUserBookings(
-  userId: string,
-  page: number,
-  limit: number 
-): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
-  const result = await this._bookingRepository.bookingOfUserId(userId, page, limit);
-  const mappedBookings = result.bookings.map(b => BookingMapper.toDomain(b)!);
-  return { bookings: mappedBookings, totalRecords: result.totalRecords };
-}
+  async getUserBookings(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+    const result = await this._bookingRepository.bookingOfUserId(
+      userId,
+      page,
+      limit,
+    );
+    const mappedBookings = result.bookings.map(
+      (b) => BookingMapper.toDomain(b)!,
+    );
+    return { bookings: mappedBookings, totalRecords: result.totalRecords };
+  }
 
-async getFilteredBookings(
-  trainerId: string,  
-  filters: BookingFilterDto,
-): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
-  const result = await this._bookingRepository.getFilteredBookings(trainerId, filters);
-  if (!result) return { bookings: [], totalRecords: 0 };
+  async getFilteredBookings(
+    trainerId: string,
+    filters: BookingFilterDto,
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+    const result = await this._bookingRepository.getFilteredBookings(
+      trainerId,
+      filters,
+    );
+    if (!result) return { bookings: [], totalRecords: 0 };
 
-  const { bookings, totalRecords } = result;
+    const { bookings, totalRecords } = result;
 
-  const mappedBookings = bookings
-    .map((b) => BookingMapper.toDomain(b)!)
-    .filter(Boolean) as BookingModel[];
+    const mappedBookings = bookings
+      .map((b) => BookingMapper.toDomain(b)!)
+      .filter(Boolean);
 
-  return { bookings: mappedBookings, totalRecords };
-}
+    return { bookings: mappedBookings, totalRecords };
+  }
 
+  async getUserFilteredBookings(
+    userId: string,
+    filters: BookingFilterDto,
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+    const result = await this._bookingRepository.getUserFilteredBookings(
+      userId,
+      filters,
+    );
+    if (!result) return { bookings: [], totalRecords: 0 };
 
-async getUserFilteredBookings(userId: string, filters: BookingFilterDto): Promise<{ bookings: BookingModel[]; totalRecords: number }>{
-  const result = await this._bookingRepository.getUserFilteredBookings(userId, filters);
-  if (!result) return { bookings: [], totalRecords: 0 };
+    const { bookings, totalRecords } = result;
 
-  const { bookings, totalRecords } = result;
+    const mappedBookings = bookings
+      .map((b) => BookingMapper.toDomain(b)!)
+      .filter(Boolean);
 
-  const mappedBookings = bookings
-    .map((b) => BookingMapper.toDomain(b)!)
-    .filter(Boolean) as BookingModel[];
-
-  return { bookings: mappedBookings, totalRecords };
-}
-  
+    return { bookings: mappedBookings, totalRecords };
+  }
 
   async changeStatus(
     id: string,
@@ -96,9 +115,16 @@ async getUserFilteredBookings(userId: string, filters: BookingFilterDto): Promis
     return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }
 
-async findOne(trainerId: string, date: string, timeSlot: string): Promise<BookingModel | null> {
-  const bookingDoc = await this._bookingRepository.findOne(trainerId, date, timeSlot);
-  return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
-}
-
+  async findOne(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+  ): Promise<BookingModel | null> {
+    const bookingDoc = await this._bookingRepository.findOne(
+      trainerId,
+      date,
+      timeSlot,
+    );
+    return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
+  }
 }

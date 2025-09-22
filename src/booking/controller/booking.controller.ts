@@ -103,7 +103,7 @@ export class BookingController {
         ...filters,
         page: pageNumber,
         limit: limitNumber,
-        clientId: userId,
+
       });
 
     return { bookings, totalRecords };

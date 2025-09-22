@@ -1,10 +1,15 @@
 import { Body, Controller, Get, Inject, Param, Query } from '@nestjs/common';
 import { MessageService } from '../service/implementation/messages.service';
-import { IMessageService, MESSAGE_SERVICE } from '../service/interface/message.service.interface';
+import {
+  IMessageService,
+  MESSAGE_SERVICE,
+} from '../service/interface/message.service.interface';
 
 @Controller('chat')
 export class MessageController {
-  constructor(@Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService) {}
+  constructor(
+    @Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService,
+  ) {}
 
   @Get('messages/:roomId')
   async getMessages(

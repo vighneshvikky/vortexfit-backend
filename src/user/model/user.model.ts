@@ -1,6 +1,6 @@
 import { BaseModel } from 'src/common/model/base-model';
 
-export class  UserModel extends BaseModel {
+export class UserModel extends BaseModel {
   constructor(
     public readonly dob?: string,
     public readonly height?: number,

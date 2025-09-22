@@ -5,7 +5,6 @@ export class SendMessageDto {
   @IsString() content!: string;
 }
 
-
 export class MessageResponseDto {
   id: string;
   content: string;

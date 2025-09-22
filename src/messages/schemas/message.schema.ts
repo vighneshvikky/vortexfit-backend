@@ -16,7 +16,7 @@ export class ChatMessage {
   receiverId: string;
 
   @Prop({ required: true })
-  participants: string[]; 
+  participants: string[];
 
   @Prop({ default: 'text' })
   messageType: string;

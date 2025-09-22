@@ -8,7 +8,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { ChatMessage } from 'src/messages/schemas/message.schema';
-import { IMessageService, MESSAGE_SERVICE } from 'src/messages/service/interface/message.service.interface';
+import {
+  IMessageService,
+  MESSAGE_SERVICE,
+} from 'src/messages/service/interface/message.service.interface';
 @WebSocketGateway({
   namespace: '/chat',
   cors: {
@@ -19,13 +22,15 @@ export class ChatGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(@Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService) {}
+  constructor(
+    @Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService,
+  ) {}
 
   @SubscribeMessage('join-room')
   handleJoinRoom(
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket,
-  ) { 
+  ) {
     client.join(roomId);
     console.log(`Client ${client.id} joined room ${roomId}`);
   }

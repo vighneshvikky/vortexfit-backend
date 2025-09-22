@@ -20,7 +20,7 @@ export class UserProfileDto {
   email: string;
 
   @IsString()
-  image? : string;
+  image?: string;
 
   @IsBoolean()
   isVerified?: boolean;

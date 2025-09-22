@@ -62,6 +62,7 @@ export class BookingRepository implements IBookingRepository {
       status,
       dateFrom,
       dateTo,
+      searchTerm,
       page = 1,
       limit = 5,
       sortBy = 'createdAt',
@@ -86,6 +87,16 @@ export class BookingRepository implements IBookingRepository {
       query.userId = clientId;
     }
 
+    if (searchTerm) {
+    const regex = new RegExp(searchTerm, 'i');
+    query.$or = [
+      { status: regex },
+      { sessionType: regex },
+      { date: regex },
+    ];
+  }
+
+
     const skip = (page - 1) * limit;
     const sort: Record<string, 1 | -1> = {
       [sortBy]: sortOrder === 'desc' ? -1 : 1,
@@ -105,7 +116,7 @@ export class BookingRepository implements IBookingRepository {
     return { bookings, totalRecords };
   }
 
-    async getUserFilteredBookings(
+  async getUserFilteredBookings(
     userId: string,
     filters: BookingFilterDto,
   ): Promise<{ bookings: Booking[]; totalRecords: number }> {
@@ -115,6 +126,7 @@ export class BookingRepository implements IBookingRepository {
       dateFrom,
       dateTo,
       page = 1,
+      searchTerm,
       limit = 3,
       sortBy = 'createdAt',
       sortOrder = 'desc',
@@ -124,7 +136,7 @@ export class BookingRepository implements IBookingRepository {
       userId: userId,
     };
 
-    if(status){
+    if (status) {
       query.status = status;
     }
 
@@ -133,7 +145,14 @@ export class BookingRepository implements IBookingRepository {
       if (dateFrom) query.date.$gte = dateFrom;
       if (dateTo) query.date.$lte = dateTo;
     }
-
+if (searchTerm) {
+    const regex = new RegExp(searchTerm, 'i'); 
+    query.$or = [
+      { status: regex },
+      { sessionType: regex },
+      { date: regex },
+    ];
+  }
 
 
     const skip = (page - 1) * limit;
@@ -155,15 +174,14 @@ export class BookingRepository implements IBookingRepository {
     return { bookings, totalRecords };
   }
 
-
-async findOne(trainerId: string, date: string, timeSlot: string) {
-  return this._bookingModel.findOne({
-    trainerId,
-    date,
-    timeSlot,
-    status: { $ne: BookingStatus.CANCELLED }, 
-  });
-}
+  async findOne(trainerId: string, date: string, timeSlot: string) {
+    return this._bookingModel.findOne({
+      trainerId,
+      date,
+      timeSlot,
+      status: { $ne: BookingStatus.CANCELLED },
+    });
+  }
 
   async countActiveBookings(
     trainerId: string,
@@ -208,8 +226,7 @@ async findOne(trainerId: string, date: string, timeSlot: string) {
     return { bookings, totalRecords };
   }
 
-
-   async bookingOfUserId(
+  async bookingOfUserId(
     userId: string,
     page: number = 1,
     limit: number = 5,

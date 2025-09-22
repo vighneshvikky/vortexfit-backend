@@ -47,8 +47,8 @@ import { PasswordUtil } from 'src/common/helpers/password.util';
     },
     {
       provide: PASSWORD_UTIL,
-      useClass: PasswordUtil
-    }
+      useClass: PasswordUtil,
+    },
   ],
   exports: [
     { provide: ITrainerRepository, useClass: TrainerRepository },

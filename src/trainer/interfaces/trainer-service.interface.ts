@@ -16,15 +16,15 @@ export interface ITrainerService {
     certificationUrl: string;
     verificationStatus: string;
   }): Promise<TrainerModel | null>;
-  
+
   updateTrainerProfile(
     trainerId: string,
     dto: TrainerProfileDto,
   ): Promise<TrainerProfileDto | null>;
-  
+
   findById(id: string): Promise<TrainerProfileDto | null>;
-  
+
   findByEmail(email: string): Promise<TrainerModel | null>;
-  
+
   updatePassword(userId: string, newPassword: string): Promise<void>;
 }

@@ -7,10 +7,10 @@ import {
 
 @Injectable()
 export class RazorpayService implements IRazorpayService {
-  private razorpay: Razorpay;
+  private _razorpay: Razorpay;
 
   constructor() {
-    this.razorpay = new Razorpay({
+    this._razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
@@ -22,6 +22,6 @@ export class RazorpayService implements IRazorpayService {
       currency: 'INR',
     };
 
-    return this.razorpay.orders.create(options) as unknown as RazorpayOrder;
+    return this._razorpay.orders.create(options) as unknown as RazorpayOrder;
   }
 }

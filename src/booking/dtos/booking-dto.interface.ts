@@ -60,7 +60,7 @@ export class BookingFilterDto {
   @IsOptional()
   @IsString()
   trainerId?: string;
-  
+
   @IsOptional()
   @IsString()
   clientId?: string;
@@ -76,6 +76,12 @@ export class BookingFilterDto {
   @IsOptional()
   @IsDateString()
   dateTo?: string;
+
+  
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value?.trim())
+  searchTerm?: string;
 
   @IsOptional()
   @Type(() => Number)

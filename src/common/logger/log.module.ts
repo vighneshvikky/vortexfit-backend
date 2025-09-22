@@ -6,7 +6,7 @@ import { LoggerConfigModule } from './log.config';
   imports: [
     LoggerConfigModule,
     WinstonModule.forRootAsync({
-      imports: [LoggerConfigModule],   
+      imports: [LoggerConfigModule],
       inject: ['LOGGER_OPTIONS'],
       useFactory: (options) => options,
     }),
@@ -14,6 +14,3 @@ import { LoggerConfigModule } from './log.config';
   exports: [WinstonModule],
 })
 export class LoggerModule {}
-
-
-

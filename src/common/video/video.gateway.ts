@@ -21,7 +21,10 @@ export class VideoGateway {
   private rooms: Map<string, RoomUser[]> = new Map();
 
   @SubscribeMessage('join-video-room')
-  handleJoin(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+  handleJoin(
+    @MessageBody() data: { sessionId: string; userId: string },
+    @ConnectedSocket() client: Socket,
+  ) {
     const { sessionId, userId } = data;
     console.log('Video: handle join', sessionId, userId);
 
@@ -66,16 +69,15 @@ export class VideoGateway {
     @MessageBody()
     data: {
       sessionId: string;
-      targetUserId?: string; 
-      signal: any;
+      targetUserId?: string;
+      signal: string;
       type: string;
-      to?: string; 
+      to?: string;
     },
     @ConnectedSocket() client: Socket,
   ) {
     const users = this.rooms.get(data.sessionId) || [];
 
-  
     const targetId = data.targetUserId || data.to;
     const target = users.find((u) => u.userId === targetId);
 
@@ -86,7 +88,6 @@ export class VideoGateway {
         sessionId: data.sessionId,
         from: client.handshake.auth.userId,
       });
-
     } else {
       console.warn(
         `[Signal failed] No target found for ${targetId}. Available users:`,

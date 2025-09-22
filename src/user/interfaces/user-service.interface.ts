@@ -17,7 +17,9 @@ export interface IUserService {
     data: Partial<UserProfileDto>,
   ): Promise<UserProfileDto | null>;
   findTrainer(id: string): Promise<TrainerModel | null>;
-  findApprovedTrainer(filters: FindApprovedTrainerQuery): Promise<(TrainerProfileDto | null)[]>;
+  findApprovedTrainer(
+    filters: FindApprovedTrainerQuery,
+  ): Promise<(TrainerProfileDto | null)[]>;
   findById(id: string): Promise<UserProfileDto | null>;
   findByEmail(email: string): Promise<UserModel | null>;
   updatePassword(userId: string, newPassword: string): Promise<void>;

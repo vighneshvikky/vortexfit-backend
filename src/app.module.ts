@@ -27,7 +27,6 @@ import { MessageModule } from './messages/message.module';
 import { LoggerModule } from './common/logger/log.module';
 import { VideoModule } from './common/video/video.module';
 
-
 winston.addColors({
   info: 'green',
   warn: 'yellow',

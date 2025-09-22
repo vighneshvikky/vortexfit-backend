@@ -7,9 +7,17 @@ export const IBookingRepository = 'IBookingRepository';
 export interface IBookingRepository {
   create(data: Partial<Booking>): Promise<Booking>;
 
-  bookingOfTrainerId(trainerId: string, page: number, limit: number): Promise<{ bookings: Booking[]; totalRecords: number }>;
+  bookingOfTrainerId(
+    trainerId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
 
-  bookingOfUserId(userId: string, page: number, limit: number): Promise<{ bookings: Booking[]; totalRecords: number }>;
+  bookingOfUserId(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
 
   update(id: string, data: Partial<Booking>): Promise<Booking | null>;
 
@@ -20,11 +28,21 @@ export interface IBookingRepository {
     slotEnd: string,
   ): Promise<number>;
 
-  findOne(trainerId: string, date: string, timeSlot: string): Promise<Booking | null>;
-  
-  getFilteredBookings(trainerId: string, filters: BookingFilterDto): Promise<{bookings: Booking[]; totalRecords: number}>;
+  findOne(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+  ): Promise<Booking | null>;
 
-  getUserFilteredBookings(userId: string, filters: BookingFilterDto): Promise<{bookings: Booking[]; totalRecords: number}>
+  getFilteredBookings(
+    trainerId: string,
+    filters: BookingFilterDto,
+  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
+
+  getUserFilteredBookings(
+    userId: string,
+    filters: BookingFilterDto,
+  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
 
   updateByOrderId(
     orderId: string,
@@ -35,6 +53,4 @@ export interface IBookingRepository {
     bookingId: string,
     status: BookingStatus,
   ): Promise<Booking | null>;
-
-
 }

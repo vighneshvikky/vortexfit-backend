@@ -33,6 +33,4 @@ export class UserRoleServiceRegistry implements IAuthServiceRegistry {
     }
     return service;
   }
-
-
 }

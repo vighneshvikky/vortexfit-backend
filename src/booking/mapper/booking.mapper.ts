@@ -20,7 +20,7 @@ export class BookingMapper {
       user = {
         _id: bookingDoc.userId._id.toString(),
         name: bookingDoc.userId.name,
-        image: bookingDoc.userId.image
+        image: bookingDoc.userId.image,
       };
     } else {
       user = new Types.ObjectId(bookingDoc.userId as string);

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ChatMessage } from "../schemas/message.schema";
-import { MessageResponseDto } from "../dtos/send-message.dto";
+import { ChatMessage } from '../schemas/message.schema';
+import { MessageResponseDto } from '../dtos/send-message.dto';
 
 @Injectable()
 export class MessageMapper {
@@ -28,7 +28,6 @@ export class MessageMapper {
     };
   }
 
-  
   toDto(entity: ChatMessage): MessageResponseDto {
     const dto = new MessageResponseDto();
     dto.id = entity['_id']?.toString();
@@ -45,6 +44,6 @@ export class MessageMapper {
   }
 
   toDtoList(entities: ChatMessage[]): MessageResponseDto[] {
-    return entities.map(entity => this.toDto(entity));
+    return entities.map((entity) => this.toDto(entity));
   }
 }
