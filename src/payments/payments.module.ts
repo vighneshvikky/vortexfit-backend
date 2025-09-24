@@ -12,12 +12,16 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
 import { RAZORPAY_SERVICE } from './services/interface/IRazorpay.service.interface';
+import { SubscriptionModule } from 'src/subscription/subscription.module';
+import { planModule } from 'src/plans/plan.module';
 
 @Module({
   imports: [
     BookingModule,
     MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }]),
     JwtModule.register({}),
+    planModule,
+    SubscriptionModule
   ],
   controllers: [PaymentsController],
   providers: [
