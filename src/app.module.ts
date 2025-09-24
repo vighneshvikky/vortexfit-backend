@@ -17,7 +17,6 @@ import { UploadModule } from './upload/upload.module';
 import { AwsS3Controller } from './common/aws/controller/aws-s3.controller';
 import { AwsS3Service } from './common/aws/services/aws-s3.service';
 import * as winston from 'winston';
-import { WinstonModule } from 'nest-winston';
 import { ScheduleModule } from './trainer/scheduling/scheduling.module';
 import { PaymentModule } from './payments/payments.module';
 import { BookingModule } from './booking/booking.module';
@@ -26,6 +25,8 @@ import { ChatModule } from './common/chat/chat.module';
 import { MessageModule } from './messages/message.module';
 import { LoggerModule } from './common/logger/log.module';
 import { VideoModule } from './common/video/video.module';
+import { planModule } from './plans/plan.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 winston.addColors({
   info: 'green',
@@ -59,6 +60,8 @@ winston.addColors({
     VideoModule,
     MessageModule,
     LoggerModule,
+    planModule,
+    SubscriptionModule
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],
