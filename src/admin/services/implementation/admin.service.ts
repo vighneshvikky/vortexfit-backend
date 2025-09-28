@@ -4,7 +4,6 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { PasswordUtil } from 'src/common/helpers/password.util';
 import Redis from 'ioredis';
 import { Inject } from '@nestjs/common';
 import { User } from 'src/user/schemas/user.schema';
@@ -61,7 +60,7 @@ export class AdminService implements IAdminService {
     }
 
     const accessToken = this._jwtService.signAccessToken({
-      sub: 'admin',
+      sub: process.env.ADMIN_ID!,
       role: 'admin',
       isBlocked: false,
     });
@@ -72,7 +71,14 @@ export class AdminService implements IAdminService {
       isBlocked: false,
     });
 
-    const refreshTokenTTL = 7 * 24 * 60 * 60 * 1000;
+    const refreshTokenTTL = parseInt(process.env.REFRESH_TOKEN_TTL!, 10);
+
+if (isNaN(refreshTokenTTL)) {
+  throw new Error('REFRESH_TOKEN_TTL must be a valid integer');
+}
+
+await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
+
     await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
 
     return { accessToken, refreshToken };
@@ -117,7 +123,8 @@ export class AdminService implements IAdminService {
     const startIndex = (page - 1) * limit;
     const paginated = combined.slice(startIndex, startIndex + limit);
 
-    const mapped = paginated.map(AdminUserMapper.toAdminUserDto);
+    const mapped = paginated.map(entity => AdminUserMapper.toAdminUserDto(entity));
+
 
     return {
       data: mapped,

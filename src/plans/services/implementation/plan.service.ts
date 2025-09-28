@@ -1,7 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PlanRepository } from 'src/plans/repository/implementation/plan.repository';
 import { IPLANREPOSITORY, IPlanRepository } from 'src/plans/repository/interface/plan.repository.interface';
-import { Plan } from 'src/plans/schema/plan.schema';
 import { IPlanService } from '../interface/plan.service.interface';
 import { CreatePlanDto, PlanDto } from 'src/plans/dtos/plan.dto';
 import { PlanMapper } from 'src/plans/mappers/plan.mapper';

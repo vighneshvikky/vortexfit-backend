@@ -7,9 +7,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { RazorpayService } from '../services/implementation/razorpay.service';
+import { Types } from 'mongoose';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
-import { BookingService } from 'src/booking/services/implementation/booking-service';
+
 import { BookingStatus } from 'src/booking/enums/booking.enum';
 import {
   BOOKING_SERVICE,
@@ -18,7 +18,6 @@ import {
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { AppLoggerService } from 'src/common/logger/log.service';
 import { ILogger } from 'src/common/logger/log.interface';
 import {
   CreateOrderDto,
@@ -29,8 +28,6 @@ import {
   IRazorpayService,
   RAZORPAY_SERVICE,
 } from '../services/interface/IRazorpay.service.interface';
-import { PlanService } from 'src/plans/services/implementation/plan.service';
-import { SubscriptionService } from 'src/subscription/service/subscription.service';
 import {
   IPlanService,
   IPLANSERVICE,
@@ -39,6 +36,10 @@ import {
   ISubscriptionService,
   ISUBSCRIPTIONSERVICE,
 } from 'src/subscription/service/interface/ISubscription.service';
+import * as crypto from 'crypto';
+import { TransactionService } from 'src/transactions/service/transaction.service';
+
+
 
 @Controller('payments')
 export class PaymentsController {
@@ -51,6 +52,7 @@ export class PaymentsController {
     private readonly _planService: IPlanService,
     @Inject(ISUBSCRIPTIONSERVICE)
     private readonly _subscriptionService: ISubscriptionService,
+    private readonly _transactionService: TransactionService,
   ) {}
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('create-order')
@@ -67,6 +69,7 @@ export class PaymentsController {
   @Post('verify-payment')
   async verifyPayment(
     @GetUser('sub') userId: string,
+    @GetUser('role') role: string,
     @Body() body: VerifyPaymentDto,
   ) {
     this.logger.log(body);
@@ -80,10 +83,9 @@ export class PaymentsController {
       razorpay_payment_id,
       razorpay_signature,
     } = body;
-    const crypto = require('crypto');
 
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
       .update(razorpay_order_id + '|' + razorpay_payment_id)
       .digest('hex');
     const existingBooking = await this._bookingService.findOne(
@@ -115,6 +117,17 @@ export class PaymentsController {
         throw new NotFoundException('Booking not found');
       }
 
+      await this._transactionService.recordTransaction({
+        fromUser: new Types.ObjectId(userId),
+        toUser: new Types.ObjectId(trainerId),
+        amount,
+        sourceType: 'BOOKING',
+        sourceId: booking._id,
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        paymentSignature: razorpay_signature,
+      });
+
       return { status: 'success', bookingId: booking._id };
     } else {
       return { status: 'failure' };
@@ -135,15 +148,12 @@ export class PaymentsController {
       throw new NotFoundException('Plan not found');
     }
 
-            const existingSubscription =
-          await this._subscriptionService.findActiveByUserAndPlan(
-            userId,
-            planId,
-          );
-console.log('existingSubscription', existingSubscription)
-        if (existingSubscription) {
-          throw new ConflictException('User already subscribed to this plan');
-        }
+    const existingSubscription =
+      await this._subscriptionService.findActiveByUserAndPlan(userId, planId);
+    console.log('existingSubscription', existingSubscription);
+    if (existingSubscription) {
+      throw new ConflictException('User already subscribed to this plan');
+    }
 
     const order = await this._razorpayService.createOrder(plan.price);
     return { order, plan };
@@ -153,10 +163,10 @@ console.log('existingSubscription', existingSubscription)
   @Post('verify-subscription-payment')
   async verifySubscriptionPayment(
     @GetUser('sub') userId: string,
+    @GetUser('role') role: string,
     @Body() body: VerifySubscriptionPaymentDto,
   ) {
-  
-
+    console.log('body', body)
     const {
       planId,
       razorpay_order_id,
@@ -164,10 +174,8 @@ console.log('existingSubscription', existingSubscription)
       razorpay_signature,
     } = body;
 
-    const crypto = require('crypto');
-
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
       .update(razorpay_order_id + '|' + razorpay_payment_id)
       .digest('hex');
 
@@ -178,6 +186,8 @@ console.log('existingSubscription', existingSubscription)
           throw new NotFoundException('Plan not found');
         }
 
+        console.log('plan', plan)
+
         const subscription =
           await this._subscriptionService.subscribeUserToPlan(
             userId,
@@ -186,18 +196,41 @@ console.log('existingSubscription', existingSubscription)
             razorpay_payment_id,
             razorpay_signature,
           );
-
+console.log('sub', subscription)
         if (!subscription) {
           throw new NotFoundException('Failed to create subscription');
         }
+
+        const adminId = process.env.ADMIN_ID;
+        console.log('adminId', adminId)
+         
+        await this._transactionService.recordTransaction({
+               fromUser:new Types.ObjectId(userId),
+        toUser: new Types.ObjectId(adminId),
+        amount: plan.price,
+        sourceType: 'SUBSCRIPTION',
+        sourceId: new Types.ObjectId(subscription._id),
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        paymentSignature: razorpay_signature,
+        })
 
         return {
           status: 'success',
           subscriptionId: subscription._id,
           message: 'Subscription activated successfully',
         };
-      } catch (error) {
-        this.logger.error('Error creating subscription:', error);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          this.logger.error(
+            'Error creating subscription:',
+            error.message,
+            error.stack,
+          );
+        } else {
+          this.logger.error('Error creating subscription:', String(error));
+        }
+
         throw new ConflictException('Failed to create subscription');
       }
     } else {

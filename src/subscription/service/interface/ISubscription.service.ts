@@ -1,6 +1,6 @@
-import { SubscriptionResponseDto } from "src/subscription/dto/subscription.dto";
+import { SubscriptionResponseDto } from 'src/subscription/dto/subscription.dto';
 
-export const ISUBSCRIPTIONSERVICE = Symbol('ISUBSCRIPTIONSERVICE')
+export const ISUBSCRIPTIONSERVICE = Symbol('ISUBSCRIPTIONSERVICE');
 
 export interface ISubscriptionService {
   subscribeUserToPlan(
@@ -13,5 +13,8 @@ export interface ISubscriptionService {
 
   getUserSubscriptions(userId: string): Promise<SubscriptionResponseDto[]>;
 
-  findActiveByUserAndPlan(userId: string, planId: string)
+  findActiveByUserAndPlan(
+    userId: string,
+    planId: string,
+  ): Promise<SubscriptionResponseDto | null>;
 }

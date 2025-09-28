@@ -27,6 +27,7 @@ import { LoggerModule } from './common/logger/log.module';
 import { VideoModule } from './common/video/video.module';
 import { planModule } from './plans/plan.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { TransactionModule } from './transactions/transaction.module';
 
 winston.addColors({
   info: 'green',
@@ -61,7 +62,8 @@ winston.addColors({
     MessageModule,
     LoggerModule,
     planModule,
-    SubscriptionModule
+    SubscriptionModule,
+    TransactionModule
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],
