@@ -59,4 +59,5 @@ export interface CreateBookingDto {
   orderId?: string;
   sessionType?: string;
   paymentSignature?: string;
+  bookingMethod: string;
 }

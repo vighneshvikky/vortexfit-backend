@@ -39,8 +39,6 @@ import {
 import * as crypto from 'crypto';
 import { TransactionService } from 'src/transactions/service/transaction.service';
 
-
-
 @Controller('payments')
 export class PaymentsController {
   constructor(
@@ -111,6 +109,7 @@ export class PaymentsController {
         orderId: razorpay_order_id,
         paymentId: razorpay_payment_id,
         paymentSignature: razorpay_signature,
+        bookingMethod: 'Razorpay',
       });
 
       if (!booking) {
@@ -119,7 +118,9 @@ export class PaymentsController {
 
       await this._transactionService.recordTransaction({
         fromUser: new Types.ObjectId(userId),
+        fromModel: 'User',
         toUser: new Types.ObjectId(trainerId),
+        toModel: 'Trainer',
         amount,
         sourceType: 'BOOKING',
         sourceId: booking._id,
@@ -166,7 +167,6 @@ export class PaymentsController {
     @GetUser('role') role: string,
     @Body() body: VerifySubscriptionPaymentDto,
   ) {
-    console.log('body', body)
     const {
       planId,
       razorpay_order_id,
@@ -186,8 +186,6 @@ export class PaymentsController {
           throw new NotFoundException('Plan not found');
         }
 
-        console.log('plan', plan)
-
         const subscription =
           await this._subscriptionService.subscribeUserToPlan(
             userId,
@@ -196,24 +194,43 @@ export class PaymentsController {
             razorpay_payment_id,
             razorpay_signature,
           );
-console.log('sub', subscription)
+        console.log('sub', subscription);
         if (!subscription) {
           throw new NotFoundException('Failed to create subscription');
         }
 
         const adminId = process.env.ADMIN_ID;
-        console.log('adminId', adminId)
-         
-        await this._transactionService.recordTransaction({
-               fromUser:new Types.ObjectId(userId),
-        toUser: new Types.ObjectId(adminId),
-        amount: plan.price,
-        sourceType: 'SUBSCRIPTION',
-        sourceId: new Types.ObjectId(subscription._id),
-        orderId: razorpay_order_id,
-        paymentId: razorpay_payment_id,
-        paymentSignature: razorpay_signature,
-        })
+
+        if (role === 'trainer') {
+          console.log('role', role);
+          await this._transactionService.recordTransaction({
+            fromUser: new Types.ObjectId(userId),
+            fromModel: 'Trainer',
+            toUser: new Types.ObjectId(adminId),
+            toModel: 'User',
+            amount: plan.price,
+            sourceType: 'SUBSCRIPTION',
+            sourceId: new Types.ObjectId(subscription._id),
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
+            paymentSignature: razorpay_signature,
+            bookingMethod: 'Razorpay',
+          });
+        } else {
+          await this._transactionService.recordTransaction({
+            fromUser: new Types.ObjectId(userId),
+            fromModel: 'User',
+            toUser: new Types.ObjectId(adminId),
+            toModel: 'User',
+            amount: plan.price,
+            sourceType: 'SUBSCRIPTION',
+            sourceId: new Types.ObjectId(subscription._id),
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
+            paymentSignature: razorpay_signature,
+            bookingMethod: 'Razorpay',
+          });
+        }
 
         return {
           status: 'success',

@@ -9,6 +9,7 @@ export class TransactionService {
   constructor(private readonly _transactionRepository: TransactionRepository) {}
 
   async recordTransaction(data: Partial<Transaction>): Promise<Transaction> {
+    console.log('data', data);
     return await this._transactionRepository.recordTransaction(data);
   }
 

@@ -7,10 +7,18 @@ export type TransactionDocument = HydratedDocument<Transaction>;
 export class Transaction {
   _id: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, required : true })
+  // who is sending (can be User or Trainer)
+  @Prop({ required: true, enum: ['User', 'Trainer'] })
+  fromModel: string;
+
+  @Prop({ type: Types.ObjectId, refPath: 'fromModel', required: true })
   fromUser: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  // who is receiving (can be User or Trainer)
+  @Prop({ required: true, enum: ['User', 'Trainer'] })
+  toModel: string;
+
+  @Prop({ type: Types.ObjectId, refPath: 'toModel', required: true })
   toUser: Types.ObjectId;
 
   @Prop({ required: true })
@@ -33,6 +41,9 @@ export class Transaction {
 
   @Prop()
   paymentSignature?: string;
+
+  @Prop({required: true})
+  bookingMethod?: string;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);
