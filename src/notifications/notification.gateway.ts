@@ -6,6 +6,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { NotificationDto } from './dtos/notification.dto';
 
 @WebSocketGateway({
   namespace: '/notifications',
@@ -34,7 +35,7 @@ export class NotificationGateway {
     console.log(`Client ${client.id} joined room ${userId}`);
   }
 
-  sendNotification(userId: string, notification: any) {
+  sendNotification(userId: string, notification: NotificationDto) {
     this.server.to(userId).emit('newNotification', notification);
   }
 }

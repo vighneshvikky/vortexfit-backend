@@ -3,8 +3,6 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type TransactionDocument = HydratedDocument<Transaction>;
 
-
-
 export interface MinimalUser {
   _id: Types.ObjectId;
   name: string;
@@ -16,7 +14,7 @@ export class Transaction {
   _id: Types.ObjectId;
 
   @Prop({ required: true, enum: ['User', 'Trainer'] })
-  fromModel: string ;
+  fromModel: string;
 
   @Prop({ type: Types.ObjectId, refPath: 'fromModel', required: true })
   fromUser: Types.ObjectId | MinimalUser;
@@ -35,7 +33,7 @@ export class Transaction {
 
   @Prop({ type: Types.ObjectId })
   sourceId: Types.ObjectId;
-  
+
   @Prop({ default: 'INR' })
   currency: string;
 
@@ -50,6 +48,9 @@ export class Transaction {
 
   @Prop({ required: true })
   bookingMethod?: string;
+
+  @Prop()
+  createdAt: Date;
 }
 
 export const TransactionSchema = SchemaFactory.createForClass(Transaction);

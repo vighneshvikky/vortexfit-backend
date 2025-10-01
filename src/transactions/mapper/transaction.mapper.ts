@@ -14,6 +14,7 @@ export interface TransactionDto {
   orderId?: string;
   paymentSignature?: string;
   bookingMethod?: string;
+  createdAt: Date;
 }
 
 function mapUser(user: Types.ObjectId | MinimalUser | null | undefined) {
@@ -54,4 +55,5 @@ export const mapTransactionToDto = (
   orderId: tx.orderId,
   paymentSignature: tx.paymentSignature,
   bookingMethod: tx.bookingMethod,
+  createdAt: tx.createdAt
 });
