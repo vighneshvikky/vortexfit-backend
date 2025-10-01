@@ -1,12 +1,13 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
 import { WalletService } from '../service/wallet.service';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from 'src/common/pipes/parseObjectId.pipes';
+import { IWalletService, IWALLETSERVICE } from '../service/interface/IWalletService.interface';
 
 @Controller('wallet')
 export class WalletController {
-  constructor(private readonly _walletService: WalletService) {}
+  constructor(@Inject(IWALLETSERVICE) private readonly _walletService: IWalletService) {}
 
   //   @Post('/add-funds')
   //   addFunds(

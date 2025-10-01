@@ -29,6 +29,7 @@ import { planModule } from './plans/plan.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { TransactionModule } from './transactions/transaction.module';
 import { WalletModule } from './wallet/wallet.module';
+import { NotificationModule } from './notifications/notification.module';
 
 winston.addColors({
   info: 'green',
@@ -65,7 +66,8 @@ winston.addColors({
     planModule,
     SubscriptionModule,
     TransactionModule,
-    WalletModule
+    WalletModule,
+    NotificationModule
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],

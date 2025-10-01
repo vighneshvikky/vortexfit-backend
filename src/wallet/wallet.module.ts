@@ -9,20 +9,26 @@ import { WalletRepository } from './repository/wallet.repository';
 import { WalletController } from './controller/wallet.controller';
 import { TransactionModule } from 'src/transactions/transaction.module';
 import { BookingModule } from 'src/booking/booking.module';
-
-
-
+import { IWALLETSERVICE } from './service/interface/IWalletService.interface';
+import { IWALLETREPOSITORY } from './repository/interface/IWalletRepository.interface';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Wallet.name, schema: WalletSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Wallet.name, schema: WalletSchema }]),
     JwtModule.register({}),
     TransactionModule,
-    BookingModule
+    BookingModule,
   ],
-  providers: [WalletService, WalletRepository],
+  providers: [
+    {
+      useClass: WalletService,
+      provide: IWALLETSERVICE,
+    },
+    {
+      useClass: WalletRepository,
+      provide: IWALLETREPOSITORY,
+    },
+  ],
   controllers: [WalletController],
   exports: [],
 })

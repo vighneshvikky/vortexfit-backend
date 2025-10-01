@@ -9,6 +9,7 @@ import { IBookingRepository } from './repository/interface/booking-repository.in
 import { BookingRepository } from './repository/implementation/booking-repository';
 import { UserModule } from 'src/user/user.module';
 import { TrainerModule } from 'src/trainer/trainer.module';
+import { NotificationModule } from 'src/notifications/notification.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TrainerModule } from 'src/trainer/trainer.module';
     JwtModule.register({}),
     UserModule,
     TrainerModule,
+    NotificationModule
   ],
   providers: [
     BookingService,

@@ -37,7 +37,11 @@ import {
   ISUBSCRIPTIONSERVICE,
 } from 'src/subscription/service/interface/ISubscription.service';
 import * as crypto from 'crypto';
-import { TransactionService } from 'src/transactions/service/transaction.service';
+
+import {
+  ITransactionService,
+  ITRANSACTIONSERVICE,
+} from 'src/transactions/service/inteface/ITransactionService.interface';
 
 @Controller('payments')
 export class PaymentsController {
@@ -50,7 +54,8 @@ export class PaymentsController {
     private readonly _planService: IPlanService,
     @Inject(ISUBSCRIPTIONSERVICE)
     private readonly _subscriptionService: ISubscriptionService,
-    private readonly _transactionService: TransactionService,
+    @Inject(ITRANSACTIONSERVICE)
+    private readonly _transactionService: ITransactionService,
   ) {}
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('create-order')
@@ -127,6 +132,7 @@ export class PaymentsController {
         orderId: razorpay_order_id,
         paymentId: razorpay_payment_id,
         paymentSignature: razorpay_signature,
+        bookingMethod: 'Razorpay',
       });
 
       return { status: 'success', bookingId: booking._id };

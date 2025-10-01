@@ -8,17 +8,54 @@ import { BookingStatus } from 'src/booking/enums/booking.enum';
 import { BookingMapper } from 'src/booking/mapper/booking.mapper';
 import { BookingModel } from 'src/booking/models/booking.model';
 import { BookingFilterDto } from 'src/booking/dtos/booking-dto.interface';
+import { NotificationGateway } from 'src/notifications/notification.gateway';
+import { NotificationType } from 'src/notifications/schema/notification.schema';
+import {
+  INotificationService,
+  INOTIFICATIONSERVICE,
+} from 'src/notifications/services/interface/INotification.service.interface';
 
 @Injectable()
 export class BookingService implements IBookingService {
   constructor(
     @Inject(IBookingRepository)
     private readonly _bookingRepository: IBookingRepository,
+    private readonly _notificationGateway: NotificationGateway,
+    @Inject(INOTIFICATIONSERVICE)
+    private readonly _notificationService: INotificationService,
   ) {}
 
   async create(data: CreateBookingDto): Promise<BookingModel | null> {
+    console.log('data for booking', data);
     const bookingDoc = await this._bookingRepository.create(data);
-    return BookingMapper.toDomain(bookingDoc);
+    const booking = BookingMapper.toDomain(bookingDoc);
+
+    const message = `Booking confirmed on ${data.date} at ${data.timeSlot}.`;
+
+    const userNotification = await this._notificationService.createNotification(
+      data.userId.toString(),
+      NotificationType.BOOKING,
+      message,
+    );
+
+    const trainerNotification =
+      await this._notificationService.createNotification(
+        data.trainerId.toString(),
+        NotificationType.BOOKING,
+        message,
+      );
+
+    this._notificationGateway.sendNotification(
+      data.userId.toString(),
+      userNotification,
+    );
+
+    this._notificationGateway.sendNotification(
+      data.trainerId.toString(),
+      trainerNotification,
+    );
+
+    return booking;
   }
 
   async update(

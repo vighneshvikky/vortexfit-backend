@@ -1,13 +1,14 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { TransactionFilterDto } from '../dtos/transaction.dto';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { TransactionService } from '../service/transaction.service';
 import { ParseObjectIdPipe } from 'src/common/pipes/parseObjectId.pipes';
 import { Types } from 'mongoose';
+import { ITransactionService, ITRANSACTIONSERVICE } from '../service/inteface/ITransactionService.interface';
 
 @Controller('transactions')
 export class transactionController {
-  constructor(private readonly _transactionSerivce: TransactionService) {}
+  constructor(@Inject(ITRANSACTIONSERVICE) private readonly _transactionSerivce: ITransactionService) {}
 
   @Get('user')
   getByUser(

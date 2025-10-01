@@ -5,7 +5,8 @@ import { TransactionService } from './service/transaction.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Transaction, TransactionSchema } from './schema/transaction.schema';
 import { TransactionRepository } from './repository/transaction.repository';
-
+import { ITRANSACTIONREPOSITORY } from './repository/interface/ITransaction.repository.interface';
+import { ITRANSACTIONSERVICE } from './service/inteface/ITransactionService.interface';
 
 @Module({
   imports: [
@@ -14,8 +15,26 @@ import { TransactionRepository } from './repository/transaction.repository';
     ]),
     JwtModule.register({}),
   ],
-  providers: [TransactionService, TransactionRepository],
+  providers: [
+    {
+      provide: ITRANSACTIONSERVICE,
+      useClass: TransactionService,
+    },
+    {
+      provide: ITRANSACTIONREPOSITORY,
+      useClass: TransactionRepository,
+    },
+  ],
   controllers: [transactionController],
-  exports: [TransactionService, TransactionRepository],
+  exports: [
+    {
+      provide: ITRANSACTIONSERVICE,
+      useClass: TransactionService,
+    },
+    {
+      provide: ITRANSACTIONREPOSITORY,
+      useClass: TransactionRepository,
+    },
+  ],
 })
 export class TransactionModule {}

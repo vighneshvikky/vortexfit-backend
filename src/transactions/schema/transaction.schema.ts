@@ -3,23 +3,29 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type TransactionDocument = HydratedDocument<Transaction>;
 
+
+
+export interface MinimalUser {
+  _id: Types.ObjectId;
+  name: string;
+  email: string;
+}
+
 @Schema({ timestamps: true })
 export class Transaction {
   _id: Types.ObjectId;
 
-  // who is sending (can be User or Trainer)
   @Prop({ required: true, enum: ['User', 'Trainer'] })
-  fromModel: string;
+  fromModel: string ;
 
   @Prop({ type: Types.ObjectId, refPath: 'fromModel', required: true })
-  fromUser: Types.ObjectId;
+  fromUser: Types.ObjectId | MinimalUser;
 
-  // who is receiving (can be User or Trainer)
   @Prop({ required: true, enum: ['User', 'Trainer'] })
   toModel: string;
 
   @Prop({ type: Types.ObjectId, refPath: 'toModel', required: true })
-  toUser: Types.ObjectId;
+  toUser: Types.ObjectId | MinimalUser;
 
   @Prop({ required: true })
   amount: number;
@@ -29,7 +35,7 @@ export class Transaction {
 
   @Prop({ type: Types.ObjectId })
   sourceId: Types.ObjectId;
-
+  
   @Prop({ default: 'INR' })
   currency: string;
 
@@ -42,7 +48,7 @@ export class Transaction {
   @Prop()
   paymentSignature?: string;
 
-  @Prop({required: true})
+  @Prop({ required: true })
   bookingMethod?: string;
 }
 

@@ -14,12 +14,17 @@ import {
   BOOKING_SERVICE,
   IBookingService,
 } from 'src/booking/services/interface/booking-service.interface';
+import { ITransactionService, ITRANSACTIONSERVICE } from 'src/transactions/service/inteface/ITransactionService.interface';
+import { WalletMapper } from '../mapper/wallet.mapper';
+import { IWalletRepository, IWALLETREPOSITORY } from '../repository/interface/IWalletRepository.interface';
 
 @Injectable()
 export class WalletService {
   constructor(
-    private readonly _walletRepository: WalletRepository,
-    private readonly _transactionService: TransactionService,
+    @Inject(IWALLETREPOSITORY)
+    private readonly _walletRepository: IWalletRepository,
+    @Inject(ITRANSACTIONSERVICE)
+    private readonly _transactionService: ITransactionService,
     @Inject(BOOKING_SERVICE)
     private readonly _bookingService: IBookingService,
   ) {}
@@ -34,16 +39,16 @@ export class WalletService {
     },
   ) {
     let wallet = await this._walletRepository.findByUserId(userId);
-    let amount = body.amount / 100;
+    const amount = body.amount / 100;
+
     if (!wallet) {
       wallet = await this._walletRepository.createWallet(userId, amount);
     } else {
       wallet.balance += amount;
-
       await wallet.save();
     }
 
-    return { success: true, wallet };
+    return { success: true, wallet: WalletMapper.toResponse(wallet) };
   }
 
   async payWithWallet(
@@ -55,12 +60,11 @@ export class WalletService {
     timeSlot: string,
   ) {
     const wallet = await this._walletRepository.findByUserId(userId);
-    if (!wallet) {
+    if (!wallet || wallet.balance < amount) {
       throw new BadRequestException('Insufficient wallet balance');
     }
 
     wallet.balance -= amount;
-
     await wallet.save();
 
     const booking = await this._bookingService.create({
@@ -88,11 +92,18 @@ export class WalletService {
       currency: 'INR',
     });
 
-    return { success: true, bookingId: booking._id, balance: wallet.balance };
+    return {
+      success: true,
+      bookingId: booking._id,
+      wallet: WalletMapper.toResponse(wallet),
+    };
   }
 
   async getBalance(userId: Types.ObjectId) {
     const wallet = await this._walletRepository.findByUserId(userId);
-    return { balance: wallet ? wallet.balance : 0 };
+    return {
+      balance: wallet ? wallet.balance : 0,
+      wallet: wallet ? WalletMapper.toResponse(wallet) : null,
+    };
   }
 }

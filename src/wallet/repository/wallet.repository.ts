@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Wallet, WalletDocument } from '../schema/wallet.schema';
 import { Model, Types } from 'mongoose';
+import { IWalletRepository } from './interface/IWalletRepository.interface';
 
 @Injectable()
-export class WalletRepository {
+export class WalletRepository implements IWalletRepository{
   constructor(
     @InjectModel(Wallet.name) private _walletModel: Model<WalletDocument>,
   ) {}
