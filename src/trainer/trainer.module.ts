@@ -53,6 +53,7 @@ import { PasswordUtil } from 'src/common/helpers/password.util';
   exports: [
     { provide: ITrainerRepository, useClass: TrainerRepository },
     TRAINER_SERVICE,
+    MongooseModule
   ],
 })
 export class TrainerModule {}

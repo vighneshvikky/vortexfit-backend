@@ -30,6 +30,6 @@ import { IWALLETREPOSITORY } from './repository/interface/IWalletRepository.inte
     },
   ],
   controllers: [WalletController],
-  exports: [],
+  exports: [MongooseModule],
 })
 export class WalletModule {}

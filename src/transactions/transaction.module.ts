@@ -35,6 +35,7 @@ import { ITRANSACTIONSERVICE } from './service/inteface/ITransactionService.inte
       provide: ITRANSACTIONREPOSITORY,
       useClass: TransactionRepository,
     },
+    MongooseModule
   ],
 })
 export class TransactionModule {}

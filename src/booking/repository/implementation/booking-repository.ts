@@ -212,11 +212,17 @@ if (searchTerm) {
     limit: number = 5,
   ): Promise<{ bookings: Booking[]; totalRecords: number }> {
     const skip = (page - 1) * limit;
+    const today = new Date().toISOString().split('T')[0];
+
+    const query = {
+      trainerId,
+      date: {$gte: today}
+    }
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
-        .find({ trainerId })
+        .find(query)
         .populate('userId', '_id name image')
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: 1 })
         .skip(skip)
         .limit(limit)
         .exec(),
@@ -232,12 +238,17 @@ if (searchTerm) {
     limit: number = 5,
   ): Promise<{ bookings: Booking[]; totalRecords: number }> {
     const skip = (page - 1) * limit;
+ const today = new Date().toISOString().split('T')[0];
+    const query = {
+      userId,
+      date: {$gte: today }
+    }
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
-        .find({ userId })
+        .find(query)
         .populate('trainerId', '_id name image')
         .populate('userId', '_id name image')
-        .sort({ createdAt: -1 })
+        .sort({ createdAt: 1})
         .skip(skip)
         .limit(limit)
         .exec(),

@@ -49,7 +49,7 @@ export class Transaction {
   @Prop({ required: true })
   bookingMethod?: string;
 
-  @Prop()
+  @Prop() 
   createdAt: Date;
 }
 

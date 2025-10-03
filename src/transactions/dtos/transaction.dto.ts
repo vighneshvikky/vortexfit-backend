@@ -1,4 +1,11 @@
-import { IsEnum, IsMongoId, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsEnum,
+  IsMongoId,
+  IsNumber,
+  IsOptional,
+  IsDateString,
+  IsNumberString,
+} from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateTransactionDto {
@@ -29,12 +36,28 @@ export class CreateTransactionDto {
 
 export class TransactionFilterDto {
   @IsOptional()
-  fromDate?: Date;
+  @IsDateString()
+  fromDate?: string;
 
   @IsOptional()
-  toDate?: Date;
+  @IsDateString()
+  toDate?: string;
 
   @IsOptional()
   @IsEnum(['BOOKING', 'SUBSCRIPTION'])
   sourceType?: 'BOOKING' | 'SUBSCRIPTION';
+
+  @IsOptional()
+  @IsNumberString()
+  page?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  limit?: string;
+
+  @IsOptional()
+  sortBy?: 'createdAt' | 'amount';
+
+  @IsOptional()
+  sortOrder?: 'asc' | 'desc';
 }

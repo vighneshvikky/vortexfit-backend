@@ -15,6 +15,7 @@ export class transactionController {
     @Query() filters: TransactionFilterDto,
     @GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId,
   ) {
+    console.log('userId', userId)
     return this._transactionSerivce.getUserTransactions(userId, filters);
   }
 

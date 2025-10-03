@@ -37,8 +37,12 @@ export class TransactionRepository implements ITransactionRepository{
     if (filters?.sourceType) query.sourceType = filters.sourceType;
     if (filters?.fromDate || filters?.toDate) {
       query.createdAt = {};
-      if (filters.fromDate) query.createdAt.$gte = filters.fromDate;
-      if (filters.toDate) query.createdAt.$lte = filters.toDate;
+        if (filters.fromDate) {
+        query.createdAt.$gte = new Date(filters.fromDate);
+      }
+      if (filters.toDate) {
+        query.createdAt.$lte = new Date(filters.toDate);
+      }
     }
 
     return this._transactionModel
@@ -71,6 +75,25 @@ export class TransactionRepository implements ITransactionRepository{
 
     return result[0]?.total || 0;
   }
+
+  //   async getTotalRevenue(trainerId: Types.ObjectId): Promise<number> {
+  //   const result = await this._transactionModel.aggregate([
+  //     {
+  //       $match: {
+  //         toUser: trainerId,
+  //         toModel: 'Trainer',
+  //       },
+  //     },
+  //     {
+  //       $group: {
+  //         _id: null,
+  //         total: { $sum: '$amount' },
+  //       },
+  //     },
+  //   ]);
+
+  //   return result.length > 0 ? result[0].total : 0;
+  // }
 
   async sumDebits(userId: Types.ObjectId): Promise<number> {
     const result = await this._transactionModel.aggregate([

@@ -18,7 +18,7 @@ import {
   BookingFilterDto,
   ChangeBookingStatusDto,
 } from '../dtos/booking-dto.interface';
-
+@UseGuards(RolesGuard, NotBlockedGuard)
 @Controller('bookings')
 export class BookingController {
   constructor(
@@ -103,7 +103,6 @@ export class BookingController {
         ...filters,
         page: pageNumber,
         limit: limitNumber,
-
       });
 
     return { bookings, totalRecords };

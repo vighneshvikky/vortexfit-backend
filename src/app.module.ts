@@ -31,6 +31,9 @@ import { TransactionModule } from './transactions/transaction.module';
 import { WalletModule } from './wallet/wallet.module';
 import { NotificationModule } from './notifications/notification.module';
 import { AiModule } from './ai/ai.module';
+import { AdminDashboardModule } from './admin/adminDashboard/adminDashboard.module';
+import { UserDashboardModule } from './user/userDashboard/userDashboard.module';
+import { TrainerDashboardModule } from './trainer/trainerDashboard/trainerDashboard.module';
 
 winston.addColors({
   info: 'green',
@@ -69,7 +72,10 @@ winston.addColors({
     TransactionModule,
     WalletModule,
     NotificationModule,
-    AiModule
+    AiModule,
+    AdminDashboardModule,
+    UserDashboardModule,
+    TrainerDashboardModule,
   ],
   controllers: [AppController, AwsS3Controller],
   providers: [AppService, AwsS3Service],

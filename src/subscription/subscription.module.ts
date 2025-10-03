@@ -34,6 +34,7 @@ import { ISUBSCRIPTIONSERVICE } from './service/interface/ISubscription.service'
       provide: ISUBSCRIPTIONSERVICE,
       useClass: SubscriptionService,
     },
+    MongooseModule
   ],
 })
 export class SubscriptionModule {}
