@@ -11,6 +11,12 @@ import {
 import { ISubscriptionService } from './interface/ISubscription.service';
 import { SubscriptionMapper } from '../mapper/mapper.subscription';
 import { SubscriptionResponseDto } from '../dto/subscription.dto';
+import {
+  INotificationService,
+  INOTIFICATIONSERVICE,
+} from 'src/notifications/services/interface/INotification.service.interface';
+import { NotificationType } from 'src/notifications/schema/notification.schema';
+import { NotificationGateway } from 'src/notifications/notification.gateway';
 
 @Injectable()
 export class SubscriptionService implements ISubscriptionService {
@@ -18,6 +24,9 @@ export class SubscriptionService implements ISubscriptionService {
     @Inject(ISUBSCRIPTIONREPOSITORY)
     private readonly _subscriptionRepository: ISubscriptionRepository,
     @Inject(IPLANREPOSITORY) private readonly _planRepository: IPlanRepository,
+    @Inject(INOTIFICATIONSERVICE)
+    private readonly _notificationService: INotificationService,
+    private readonly _notificationGateway: NotificationGateway,
   ) {}
   async subscribeUserToPlan(
     userId: string,
@@ -32,6 +41,10 @@ export class SubscriptionService implements ISubscriptionService {
     const startDate = new Date();
     let endDate: Date;
 
+    const adminID = process.env.ADMIN_ID!;
+    const message = `You have successfully subscribed plan.`;
+    const adminMessage = `${userId} subscribed to the plan ${planId}`;
+
     if (plan.billingCycle === 'monthly') {
       endDate = new Date(startDate);
       endDate.setMonth(startDate.getMonth() + 1);
@@ -41,6 +54,23 @@ export class SubscriptionService implements ISubscriptionService {
     } else {
       throw new NotFoundException('Invalid plan duration');
     }
+
+    const notificationUser = await this._notificationService.createNotification(
+      userId,
+      NotificationType.SUBSCRIPTION,
+      message,
+    );
+
+    const notificationAdmin =
+      await this._notificationService.createNotification(
+        adminID,
+        NotificationType.SUBSCRIPTION,
+        adminMessage,
+      );
+
+    this._notificationGateway.sendNotification(userId, notificationUser);
+
+    this._notificationGateway.sendNotification(adminID, notificationAdmin);
 
     const subscription = await this._subscriptionRepository.create({
       userId: new Types.ObjectId(userId),

@@ -9,6 +9,7 @@ import { SubscriptionController } from './controller/subscription.controller';
 import { planModule } from 'src/plans/plan.module';
 import { ISUBSCRIPTIONREPOSITORY } from './repository/interface/subscription.inteface.repository';
 import { ISUBSCRIPTIONSERVICE } from './service/interface/ISubscription.service';
+import { NotificationModule } from 'src/notifications/notification.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ISUBSCRIPTIONSERVICE } from './service/interface/ISubscription.service'
     ]),
     JwtModule.register({}),
     planModule,
+    NotificationModule
   ],
   providers: [
     {

@@ -44,11 +44,13 @@ export class AdminController {
       );
 
     setTokenCookies(response, accessToken, refreshToken);
+    const adminId = process.env.ADMIN_ID
     return {
       message: 'Admin login successful',
       data: {
+        _id: process.env.ADMIN_ID,
         email: loginDto.email,
-        role: 'admin',
+        role: adminId  
       },
     };
   }

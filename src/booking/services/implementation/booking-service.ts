@@ -148,6 +148,10 @@ export class BookingService implements IBookingService {
     id: string,
     status: BookingStatus,
   ): Promise<BookingModel | null> {
+
+    if(status === BookingStatus.CONFIRMED){
+      
+    }
     const bookingDoc = await this._bookingRepository.changeStatus(id, status);
     return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }

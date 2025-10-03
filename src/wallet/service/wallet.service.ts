@@ -4,19 +4,21 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { WalletRepository } from '../repository/wallet.repository';
-import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
-import { TransactionService } from 'src/transactions/service/transaction.service';
-import { BookingService } from 'src/booking/services/implementation/booking-service';
 import { BookingStatus } from 'src/booking/enums/booking.enum';
 import {
   BOOKING_SERVICE,
   IBookingService,
 } from 'src/booking/services/interface/booking-service.interface';
-import { ITransactionService, ITRANSACTIONSERVICE } from 'src/transactions/service/inteface/ITransactionService.interface';
+import {
+  ITransactionService,
+  ITRANSACTIONSERVICE,
+} from 'src/transactions/service/inteface/ITransactionService.interface';
 import { WalletMapper } from '../mapper/wallet.mapper';
-import { IWalletRepository, IWALLETREPOSITORY } from '../repository/interface/IWalletRepository.interface';
+import {
+  IWalletRepository,
+  IWALLETREPOSITORY,
+} from '../repository/interface/IWalletRepository.interface';
 
 @Injectable()
 export class WalletService {
