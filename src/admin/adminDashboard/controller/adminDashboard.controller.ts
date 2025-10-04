@@ -11,8 +11,12 @@ import {
   IAdminDashboardService,
   IADMINSERVICEDASHBOARD,
 } from '../service/interface/IAdminDashboard.service.interface';
+import { RolesGuard } from 'src/common/guards/role.guard';
+import { Roles } from 'src/common/decorator/role.decorator';
 
 @UseGuards(JwtAuthGuard)
+@UseGuards(RolesGuard)
+@Roles('admin')
 @Controller('adminDashboard')
 export class AdminDashboardController {
   constructor(
@@ -42,7 +46,6 @@ export class AdminDashboardController {
     return { monthly };
   }
 
-
   @Get('bookings/analytics')
   async getBookingAnalytics() {
     return this._adminService.getBookingAnalytics();
@@ -61,7 +64,6 @@ export class AdminDashboardController {
     return { count };
   }
 
-  
   @Get('trainers/top')
   async getTopTrainers(
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 10,
@@ -75,7 +77,6 @@ export class AdminDashboardController {
     return { count };
   }
 
-
   @Get('subscriptions/analytics')
   async getSubscriptionAnalytics() {
     return this._adminService.getSubscriptionAnalytics();
@@ -86,7 +87,6 @@ export class AdminDashboardController {
     const count = await this._adminService.getSubscriptionCount();
     return { count };
   }
-
 
   @Get('users/analytics')
   async getUserAnalytics() {
@@ -99,7 +99,6 @@ export class AdminDashboardController {
     return { count };
   }
 
- 
   @Get('transactions/recent')
   async getRecentTransactions(
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 20,

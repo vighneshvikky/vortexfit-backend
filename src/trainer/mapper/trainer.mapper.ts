@@ -31,6 +31,7 @@ export class TrainerMapper {
     trainer.image = trainerDoc.image;
     trainer.createdAt = trainerDoc.createdAt;
     trainer.updatedAt = trainerDoc.updatedAt;
+    trainer.image = trainerDoc.image
 
     return trainer;
   }
@@ -49,6 +50,7 @@ export class TrainerMapper {
       idProofUrl: domain.idProofUrl,
       pricing: domain.pricing,
       isBlocked: domain.isBlocked,
+      image: domain.image
     };
   }
 }

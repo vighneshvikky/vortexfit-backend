@@ -38,7 +38,11 @@ export class TrainerController {
     trainerId: string,
     @Body() dto: TrainerProfileDto,
   ) {
-    return this._trainerService.updateTrainerProfile(trainerId, dto);
+    const data = await this._trainerService.updateTrainerProfile(
+      trainerId,
+      dto,
+    );
+    return data;
   }
 
   @UseGuards(RolesGuard, NotBlockedGuard)
