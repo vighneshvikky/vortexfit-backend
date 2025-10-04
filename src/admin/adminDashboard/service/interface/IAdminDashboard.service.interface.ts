@@ -23,7 +23,6 @@ export interface DashboardStats {
   };
 }
 
-
 export interface RevenueBySource {
   total: number;
   count: number;
@@ -48,7 +47,6 @@ export interface RevenueAnalytics {
   byPlan: RevenueByPlan[];
 }
 
-
 export interface BookingsByStatus {
   count: number;
   status: string;
@@ -67,7 +65,6 @@ export interface BookingAnalytics {
   topTrainers: TopTrainer[];
   recent: (BookingModel | null)[];
 }
-
 
 export interface SubscriptionByPlan {
   count: number;
@@ -90,7 +87,6 @@ export interface SubscriptionAnalytics {
   activeVsExpired: ActiveVsExpiredSubscription[];
 }
 
-
 export interface UserByFitnessGoal {
   count: number;
   goal: string;
@@ -107,10 +103,6 @@ export interface UserAnalytics {
   byFitnessGoals: UserByFitnessGoal[];
   byFitnessLevel: UserByFitnessLevel[];
 }
-
-
-
-
 
 export interface IAdminDashboardService {
   getDashboardStats(): Promise<DashboardStats>;

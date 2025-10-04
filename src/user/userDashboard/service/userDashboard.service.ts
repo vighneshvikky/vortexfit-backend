@@ -3,12 +3,16 @@ import { Types } from 'mongoose';
 import { BookingMapper } from 'src/booking/mapper/booking.mapper';
 import { IUserDashboardService } from './interface/IUserDashboard.service.interface';
 import { mapTransactionToDto } from 'src/transactions/mapper/transaction.mapper';
-import { IUserDashboardRepository, IUSERDASHBOARDREPOSITORY } from '../repository/interface/IUserDashboard.repository.interface';
+import {
+  IUserDashboardRepository,
+  IUSERDASHBOARDREPOSITORY,
+} from '../repository/interface/IUserDashboard.repository.interface';
 
 @Injectable()
-export class UserDashboardService implements IUserDashboardService{
+export class UserDashboardService implements IUserDashboardService {
   constructor(
-   @Inject(IUSERDASHBOARDREPOSITORY)  private readonly _userDashboardRepository: IUserDashboardRepository,
+    @Inject(IUSERDASHBOARDREPOSITORY)
+    private readonly _userDashboardRepository: IUserDashboardRepository,
   ) {}
 
   async getDashboardStats(userId: string) {
@@ -35,7 +39,7 @@ export class UserDashboardService implements IUserDashboardService{
       upcomingBookings,
       completedBookings,
       hasActiveSubscription: !!activeSubscription,
-    //   subscriptionName: activeSubscription?.planId?.name || null,
+      //   subscriptionName: activeSubscription?.planId?.name || null,
       walletBalance: wallet?.balance || 0,
       totalSpent: totalSpent || 0,
     };
@@ -43,14 +47,15 @@ export class UserDashboardService implements IUserDashboardService{
 
   async getActiveSubscription(userId: string) {
     const objectId = new Types.ObjectId(userId);
-    const subscription = await this._userDashboardRepository.getActiveSubscription(objectId);
-    
+    const subscription =
+      await this._userDashboardRepository.getActiveSubscription(objectId);
+
     if (!subscription) {
       return null;
     }
 
     return {
-    //   planName: subscription.planId?.name,
+      //   planName: subscription.planId?.name,
       price: subscription.price,
       startDate: subscription.startDate,
       endDate: subscription.endDate,
@@ -64,23 +69,29 @@ export class UserDashboardService implements IUserDashboardService{
 
   async getRecentBookings(userId: string, limit: number = 5) {
     const objectId = new Types.ObjectId(userId);
-    let recentBookings = await this._userDashboardRepository.getRecentBookings(objectId, limit);
+    const recentBookings =
+      await this._userDashboardRepository.getRecentBookings(objectId, limit);
 
-    let bookings = recentBookings.map(b => BookingMapper.toDomain(b));
+    const bookings = recentBookings.map((b) => BookingMapper.toDomain(b));
 
-    return bookings
+    return bookings;
   }
 
   async getRecentTransactions(userId: string, limit: number = 10) {
     const objectId = new Types.ObjectId(userId);
-    const transactions = await this._userDashboardRepository.getRecentTransactions(objectId, limit);
+    const transactions =
+      await this._userDashboardRepository.getRecentTransactions(
+        objectId,
+        limit,
+      );
 
-    return transactions.map(mapTransactionToDto)
+    return transactions.map(mapTransactionToDto);
   }
 
   async getWalletBalance(userId: string) {
     const objectId = new Types.ObjectId(userId);
-    const wallet = await this._userDashboardRepository.getWalletBalance(objectId);
+    const wallet =
+      await this._userDashboardRepository.getWalletBalance(objectId);
     return {
       balance: wallet?.balance || 0,
     };
@@ -88,7 +99,8 @@ export class UserDashboardService implements IUserDashboardService{
 
   async getSpendingSummary(userId: string) {
     const objectId = new Types.ObjectId(userId);
-    const transactions = await this._userDashboardRepository.getAllTransactions(objectId);
+    const transactions =
+      await this._userDashboardRepository.getAllTransactions(objectId);
 
     let bookingSpent = 0;
     let subscriptionSpent = 0;

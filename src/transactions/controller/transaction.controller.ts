@@ -1,21 +1,27 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { TransactionFilterDto } from '../dtos/transaction.dto';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
-import { TransactionService } from '../service/transaction.service';
+
 import { ParseObjectIdPipe } from 'src/common/pipes/parseObjectId.pipes';
 import { Types } from 'mongoose';
-import { ITransactionService, ITRANSACTIONSERVICE } from '../service/inteface/ITransactionService.interface';
+import {
+  ITransactionService,
+  ITRANSACTIONSERVICE,
+} from '../service/inteface/ITransactionService.interface';
 
 @Controller('transactions')
 export class transactionController {
-  constructor(@Inject(ITRANSACTIONSERVICE) private readonly _transactionSerivce: ITransactionService) {}
+  constructor(
+    @Inject(ITRANSACTIONSERVICE)
+    private readonly _transactionSerivce: ITransactionService,
+  ) {}
 
   @Get('user')
   getByUser(
     @Query() filters: TransactionFilterDto,
     @GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId,
   ) {
-    console.log('userId', userId)
+    console.log('userId', userId);
     return this._transactionSerivce.getUserTransactions(userId, filters);
   }
 
@@ -28,7 +34,7 @@ export class transactionController {
   }
 
   @Get('expenses')
-  getExpenses(@GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId){
-    return this._transactionSerivce.getExpenses(userId)
+  getExpenses(@GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId) {
+    return this._transactionSerivce.getExpenses(userId);
   }
 }

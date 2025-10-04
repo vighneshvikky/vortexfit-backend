@@ -5,7 +5,7 @@ import { Model, Types } from 'mongoose';
 import { IWalletRepository } from './interface/IWalletRepository.interface';
 
 @Injectable()
-export class WalletRepository implements IWalletRepository{
+export class WalletRepository implements IWalletRepository {
   constructor(
     @InjectModel(Wallet.name) private _walletModel: Model<WalletDocument>,
   ) {}

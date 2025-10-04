@@ -1,7 +1,10 @@
 import { Types } from 'mongoose';
-import { NotificationDocument, Notification } from '../../schema/notification.schema';
+import {
+  NotificationDocument,
+  Notification,
+} from '../../schema/notification.schema';
 
-export const INOTFICATIONREPOSITORY = Symbol('INOTFICATIONREPOSITORY')
+export const INOTFICATIONREPOSITORY = Symbol('INOTFICATIONREPOSITORY');
 
 export interface INotificationRepository {
   create(data: Partial<Notification>): Promise<NotificationDocument>;

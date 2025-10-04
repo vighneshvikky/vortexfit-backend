@@ -19,14 +19,15 @@ export class SubscriptionGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    const subscriptions = await this.subscriptionService.getUserSubscriptions(userId);
+    const subscriptions =
+      await this.subscriptionService.getUserSubscriptions(userId);
 
     const active = subscriptions.find(
-        (sub) => sub.status === 'active' && sub.endDate > new Date(),
+      (sub) => sub.status === 'active' && sub.endDate > new Date(),
     );
 
-    if(!active){
-        throw new ForbiddenException('No active subscription found')
+    if (!active) {
+      throw new ForbiddenException('No active subscription found');
     }
 
     return true;

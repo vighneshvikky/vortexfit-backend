@@ -19,7 +19,7 @@ import { TransactionModule } from 'src/transactions/transaction.module';
     JwtModule.register({}),
     planModule,
     SubscriptionModule,
-    TransactionModule
+    TransactionModule,
   ],
   controllers: [PaymentsController],
   providers: [

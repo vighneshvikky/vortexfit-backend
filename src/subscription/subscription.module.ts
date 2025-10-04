@@ -18,7 +18,7 @@ import { NotificationModule } from 'src/notifications/notification.module';
     ]),
     JwtModule.register({}),
     planModule,
-    NotificationModule
+    NotificationModule,
   ],
   providers: [
     {
@@ -36,7 +36,7 @@ import { NotificationModule } from 'src/notifications/notification.module';
       provide: ISUBSCRIPTIONSERVICE,
       useClass: SubscriptionService,
     },
-    MongooseModule
+    MongooseModule,
   ],
 })
 export class SubscriptionModule {}

@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 export type PlanDocument = HydratedDocument<Plan>;
 
-@Schema({_id: false})
+@Schema({ _id: false })
 export class PlanLimits {
- @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true })
   oneOnOneSessions: number | 'unlimited';
 
- @Prop({ type: Number, required: true })
+  @Prop({ type: Number, required: true })
   aiQueries: number | 'unlimited';
 
   @Prop({ default: false })
@@ -72,11 +72,8 @@ export class Plan {
   })
   features: string[];
 
- @Prop({ type: PlanLimitsSchema, _id: false, required: true })
-limits: PlanLimits;
-
-
-  
+  @Prop({ type: PlanLimitsSchema, _id: false, required: true })
+  limits: PlanLimits;
 
   @Prop({
     default: 0,

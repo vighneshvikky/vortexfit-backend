@@ -1,5 +1,4 @@
-import { User } from 'src/user/schemas/user.schema';
-import { Trainer } from 'src/trainer/schemas/trainer.schema';
+
 import { PaginatedResult } from 'src/common/interface/base-repository.interface';
 import { AdminUserDto } from 'src/admin/dtos/admin-user.dto';
 

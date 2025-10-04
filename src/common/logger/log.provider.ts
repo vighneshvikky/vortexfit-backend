@@ -16,8 +16,15 @@ export const loggerProvider: Provider = {
           winston.format.colorize({ all: true }),
           winston.format.timestamp(),
           winston.format.printf(
-            ({ timestamp, level, message }) =>
-              `${timestamp} ${level}: ${message}`,
+            ({
+              timestamp,
+              level,
+              message,
+            }: {
+              timestamp: string;
+              level: string;
+              message: string;
+            }) => `${timestamp} ${level}: ${message}`,
           ),
         ),
       }),

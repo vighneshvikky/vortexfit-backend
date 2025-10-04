@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+import {  Type } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
@@ -52,9 +52,7 @@ export class ChangeBookingStatusDto {
   bookingStatus: BookingStatus;
 }
 
-export interface CreateBookingDto {
-  // Your existing CreateBookingDto properties
-}
+
 
 export class BookingFilterDto {
   @IsOptional()
@@ -77,10 +75,8 @@ export class BookingFilterDto {
   @IsDateString()
   dateTo?: string;
 
-  
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value?.trim())
   searchTerm?: string;
 
   @IsOptional()

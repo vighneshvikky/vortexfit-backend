@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { ObjectId } from 'mongoose';
 import { BookingStatus } from '../enums/booking.enum';
 
 export class BookingModel {

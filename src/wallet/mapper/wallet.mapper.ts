@@ -1,4 +1,4 @@
-import { WalletDocument } from "../schema/wallet.schema";
+import { WalletDocument } from '../schema/wallet.schema';
 
 export class WalletMapper {
   static toResponse(wallet: WalletDocument) {

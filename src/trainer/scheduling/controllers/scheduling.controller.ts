@@ -4,7 +4,6 @@ import {
   Delete,
   Param,
   Post,
-  Put,
   UsePipes,
   Inject,
   UseGuards,
@@ -14,7 +13,7 @@ import {
   ISchedulingService,
   SCHEDULE_SERVICE,
 } from '../services/interface/scheduling.interface';
-import { CreateScheduleDto, UpdateScheduleDto } from '../dtos/scheduling.dto';
+import { CreateScheduleDto } from '../dtos/scheduling.dto';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';

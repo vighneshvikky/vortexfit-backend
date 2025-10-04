@@ -1,12 +1,19 @@
-import { IsString, IsNumber, IsEnum, IsArray, IsBoolean, ValidateNested } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsArray,
+  IsBoolean,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class PlanLimitsDto {
   @IsNumber()
-  oneOnOneSessions: number | "unlimited";
+  oneOnOneSessions: number | 'unlimited';
 
   @IsNumber()
-  aiQueries: number | "unlimited";
+  aiQueries: number | 'unlimited';
 
   @IsBoolean()
   chatAccess: boolean;
@@ -46,9 +53,8 @@ export class CreatePlanDto {
   limits: PlanLimitsDto;
 }
 
-
 export interface PlanDto {
-  _id: string;  
+  _id: string;
   name: string;
   description: string;
   price: number;
@@ -61,4 +67,3 @@ export interface PlanDto {
   createdAt?: Date;
   updatedAt?: Date;
 }
-

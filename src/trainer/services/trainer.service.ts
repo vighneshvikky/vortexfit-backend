@@ -1,11 +1,9 @@
 import {
-  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Trainer } from '../schemas/trainer.schema';
-import { PasswordUtil } from 'src/common/helpers/password.util';
 import { ITrainerRepository } from '../interfaces/trainer-repository.interface';
 import { ITrainerService } from '../interfaces/trainer-service.interface';
 import {

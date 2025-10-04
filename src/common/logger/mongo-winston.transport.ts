@@ -1,6 +1,6 @@
 import Transport, { TransportStreamOptions } from 'winston-transport';
 import { Model } from 'mongoose';
-import { Log, LogDocument } from './schema/logger.schema';
+import {  LogDocument } from './schema/logger.schema';
 
 export class MongoWinstonTransport extends Transport {
   private logModel: Model<LogDocument>;

@@ -20,7 +20,7 @@ export class Notification {
   _id: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, required: true })
-  userId: Types.ObjectId; 
+  userId: Types.ObjectId;
 
   @Prop({ type: String, enum: NotificationType, required: true })
   type: NotificationType;
@@ -28,7 +28,11 @@ export class Notification {
   @Prop({ type: String, required: true })
   message: string;
 
-  @Prop({ type: String, enum: NotificationStatus, default: NotificationStatus.UNREAD })
+  @Prop({
+    type: String,
+    enum: NotificationStatus,
+    default: NotificationStatus.UNREAD,
+  })
   status: NotificationStatus;
 
   @Prop({ type: Date, default: Date.now })

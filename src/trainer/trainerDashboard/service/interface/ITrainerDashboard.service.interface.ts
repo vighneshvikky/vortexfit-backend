@@ -1,6 +1,6 @@
-import { BookingModel } from "src/booking/models/booking.model";
+import { BookingModel } from 'src/booking/models/booking.model';
 
-export const ITRAINERDASHBOARDSERVICE = Symbol('ITRAINERDASHBOARDSERVICE')
+export const ITRAINERDASHBOARDSERVICE = Symbol('ITRAINERDASHBOARDSERVICE');
 
 export interface ITrainerDashboardService {
   getDashboardStats(trainerId: string): Promise<{
@@ -10,8 +10,6 @@ export interface ITrainerDashboardService {
     pendingBookings: number;
   }>;
 
-   
-
   getRevenueData(trainerId: string): Promise<
     {
       type: string;
@@ -20,7 +18,7 @@ export interface ITrainerDashboardService {
     }[]
   >;
 
-  getRecentBookings(trainerId: string): Promise<(BookingModel | null)[]>; 
+  getRecentBookings(trainerId: string): Promise<(BookingModel | null)[]>;
 
   getBookingStatusBreakdown(trainerId: string): Promise<
     {

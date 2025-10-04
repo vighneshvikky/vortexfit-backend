@@ -1,6 +1,5 @@
 import { Type } from 'class-transformer';
 import {
-  IsDefined,
   IsEmail,
   IsIn,
   IsNotEmpty,

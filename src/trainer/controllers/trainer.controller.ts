@@ -4,8 +4,6 @@ import {
   Patch,
   UseGuards,
   Inject,
-  Req,
-  Post,
   Get,
   Param,
 } from '@nestjs/common';

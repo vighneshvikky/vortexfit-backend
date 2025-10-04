@@ -1,8 +1,8 @@
 import { Booking, BookingDocument } from 'src/booking/schemas/booking.schema';
 import { IBookingRepository } from '../interface/booking-repository.interface';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { BookingStatus } from 'src/booking/enums/booking.enum';
 import { BookingFilterDto } from 'src/booking/dtos/booking-dto.interface';
 import { User, UserDocument } from 'src/user/schemas/user.schema';
@@ -88,14 +88,9 @@ export class BookingRepository implements IBookingRepository {
     }
 
     if (searchTerm) {
-    const regex = new RegExp(searchTerm, 'i');
-    query.$or = [
-      { status: regex },
-      { sessionType: regex },
-      { date: regex },
-    ];
-  }
-
+      const regex = new RegExp(searchTerm, 'i');
+      query.$or = [{ status: regex }, { sessionType: regex }, { date: regex }];
+    }
 
     const skip = (page - 1) * limit;
     const sort: Record<string, 1 | -1> = {
@@ -121,7 +116,6 @@ export class BookingRepository implements IBookingRepository {
     filters: BookingFilterDto,
   ): Promise<{ bookings: Booking[]; totalRecords: number }> {
     const {
-      trainerId,
       status,
       dateFrom,
       dateTo,
@@ -145,15 +139,10 @@ export class BookingRepository implements IBookingRepository {
       if (dateFrom) query.date.$gte = dateFrom;
       if (dateTo) query.date.$lte = dateTo;
     }
-if (searchTerm) {
-    const regex = new RegExp(searchTerm, 'i'); 
-    query.$or = [
-      { status: regex },
-      { sessionType: regex },
-      { date: regex },
-    ];
-  }
-
+    if (searchTerm) {
+      const regex = new RegExp(searchTerm, 'i');
+      query.$or = [{ status: regex }, { sessionType: regex }, { date: regex }];
+    }
 
     const skip = (page - 1) * limit;
     const sort: Record<string, 1 | -1> = {
@@ -216,8 +205,8 @@ if (searchTerm) {
 
     const query = {
       trainerId,
-      date: {$gte: today}
-    }
+      date: { $gte: today },
+    };
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
         .find(query)
@@ -238,17 +227,17 @@ if (searchTerm) {
     limit: number = 5,
   ): Promise<{ bookings: Booking[]; totalRecords: number }> {
     const skip = (page - 1) * limit;
- const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
     const query = {
       userId,
-      date: {$gte: today }
-    }
+      date: { $gte: today },
+    };
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
         .find(query)
         .populate('trainerId', '_id name image')
         .populate('userId', '_id name image')
-        .sort({ createdAt: 1})
+        .sort({ createdAt: 1 })
         .skip(skip)
         .limit(limit)
         .exec(),

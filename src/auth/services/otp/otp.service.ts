@@ -13,7 +13,6 @@ import {
   IMailService,
   MAIL_SERVICE,
 } from 'src/common/helpers/mailer/mail-service.interface';
-import { MailService } from 'src/common/helpers/mailer/mailer.service';
 import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
 import { IUserRepository } from 'src/user/interfaces/user-repository.interface';
 

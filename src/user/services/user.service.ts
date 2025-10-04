@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IUserRepository } from '../interfaces/user-repository.interface';
 import { UserProfileDto } from '../dtos/user.mapper.dto';
 import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
-import { Trainer } from 'src/trainer/schemas/trainer.schema';
 import { FindApprovedTrainerQuery } from '../interfaces/user-interface';
 import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';

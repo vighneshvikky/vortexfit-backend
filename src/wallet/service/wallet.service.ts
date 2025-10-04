@@ -47,7 +47,7 @@ export class WalletService {
       wallet = await this._walletRepository.createWallet(userId, amount);
     } else {
       wallet.balance += amount;
-      await wallet.save();
+      wallet = await wallet.save();
     }
 
     return { success: true, wallet: WalletMapper.toResponse(wallet) };

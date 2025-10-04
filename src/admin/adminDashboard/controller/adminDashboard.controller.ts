@@ -7,22 +7,24 @@ import {
   Inject,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { IAdminDashboardService, IADMINSERVICEDASHBOARD } from '../service/interface/IAdminDashboard.service.interface';
+import {
+  IAdminDashboardService,
+  IADMINSERVICEDASHBOARD,
+} from '../service/interface/IAdminDashboard.service.interface';
 
-
-
- @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 @Controller('adminDashboard')
 export class AdminDashboardController {
-  constructor(@Inject(IADMINSERVICEDASHBOARD) private readonly _adminService: IAdminDashboardService) {}
-
+  constructor(
+    @Inject(IADMINSERVICEDASHBOARD)
+    private readonly _adminService: IAdminDashboardService,
+  ) {}
 
   @Get('dashboard')
   async getDashboardStats() {
     return this._adminService.getDashboardStats();
   }
 
- 
   @Get('revenue')
   async getRevenueAnalytics() {
     return this._adminService.getRevenueAnalytics();
@@ -40,7 +42,7 @@ export class AdminDashboardController {
     return { monthly };
   }
 
-  // Booking Endpoints
+
   @Get('bookings/analytics')
   async getBookingAnalytics() {
     return this._adminService.getBookingAnalytics();
@@ -59,7 +61,7 @@ export class AdminDashboardController {
     return { count };
   }
 
-  // Trainer Endpoints
+  
   @Get('trainers/top')
   async getTopTrainers(
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 10,
@@ -73,7 +75,7 @@ export class AdminDashboardController {
     return { count };
   }
 
-  // Subscription Endpoints
+
   @Get('subscriptions/analytics')
   async getSubscriptionAnalytics() {
     return this._adminService.getSubscriptionAnalytics();
@@ -85,7 +87,7 @@ export class AdminDashboardController {
     return { count };
   }
 
-  // User Endpoints
+
   @Get('users/analytics')
   async getUserAnalytics() {
     return this._adminService.getUserAnalytics();
@@ -97,7 +99,7 @@ export class AdminDashboardController {
     return { count };
   }
 
-  // Transaction Endpoints
+ 
   @Get('transactions/recent')
   async getRecentTransactions(
     @Query('limit', new ParseIntPipe({ optional: true })) limit = 20,

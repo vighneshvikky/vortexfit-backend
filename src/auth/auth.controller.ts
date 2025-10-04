@@ -151,10 +151,10 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async logOut(
+   logOut(
     @GetUser() user: TokenPayload,
     @Res() res: Response,
-  ): Promise<void> {
+  ) {
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: true,

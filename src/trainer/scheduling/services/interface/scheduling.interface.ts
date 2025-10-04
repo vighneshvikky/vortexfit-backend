@@ -1,6 +1,5 @@
 import {
   CreateScheduleDto,
-  UpdateScheduleDto,
 } from '../../dtos/scheduling.dto';
 import { ScheduleDto } from '../../mapper/interface/schedule.mapper.interface';
 

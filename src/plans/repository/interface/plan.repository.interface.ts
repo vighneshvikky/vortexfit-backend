@@ -1,7 +1,7 @@
 import { CreatePlanDto } from 'src/plans/dtos/plan.dto';
 import { Plan, PlanDocument } from 'src/plans/schema/plan.schema';
 
-export const IPLANREPOSITORY = Symbol('IPLANREPOSITORY') ;
+export const IPLANREPOSITORY = Symbol('IPLANREPOSITORY');
 
 export interface IPlanRepository {
   create(data: CreatePlanDto): Promise<PlanDocument>;
@@ -9,5 +9,5 @@ export interface IPlanRepository {
   findById(id: string): Promise<PlanDocument>;
   getUserPlan(role: string): Promise<PlanDocument[]>;
   update(id: string, data: Partial<Plan>): Promise<PlanDocument>;
-  softDelete(id: string): Promise<PlanDocument>;
+  delete(id: string): Promise<boolean>;
 }

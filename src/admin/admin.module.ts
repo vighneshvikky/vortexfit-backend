@@ -14,6 +14,7 @@ import { MAIL_SERVICE } from 'src/common/helpers/mailer/mail-service.interface';
 import { MailService } from 'src/common/helpers/mailer/mailer.service';
 import { PASSWORD_UTIL } from 'src/common/interface/IPasswordUtil.interface';
 import { PasswordUtil } from 'src/common/helpers/password.util';
+import { VideoModule } from 'src/common/video/video.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PasswordUtil } from 'src/common/helpers/password.util';
     UserModule,
     TrainerModule,
     MailModule,
+    VideoModule,
   ],
   controllers: [AdminController],
   providers: [

@@ -30,7 +30,7 @@ import { IADMINDASHBOARDREPOSITORY } from './repository/inteface/IAdminDashboard
       useClass: AdminDashboardService,
       provide: IADMINSERVICEDASHBOARD,
     },
-        {
+    {
       useClass: AdminDashboardRepository,
       provide: IADMINDASHBOARDREPOSITORY,
     },

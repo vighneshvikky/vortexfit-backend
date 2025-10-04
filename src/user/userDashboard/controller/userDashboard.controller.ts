@@ -1,12 +1,18 @@
-import { Controller, Get, UseGuards, Req, Inject } from '@nestjs/common';
+import { Controller, Get, UseGuards, Inject } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
-import { IUserDashboardService, IUSERDASHBOARDSERVICE } from '../service/interface/IUserDashboard.service.interface';
+import {
+  IUserDashboardService,
+  IUSERDASHBOARDSERVICE,
+} from '../service/interface/IUserDashboard.service.interface';
 
 @Controller('user-dashboard')
 @UseGuards(JwtAuthGuard)
 export class UserDashboardController {
-  constructor(@Inject(IUSERDASHBOARDSERVICE) private readonly _userDashboardService: IUserDashboardService) {}
+  constructor(
+    @Inject(IUSERDASHBOARDSERVICE)
+    private readonly _userDashboardService: IUserDashboardService,
+  ) {}
 
   @Get('stats')
   async getDashboardStats(@GetUser('sub') userId: string) {
@@ -35,6 +41,6 @@ export class UserDashboardController {
 
   @Get('spending-summary')
   async getSpendingSummary(@GetUser('sub') userId: string) {
-     return this._userDashboardService.getSpendingSummary(userId);
+    return this._userDashboardService.getSpendingSummary(userId);
   }
 }

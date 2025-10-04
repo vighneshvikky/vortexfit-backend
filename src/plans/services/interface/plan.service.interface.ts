@@ -1,6 +1,6 @@
-import { CreatePlanDto, PlanDto } from "src/plans/dtos/plan.dto";
+import { CreatePlanDto, PlanDto } from 'src/plans/dtos/plan.dto';
 
-export const IPLANSERVICE = Symbol("IPLANSERVICE")
+export const IPLANSERVICE = Symbol('IPLANSERVICE');
 
 export interface IPlanService {
   createPlan(data: CreatePlanDto): Promise<PlanDto>;
@@ -8,5 +8,5 @@ export interface IPlanService {
   getPlanById(id: string): Promise<PlanDto>;
   updatePlan(id: string, data: Partial<PlanDto>): Promise<PlanDto>;
   getUserPlan(role: string): Promise<PlanDto[]>;
-  softDeletePlan(id: string): Promise<PlanDto>;
+  delete(id: string): Promise<boolean>;
 }

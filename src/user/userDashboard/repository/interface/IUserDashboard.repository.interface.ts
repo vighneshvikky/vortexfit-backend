@@ -11,11 +11,19 @@ export interface IUserDashboardRepository {
   getUpcomingBookingsCount(userId: Types.ObjectId): Promise<number>;
   getCompletedBookingsCount(userId: Types.ObjectId): Promise<number>;
 
-  getActiveSubscription(userId: Types.ObjectId): Promise<SubscriptionDocument | null>;
+  getActiveSubscription(
+    userId: Types.ObjectId,
+  ): Promise<SubscriptionDocument | null>;
 
-  getRecentBookings(userId: Types.ObjectId, limit?: number): Promise<BookingDocument[]>;
+  getRecentBookings(
+    userId: Types.ObjectId,
+    limit?: number,
+  ): Promise<BookingDocument[]>;
 
-  getRecentTransactions(userId: Types.ObjectId, limit?: number): Promise<TransactionDocument[]>;
+  getRecentTransactions(
+    userId: Types.ObjectId,
+    limit?: number,
+  ): Promise<TransactionDocument[]>;
 
   getWalletBalance(userId: Types.ObjectId): Promise<WalletDocument | null>;
 

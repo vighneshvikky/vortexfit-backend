@@ -9,8 +9,6 @@ import {
   TRAINER_SERVICE,
 } from 'src/trainer/interfaces/trainer-service.interface';
 import { IAuthServiceRegistry } from 'src/auth/interfaces/auth-service-registry.interface';
-import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
-import { IUserRepository } from 'src/user/interfaces/user-repository.interface';
 
 @Injectable()
 export class UserRoleServiceRegistry implements IAuthServiceRegistry {

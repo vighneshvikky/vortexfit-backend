@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Notification, NotificationDocument } from '../schema/notification.schema';
+import {
+  Notification,
+  NotificationDocument,
+} from '../schema/notification.schema';
 import { INotificationRepository } from './interface/INotification.repository.interface';
 
 @Injectable()
-export class NotificationRepository implements INotificationRepository{
+export class NotificationRepository implements INotificationRepository {
   constructor(
     @InjectModel(Notification.name)
     private _notificationModel: Model<NotificationDocument>,
@@ -17,7 +20,10 @@ export class NotificationRepository implements INotificationRepository{
   }
 
   async findByUser(userId: Types.ObjectId): Promise<NotificationDocument[]> {
-    return this._notificationModel.find({ userId }).sort({ createdAt: -1 }).exec();
+    return this._notificationModel
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async markAsRead(id: Types.ObjectId): Promise<NotificationDocument | null> {

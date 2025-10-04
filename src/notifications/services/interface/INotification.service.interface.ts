@@ -1,7 +1,7 @@
 import { NotificationDto } from 'src/notifications/dtos/notification.dto';
 import { NotificationType } from 'src/notifications/schema/notification.schema';
 
-export const  INOTIFICATIONSERVICE = Symbol('INOTIFICATIONSERVICE')
+export const INOTIFICATIONSERVICE = Symbol('INOTIFICATIONSERVICE');
 
 export interface INotificationService {
   createNotification(

@@ -1,5 +1,4 @@
 import { MessageResponseDto } from 'src/messages/dtos/send-message.dto';
-import { ChatMessage } from '../../schemas/message.schema';
 
 export const MESSAGE_SERVICE = Symbol('MESSAGE_SERVICE');
 

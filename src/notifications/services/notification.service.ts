@@ -1,33 +1,38 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { NotificationRepository } from '../repository/notification.repository';
 import { NotificationType } from '../schema/notification.schema';
 import { NotificationGateway } from '../notification.gateway';
-import { INOTFICATIONREPOSITORY, INotificationRepository } from '../repository/interface/INotification.repository.interface';
+import {
+  INOTFICATIONREPOSITORY,
+  INotificationRepository,
+} from '../repository/interface/INotification.repository.interface';
 import { INotificationService } from './interface/INotification.service.interface';
 import { NotificationMapper } from '../mapper/notification.mapper';
 import { NotificationDto } from '../dtos/notification.dto';
 
 @Injectable()
-export class NotificationService implements INotificationService{
+export class NotificationService implements INotificationService {
   constructor(
     @Inject(INOTFICATIONREPOSITORY)
     private readonly _notificationRepo: INotificationRepository,
     private readonly _gateway: NotificationGateway,
   ) {}
 
-   async createNotification(
+  async createNotification(
     userId: string,
     type: NotificationType,
     message: string,
   ): Promise<NotificationDto> {
-    const notification= await this._notificationRepo.create({
+    const notification = await this._notificationRepo.create({
       userId: new Types.ObjectId(userId),
       type,
       message,
     });
 
-    this._gateway.sendNotification(userId, NotificationMapper.toDto(notification));
+    this._gateway.sendNotification(
+      userId,
+      NotificationMapper.toDto(notification),
+    );
     return NotificationMapper.toDto(notification);
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Transaction, TransactionDocument } from '../schema/transaction.schema';
@@ -6,9 +6,8 @@ import { TransactionFilterDto } from '../dtos/transaction.dto';
 import { FilterQuery } from 'mongoose';
 import { ITransactionRepository } from './interface/ITransaction.repository.interface';
 
-
 @Injectable()
-export class TransactionRepository implements ITransactionRepository{
+export class TransactionRepository implements ITransactionRepository {
   constructor(
     @InjectModel(Transaction.name)
     private readonly _transactionModel: Model<TransactionDocument>,
@@ -37,11 +36,15 @@ export class TransactionRepository implements ITransactionRepository{
     if (filters?.sourceType) query.sourceType = filters.sourceType;
     if (filters?.fromDate || filters?.toDate) {
       query.createdAt = {};
-        if (filters.fromDate) {
-        query.createdAt.$gte = new Date(filters.fromDate);
+      if (filters.fromDate) {
+        const fromDate = new Date(filters.fromDate);
+        fromDate.setHours(0, 0, 0, 0);
+        query.createdAt.$gte = fromDate;
       }
       if (filters.toDate) {
-        query.createdAt.$lte = new Date(filters.toDate);
+        const toDate = new Date(filters.toDate);
+        toDate.setHours(23, 59, 59, 999);
+        query.createdAt.$lte = toDate;
       }
     }
 
@@ -65,7 +68,6 @@ export class TransactionRepository implements ITransactionRepository{
     const match: FilterQuery<TransactionDocument> = {};
     if (role === 'trainer') {
       match.toUser = userId;
-    } else if (role === 'admin') {
     }
 
     const result = await this._transactionModel.aggregate([

@@ -1,8 +1,9 @@
-
 import { Types } from 'mongoose';
 import { Booking } from 'src/booking/schemas/booking.schema';
 
-export const ITRAINERDASHBOARDREPOSITORY = Symbol('ITRAINERDASHBOARDREPOSITORY');
+export const ITRAINERDASHBOARDREPOSITORY = Symbol(
+  'ITRAINERDASHBOARDREPOSITORY',
+);
 
 export interface ITrainerDashboardRepository {
   getTotalBookings(trainerId: Types.ObjectId): Promise<number>;
@@ -19,7 +20,7 @@ export interface ITrainerDashboardRepository {
   getRecentBookings(
     trainerId: Types.ObjectId,
     limit?: number,
-  ): Promise<Booking[]>; 
+  ): Promise<Booking[]>;
   getBookingStatusBreakdown(trainerId: Types.ObjectId): Promise<
     {
       status: string;

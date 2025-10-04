@@ -8,7 +8,7 @@ export interface WalletResponse {
   updatedAt: Date;
 }
 
-export const IWALLETSERVICE = Symbol('IWALLETSERVICE')
+export const IWALLETSERVICE = Symbol('IWALLETSERVICE');
 
 export interface IWalletService {
   handleFailedPayment(

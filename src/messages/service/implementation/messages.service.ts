@@ -1,11 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { MessageRepository } from '../../repository/implementation/messages.repository';
 import {
   IMessageRepository,
   MESSAGE_REPOSITORY,
 } from '../../repository/interface/messages.repository.interface';
 import { IMessageService } from '../interface/message.service.interface';
-import { ChatMessage } from '../../schemas/message.schema';
 import { MessageMapper } from 'src/messages/mappers/message.mapper';
 import { MessageResponseDto } from 'src/messages/dtos/send-message.dto';
 

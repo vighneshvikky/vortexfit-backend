@@ -33,7 +33,7 @@ import { IPLANSERVICE } from './services/interface/plan.service.interface';
       provide: IPLANREPOSITORY,
       useClass: PlanRepository,
     },
-    MongooseModule
+    MongooseModule,
   ],
 })
 export class planModule {}

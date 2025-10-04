@@ -1,5 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Query } from '@nestjs/common';
-import { MessageService } from '../service/implementation/messages.service';
+import {  Controller, Get, Inject, Param, Query } from '@nestjs/common';
 import {
   IMessageService,
   MESSAGE_SERVICE,

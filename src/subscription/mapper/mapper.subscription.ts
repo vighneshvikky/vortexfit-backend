@@ -1,5 +1,5 @@
-import { SubscriptionResponseDto } from "../dto/subscription.dto";
-import { SubscriptionDocument } from "../schema/subscription.schema";
+import { SubscriptionResponseDto } from '../dto/subscription.dto';
+import { SubscriptionDocument } from '../schema/subscription.schema';
 
 export class SubscriptionMapper {
   static toDto(subscription: SubscriptionDocument): SubscriptionResponseDto {
@@ -16,7 +16,9 @@ export class SubscriptionMapper {
     };
   }
 
-  static toDtoList(subscriptions: SubscriptionDocument[]): SubscriptionResponseDto[] {
+  static toDtoList(
+    subscriptions: SubscriptionDocument[],
+  ): SubscriptionResponseDto[] {
     return subscriptions.map((sub) => this.toDto(sub));
   }
 }

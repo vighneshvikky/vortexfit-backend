@@ -5,7 +5,6 @@ import {
   ISUBSCRIPTIONSERVICE,
 } from '../service/interface/ISubscription.service';
 
-
 @Controller('subscriptions')
 export class SubscriptionController {
   constructor(

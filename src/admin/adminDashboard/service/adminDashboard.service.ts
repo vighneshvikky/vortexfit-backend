@@ -83,7 +83,7 @@ export class AdminDashboardService implements IAdminDashboardService {
       this._adminRepository.getRecentBookings(10),
     ]);
 
-    let bookings = recentBookings.map((b) => BookingMapper.toDomain(b));
+    const bookings = recentBookings.map((b) => BookingMapper.toDomain(b));
 
     return {
       byStatus: bookingsByStatus,
@@ -98,7 +98,7 @@ export class AdminDashboardService implements IAdminDashboardService {
 
   async getRecentBookings(limit = 10) {
     const recentBookings = await this._adminRepository.getRecentBookings(limit);
-    let bookings = recentBookings.map((b) => BookingMapper.toDomain(b));
+    const bookings = recentBookings.map((b) => BookingMapper.toDomain(b));
 
     return bookings;
   }

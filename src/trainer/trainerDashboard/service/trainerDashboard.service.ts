@@ -1,30 +1,31 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { TrainerDashboardRepository } from '../repository/trainerDashboard.repository';
 import { BookingMapper } from 'src/booking/mapper/booking.mapper';
 import { ITrainerDashboardService } from './interface/ITrainerDashboard.service.interface';
-import { ITrainerDashboardRepository, ITRAINERDASHBOARDREPOSITORY } from '../repository/interface/ITrainerDashboard.repository.interface';
+import {
+  ITrainerDashboardRepository,
+  ITRAINERDASHBOARDREPOSITORY,
+} from '../repository/interface/ITrainerDashboard.repository.interface';
 
 @Injectable()
-export class TrainerDashboardService implements ITrainerDashboardService{
+export class TrainerDashboardService implements ITrainerDashboardService {
   constructor(
-   @Inject(ITRAINERDASHBOARDREPOSITORY)  private readonly _trainerDashboardRepository: ITrainerDashboardRepository,
+    @Inject(ITRAINERDASHBOARDREPOSITORY)
+    private readonly _trainerDashboardRepository: ITrainerDashboardRepository,
   ) {}
 
   async getDashboardStats(trainerId: string) {
-    const trainerObjectId  = new Types.ObjectId(trainerId);
+    const trainerObjectId = new Types.ObjectId(trainerId);
 
-    const [
-      totalBookings,
-      totalRevenue,
-      activeSubscriptions,
-      pendingBookings,
-    ] = await Promise.all([
-      this._trainerDashboardRepository.getTotalBookings(trainerObjectId),
-      this._trainerDashboardRepository.getTotalRevenue(trainerObjectId),
-      this._trainerDashboardRepository.getActiveSubscriptions(trainerObjectId),
-      this._trainerDashboardRepository.getPendingBookings(trainerObjectId),
-    ]);
+    const [totalBookings, totalRevenue, activeSubscriptions, pendingBookings] =
+      await Promise.all([
+        this._trainerDashboardRepository.getTotalBookings(trainerObjectId),
+        this._trainerDashboardRepository.getTotalRevenue(trainerObjectId),
+        this._trainerDashboardRepository.getActiveSubscriptions(
+          trainerObjectId,
+        ),
+        this._trainerDashboardRepository.getPendingBookings(trainerObjectId),
+      ]);
 
     return {
       totalBookings,
@@ -43,13 +44,14 @@ export class TrainerDashboardService implements ITrainerDashboardService{
 
   async getRecentBookings(trainerId: string) {
     const trainerObjectId = new Types.ObjectId(trainerId);
-    let recentBookings = await this._trainerDashboardRepository.getRecentBookings(
-      trainerObjectId,
-      5,
-    );
+    const recentBookings =
+      await this._trainerDashboardRepository.getRecentBookings(
+        trainerObjectId,
+        5,
+      );
 
-    const bookings = recentBookings.map(b => BookingMapper.toDomain(b))
-    return bookings
+    const bookings = recentBookings.map((b) => BookingMapper.toDomain(b));
+    return bookings;
   }
 
   async getBookingStatusBreakdown(trainerId: string) {

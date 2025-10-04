@@ -1,21 +1,18 @@
-import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
-import { WalletService } from '../service/wallet.service';
+import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 import { Types } from 'mongoose';
 import { ParseObjectIdPipe } from 'src/common/pipes/parseObjectId.pipes';
-import { IWalletService, IWALLETSERVICE } from '../service/interface/IWalletService.interface';
+import {
+  IWalletService,
+  IWALLETSERVICE,
+} from '../service/interface/IWalletService.interface';
 
 @Controller('wallet')
 export class WalletController {
-  constructor(@Inject(IWALLETSERVICE) private readonly _walletService: IWalletService) {}
-
-  //   @Post('/add-funds')
-  //   addFunds(
-  //     @GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId,
-  //     @Body() body: { amount: number; sourceType: 'BOOKING' | 'SUBSCRIPTION'; sourceId?: string }
-  //   ) {
-  //     return this.walletService.addFunds( userId, body.amount, body.sourceType, body.sourceId);
-  //   }
+  constructor(
+    @Inject(IWALLETSERVICE) private readonly _walletService: IWalletService,
+  ) {}
 
   @Post('failed-payment')
   async handleFailedPayment(
@@ -57,9 +54,4 @@ export class WalletController {
       body.timeSlot,
     );
   }
-
-  //   @Get(':userId/transactions')
-  //   getTransactions(@Param('userId') userId: string) {
-  //     return this.walletService.getTransactions(userId);
-  //   }
 }

@@ -12,9 +12,10 @@ import {
   TransactionDocument,
 } from 'src/transactions/schema/transaction.schema';
 import { Wallet, WalletDocument } from 'src/wallet/schema/wallet.schema';
+import { IUserDashboardRepository } from './interface/IUserDashboard.repository.interface';
 
 @Injectable()
-export class UserDashboardRepository {
+export class UserDashboardRepository implements IUserDashboardRepository {
   constructor(
     @InjectModel(Booking.name)
     private readonly _bookingModel: Model<BookingDocument>,
@@ -27,7 +28,7 @@ export class UserDashboardRepository {
   ) {}
 
   async getTotalBookingsCount(userId: Types.ObjectId): Promise<number> {
-    return this._bookingModel.countDocuments({ userId:userId.toString() });
+    return this._bookingModel.countDocuments({ userId: userId.toString() });
   }
 
   async getUpcomingBookingsCount(userId: Types.ObjectId): Promise<number> {
@@ -47,7 +48,7 @@ export class UserDashboardRepository {
   }
 
   async getActiveSubscription(userId: Types.ObjectId) {
-    const now = new Date();
+
     return this._subscriptionModel
       .findOne({
         userId,
@@ -60,7 +61,7 @@ export class UserDashboardRepository {
 
   async getRecentBookings(userId: Types.ObjectId, limit: number = 5) {
     return this._bookingModel
-      .find({userId:  userId.toString() })
+      .find({ userId: userId.toString() })
       .sort({ createdAt: -1 })
       .limit(limit)
       .populate('trainerId', 'name email')
@@ -68,7 +69,7 @@ export class UserDashboardRepository {
       .exec();
   }
 
-  async getRecentTransactions(userId: Types.ObjectId, limit: number = 5) {
+  async getRecentTransactions(userId: Types.ObjectId) {
     return this._transactionModel
       .find({ fromUser: userId })
       .sort({ createdAt: -1 })

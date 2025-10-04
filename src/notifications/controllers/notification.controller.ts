@@ -34,7 +34,7 @@ export class NotificationController {
 
   @Get('')
   async getUserNotifications(@GetUser('sub') userId: string) {
-    console.log('userId', userId)
+    console.log('userId', userId);
     return this._notificationService.getUserNotifications(userId);
   }
 

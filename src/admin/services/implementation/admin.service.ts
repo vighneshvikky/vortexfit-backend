@@ -28,6 +28,7 @@ import {
   IPasswordUtil,
   PASSWORD_UTIL,
 } from 'src/common/interface/IPasswordUtil.interface';
+import { VideoGateway } from 'src/common/video/video.gateway';
 
 @Injectable()
 export class AdminService implements IAdminService {
@@ -43,6 +44,7 @@ export class AdminService implements IAdminService {
     @Inject(ITrainerRepository)
     private readonly _trainerRepository: ITrainerRepository,
     @Inject(PASSWORD_UTIL) private readonly _passwordUtil: IPasswordUtil,
+    private readonly videoGateway: VideoGateway,
   ) {}
 
   async verifyAdminLogin(
@@ -73,11 +75,11 @@ export class AdminService implements IAdminService {
 
     const refreshTokenTTL = parseInt(process.env.REFRESH_TOKEN_TTL!, 10);
 
-if (isNaN(refreshTokenTTL)) {
-  throw new Error('REFRESH_TOKEN_TTL must be a valid integer');
-}
+    if (isNaN(refreshTokenTTL)) {
+      throw new Error('REFRESH_TOKEN_TTL must be a valid integer');
+    }
 
-await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
+    await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
 
     await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
 
@@ -123,8 +125,9 @@ await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
     const startIndex = (page - 1) * limit;
     const paginated = combined.slice(startIndex, startIndex + limit);
 
-    const mapped = paginated.map(entity => AdminUserMapper.toAdminUserDto(entity));
-
+    const mapped = paginated.map((entity) =>
+      AdminUserMapper.toAdminUserDto(entity),
+    );
 
     return {
       data: mapped,
@@ -147,7 +150,8 @@ await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
       const updatedUser = await this._userRepository.updateById(id, {
         isBlocked: !user.isBlocked,
       });
-      //  return updatedUser;
+
+      // this.videoGateway.removeBlockedUser(id);
 
       return AdminUserMapper.toAdminUserDto(updatedUser);
     } else if (role === 'trainer') {
@@ -158,7 +162,7 @@ await this._redis.set(refreshToken, 'admin', 'EX', refreshTokenTTL);
       const updatedTrainer = await this._trainerRepository.updateById(id, {
         isBlocked: !trainer.isBlocked,
       });
-
+      // this.videoGateway.removeBlockedUser(id);
       return AdminUserMapper.toAdminUserDto(updatedTrainer);
     }
     throw new NotFoundException('Invalid role specified');

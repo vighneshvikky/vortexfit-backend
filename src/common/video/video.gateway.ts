@@ -98,7 +98,6 @@ export class VideoGateway {
   @SubscribeMessage('approve-user')
   handleApproveUser(
     @MessageBody() data: { sessionId: string; userId: string },
-    @ConnectedSocket() client: Socket,
   ) {
     const roomUsers = this.rooms.get(data.sessionId) || [];
     const user = roomUsers.find((u) => u.userId === data.userId);
@@ -107,6 +106,26 @@ export class VideoGateway {
       this.server
         .to(user.socketId)
         .emit('user-approved', { sessionId: data.sessionId });
+    }
+  }
+
+  removeBlockedUser(userId: string) {
+    for (const [sessionId, users] of this.rooms.entries()) {
+      const blockedUser = users.find((u) => u.userId === userId);
+      if (blockedUser) {
+        this.server.to(blockedUser.socketId).emit('blocked', {
+          sessionId,
+          reason: 'Admin blocked you',
+        });
+
+        this.server.sockets.sockets.get(blockedUser.socketId)?.disconnect(true);
+
+        this.rooms.set(
+          sessionId,
+          users.filter((u) => u.userId !== userId),
+        );
+        this.server.to(sessionId).emit('user-left', { userId, sessionId });
+      }
     }
   }
 }

@@ -5,7 +5,7 @@ import fs from 'fs';
 import { IAIService } from './interface/ai.service.interface';
 
 @Injectable()
-export class AiService implements IAIService{
+export class AiService implements IAIService {
   private groq: Groq;
 
   constructor() {

@@ -8,7 +8,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
-import { PasswordUtil } from 'src/common/helpers/password.util';
 import Redis from 'ioredis';
 import { OAuth2Client } from 'google-auth-library';
 import axios from 'axios';
@@ -184,7 +183,7 @@ export class AuthService implements IAuthService {
       isBlocked: false,
     });
 
-    const newRefreshToken = this._jwtService.signRefreshToken({
+    const newRefreshToken =  this._jwtService.signRefreshToken({
       sub: userId,
       role,
       isBlocked: false,

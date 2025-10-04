@@ -17,7 +17,7 @@ import { NotificationModule } from 'src/notifications/notification.module';
     JwtModule.register({}),
     UserModule,
     TrainerModule,
-    NotificationModule
+    NotificationModule,
   ],
   providers: [
     BookingService,

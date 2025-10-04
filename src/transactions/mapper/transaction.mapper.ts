@@ -28,7 +28,7 @@ function mapUser(user: Types.ObjectId | MinimalUser | null | undefined) {
 
   if (user) {
     return {
-      _id: (user as Types.ObjectId).toString(),
+      _id: user.toString(),
       name: '',
       email: '',
     };
@@ -55,5 +55,5 @@ export const mapTransactionToDto = (
   orderId: tx.orderId,
   paymentSignature: tx.paymentSignature,
   bookingMethod: tx.bookingMethod,
-  createdAt: tx.createdAt
+  createdAt: tx.createdAt,
 });

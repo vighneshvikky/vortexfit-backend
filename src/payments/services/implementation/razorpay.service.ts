@@ -22,6 +22,6 @@ export class RazorpayService implements IRazorpayService {
       currency: 'INR',
     };
 
-    return this._razorpay.orders.create(options) as unknown as RazorpayOrder;
+    return await this._razorpay.orders.create(options) as unknown as RazorpayOrder;
   }
 }

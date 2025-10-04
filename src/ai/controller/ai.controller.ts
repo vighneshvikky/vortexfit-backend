@@ -1,10 +1,12 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { AiService } from '../service/ai.serivce';
-import { IAIService, IAISERVICE } from '../service/interface/ai.service.interface';
+import {
+  IAIService,
+  IAISERVICE,
+} from '../service/interface/ai.service.interface';
 
 @Controller('ai')
 export class AiController {
-  constructor (@Inject(IAISERVICE) private readonly _aiService: IAIService) {}
+  constructor(@Inject(IAISERVICE) private readonly _aiService: IAIService) {}
 
   @Post('chat')
   async chat(@Body() body: { message: string; personality: string }) {

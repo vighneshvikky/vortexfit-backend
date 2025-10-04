@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TransactionRepository } from '../repository/transaction.repository';
 import { Transaction } from '../schema/transaction.schema';
 import { TransactionFilterDto } from '../dtos/transaction.dto';
 import { Types } from 'mongoose';

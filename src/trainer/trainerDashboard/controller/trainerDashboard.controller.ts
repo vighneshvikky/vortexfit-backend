@@ -1,16 +1,20 @@
-import { Controller, Get, UseGuards, Req, Inject } from '@nestjs/common';
+import { Controller, Get, UseGuards, Inject } from '@nestjs/common';
 import { Roles } from 'src/common/decorator/role.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
-import { ITRAINERDASHBOARDSERVICE, ITrainerDashboardService } from '../service/interface/ITrainerDashboard.service.interface';
+import {
+  ITRAINERDASHBOARDSERVICE,
+  ITrainerDashboardService,
+} from '../service/interface/ITrainerDashboard.service.interface';
 
 @Controller('trainer/dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('trainer')
 export class TrainerDashboardController {
   constructor(
-   @Inject(ITRAINERDASHBOARDSERVICE)  private readonly _trainerDashboardService: ITrainerDashboardService,
+    @Inject(ITRAINERDASHBOARDSERVICE)
+    private readonly _trainerDashboardService: ITrainerDashboardService,
   ) {}
 
   @Get('stats')

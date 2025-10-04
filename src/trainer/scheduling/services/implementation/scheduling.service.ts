@@ -1,15 +1,7 @@
-import {
-  Inject,
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, BadRequestException } from '@nestjs/common';
 import { ISchedulingService } from '../interface/scheduling.interface';
 import { IScheduleRepository } from '../../repositories/interface/scheduling.repository.interface';
-import {
-  CreateScheduleDto,
-  UpdateScheduleDto,
-} from '../../dtos/scheduling.dto';
+import { CreateScheduleDto } from '../../dtos/scheduling.dto';
 import { SchedulingRule } from '../../schemas/schedule.schema';
 import { Types } from 'mongoose';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger } from 'nest-winston';
@@ -52,6 +44,13 @@ export class ScheduleService implements ISchedulingService {
 
     const startDate = new Date(data.startDate);
     const endDate = new Date(data.endDate);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (startDate < today) {
+      throw new BadRequestException('startDate must be today or a future date');
+    }
     if (startDate > endDate) {
       throw new BadRequestException(
         'startDate must be before or equal to endDate',
@@ -190,6 +189,7 @@ export class ScheduleService implements ISchedulingService {
           rule.maxBookingsPerSlot &&
           existingBookings >= rule.maxBookingsPerSlot
         ) {
+          console.log('hai');
         } else {
           availableSlots.push(`${slotStart}-${slotEnd}`);
         }

@@ -5,7 +5,6 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { GetUser } from '../decorator/get-user.decorator';
 
 @Injectable()
 export class ParseObjectIdPipe implements PipeTransform {

@@ -43,7 +43,6 @@ export class VerifyPaymentDto {
   amount: number;
 }
 
-
 export class VerifySubscriptionPaymentDto {
   @IsString()
   @IsNotEmpty()

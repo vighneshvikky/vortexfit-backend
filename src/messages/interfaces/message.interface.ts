@@ -1,5 +1,5 @@
 // dtos/create-message.dto.ts
-import { IsString, IsBoolean, IsDateString, IsOptional } from 'class-validator';
+import { IsString, IsBoolean, IsDateString } from 'class-validator';
 
 export class CreateMessageDto {
   @IsString()
@@ -18,7 +18,7 @@ export class CreateMessageDto {
   timestamp: string;
 
   @IsString()
-  messageType: string; // e.g., 'text', 'image', 'video'
+  messageType: string; 
 
   @IsBoolean()
   isRead: boolean;

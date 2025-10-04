@@ -1,5 +1,4 @@
 import { UserProfileDto } from '../dtos/user.mapper.dto';
-import { Trainer } from 'src/trainer/schemas/trainer.schema';
 import { UserModel } from '../model/user.model';
 import { TrainerModel } from 'src/trainer/models/trainer.model';
 import { TrainerProfileDto } from 'src/trainer/dtos/trainer.dto';

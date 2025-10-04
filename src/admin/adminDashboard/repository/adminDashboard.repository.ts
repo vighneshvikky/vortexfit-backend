@@ -1,10 +1,8 @@
-
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import { Model } from 'mongoose';
 import { Booking, BookingDocument } from 'src/booking/schemas/booking.schema';
-import { Plan, PlanDocument } from 'src/plans/schema/plan.schema';
 import {
   Subscription,
   SubscriptionDocument,
@@ -18,7 +16,7 @@ import { User, UserDocument } from 'src/user/schemas/user.schema';
 import { IAdminDashboardRepository } from './inteface/IAdminDashboard.repository.interface';
 
 @Injectable()
-export class AdminDashboardRepository implements IAdminDashboardRepository{
+export class AdminDashboardRepository implements IAdminDashboardRepository {
   constructor(
     @InjectModel(User.name) private _userModel: Model<UserDocument>,
     @InjectModel(Trainer.name) private _trainerModel: Model<TraninerDocument>,
@@ -46,7 +44,7 @@ export class AdminDashboardRepository implements IAdminDashboardRepository{
   }
 
   async getTotalRevenue(): Promise<number> {
-    let adminId = process.env.ADMIN_ID;
+    const adminId = process.env.ADMIN_ID;
     const result = await this._transactionModel.aggregate([
       {
         $match: { toUser: new Types.ObjectId(adminId) },
@@ -65,7 +63,7 @@ export class AdminDashboardRepository implements IAdminDashboardRepository{
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
-    let adminId = process.env.ADMIN_ID;
+    const adminId = process.env.ADMIN_ID;
     const result = await this._transactionModel.aggregate([
       {
         $match: {
@@ -84,7 +82,7 @@ export class AdminDashboardRepository implements IAdminDashboardRepository{
   }
 
   async getRevenueBySource() {
-    let adminId = process.env.ADMIN_ID;
+    const adminId = process.env.ADMIN_ID;
     return this._transactionModel.aggregate([
       {
         $match: { toUser: new Types.ObjectId(adminId) },
@@ -110,7 +108,7 @@ export class AdminDashboardRepository implements IAdminDashboardRepository{
   async getMonthlyRevenueBreakdown() {
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    let adminId = process.env.ADMIN_ID;
+    const adminId = process.env.ADMIN_ID;
     return this._transactionModel.aggregate([
       {
         $match: {
