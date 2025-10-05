@@ -35,6 +35,7 @@ export class TrainerDashboardRepository implements ITrainerDashboardRepository {
       {
         $match: {
           toUser: trainerId,
+          isCancelled: { $ne: true },
         },
       },
       {

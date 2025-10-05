@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PaymentsController } from './controllers/payments.controller';
 import { RazorpayService } from './services/implementation/razorpay.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -14,7 +14,7 @@ import { TransactionModule } from 'src/transactions/transaction.module';
 
 @Module({
   imports: [
-    BookingModule,
+    forwardRef(() => BookingModule),
     MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }]),
     JwtModule.register({}),
     planModule,
@@ -32,5 +32,6 @@ import { TransactionModule } from 'src/transactions/transaction.module';
       useClass: RazorpayService,
     },
   ],
+  exports: [RAZORPAY_SERVICE],
 })
 export class PaymentModule {}

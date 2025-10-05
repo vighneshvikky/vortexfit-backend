@@ -43,6 +43,25 @@ export class Booking {
   @Prop()
   paymentSignature?: string;
 
+  //lock
+
+    @Prop({ default: false })
+  isLocked: boolean;
+
+  // cancellation properties
+
+  @Prop()
+  refundId?: string;
+
+  @Prop()
+  refundAmount?: number;
+
+  @Prop()
+  refundStatus?: 'pending' | 'processed' | 'failed';
+
+  @Prop()
+  cancelledAt?: Date;
+
   @Prop()
   createdAt: Date;
 

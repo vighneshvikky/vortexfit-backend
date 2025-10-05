@@ -39,6 +39,7 @@ export class BookingMapper {
       bookingDoc.orderId,
       bookingDoc.sessionType,
       bookingDoc.paymentSignature,
+      bookingDoc.isLocked
     );
   }
 
@@ -56,6 +57,7 @@ export class BookingMapper {
       orderId: domain.orderId,
       sessionType: domain.sessionType,
       paymentSignature: domain.paymentSignature,
+      isLocked: domain.isLocked
     };
   }
 }

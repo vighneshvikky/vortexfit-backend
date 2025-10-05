@@ -13,6 +13,8 @@ export interface ITransactionService {
   ): Promise<TransactionDto[]>;
   getTrainerTransactions(trainerId: string): Promise<TransactionDto[]>;
   getAdminTransactions(adminId: string): Promise<TransactionDto[]>;
-  getEarnings(userId: Types.ObjectId, role: string): Promise<number>;
   getExpenses(userId: Types.ObjectId): Promise<number>;
+  updateCancellation(transactionId: Types.ObjectId): Promise<TransactionDto>;
+   getTransactionByPaymentId(paymentId: string): Promise<TransactionDto>
+    deleteTransaction(tId: string): Promise<{ deletedCount?: number }>;
 }

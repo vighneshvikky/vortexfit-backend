@@ -34,6 +34,7 @@ export class TransactionRepository implements ITransactionRepository {
     };
 
     if (filters?.sourceType) query.sourceType = filters.sourceType;
+
     if (filters?.fromDate || filters?.toDate) {
       query.createdAt = {};
       if (filters.fromDate) {
@@ -60,46 +61,21 @@ export class TransactionRepository implements ITransactionRepository {
     return this._transactionModel
       .find({
         $or: [{ fromUser: trainerId }, { toUser: trainerId }],
+        isCancelled: { $ne: true },
       })
       .sort({ createdAt: -1 });
   }
 
-  async sumCredits(userId: Types.ObjectId, role: string): Promise<number> {
-    const match: FilterQuery<TransactionDocument> = {};
-    if (role === 'trainer') {
-      match.toUser = userId;
-    }
-
-    const result = await this._transactionModel.aggregate([
-      { $match: match },
-      { $group: { _id: null, total: { $sum: '$amount' } } },
-    ]);
-
-    return result[0]?.total || 0;
+  async updateCancellation(transactionId: Types.ObjectId) {
+    return this._transactionModel.findByIdAndUpdate(
+      { _id: transactionId },
+      { isCancelled: true },
+    );
   }
-
-  //   async getTotalRevenue(trainerId: Types.ObjectId): Promise<number> {
-  //   const result = await this._transactionModel.aggregate([
-  //     {
-  //       $match: {
-  //         toUser: trainerId,
-  //         toModel: 'Trainer',
-  //       },
-  //     },
-  //     {
-  //       $group: {
-  //         _id: null,
-  //         total: { $sum: '$amount' },
-  //       },
-  //     },
-  //   ]);
-
-  //   return result.length > 0 ? result[0].total : 0;
-  // }
 
   async sumDebits(userId: Types.ObjectId): Promise<number> {
     const result = await this._transactionModel.aggregate([
-      { $match: { fromUser: userId } },
+      { $match: { fromUser: userId, isCancelled: { $ne: true } } },
       { $group: { _id: null, total: { $sum: '$amount' } } },
     ]);
 
@@ -110,5 +86,14 @@ export class TransactionRepository implements ITransactionRepository {
     return this._transactionModel
       .find({ toUser: adminId })
       .sort({ createdAt: -1 });
+  }
+
+  async getTransactionByPaymentId(paymentId: string) {
+    return this._transactionModel.findOne({ paymentId }).exec();
+  }
+
+  async deleteTransaction(tId: string) {
+    let txId = new Types.ObjectId(tId);
+    return this._transactionModel.deleteOne({ _id: txId });
   }
 }

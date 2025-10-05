@@ -1,11 +1,11 @@
-import { Booking, BookingDocument } from 'src/booking/schemas/booking.schema';
-import { IBookingRepository } from '../interface/booking-repository.interface';
+import { Booking, BookingDocument } from '@/booking/schemas/booking.schema';
+import { IBookingRepository } from '@/booking/repository/interface/booking-repository.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
-import { BookingStatus } from 'src/booking/enums/booking.enum';
-import { BookingFilterDto } from 'src/booking/dtos/booking-dto.interface';
-import { User, UserDocument } from 'src/user/schemas/user.schema';
+import { BookingStatus } from '@/booking/enums/booking.enum';
+import { BookingFilterDto } from '@/booking/dtos/booking-dto.interface';
+import { User, UserDocument } from '@/user/schemas/user.schema';
 
 @Injectable()
 export class BookingRepository implements IBookingRepository {
@@ -51,6 +51,20 @@ export class BookingRepository implements IBookingRepository {
     return this._bookingModel
       .findByIdAndUpdate(id, { $set: data }, { new: true })
       .exec();
+  }
+
+  async findById(id: string) {
+    const bookingId = new Types.ObjectId(id);
+
+    return this._bookingModel.findById({ _id: bookingId }).exec();
+  }
+
+    async updateOne(filter: Partial<Booking>, data: Partial<Booking>): Promise<Booking | null> {
+    return this._bookingModel.findOneAndUpdate(filter, data, { new: true }).exec();
+  }
+
+  async deleteOne(filter: Partial<Booking>): Promise<void> {
+    await this._bookingModel.deleteOne(filter).exec();
   }
 
   async getFilteredBookings(
@@ -163,14 +177,54 @@ export class BookingRepository implements IBookingRepository {
     return { bookings, totalRecords };
   }
 
-  async findOne(trainerId: string, date: string, timeSlot: string) {
-    return this._bookingModel.findOne({
+  async findOne(filter: Partial<Booking>) {
+    return this._bookingModel.findOne(filter);
+  }
+
+
+async lockSlot(trainerId: string, date: string, timeSlot: string): Promise<boolean> {
+  const session = await this._bookingModel.db.startSession();
+  session.startTransaction();
+
+  try {
+   
+    const existing = await this._bookingModel.findOne({
       trainerId,
       date,
       timeSlot,
-      status: { $ne: BookingStatus.CANCELLED },
+      $or: [{ isLocked: true }, { status: { $ne: 'CANCELLED' } }],
     });
+
+    if (existing) {
+      await session.abortTransaction();
+      session.endSession();
+      return false; 
+    }
+
+  
+    await this._bookingModel.create(
+      [
+        {
+          trainerId,
+          date,
+          timeSlot,
+          isLocked: true,
+          status: 'LOCKED',
+        },
+      ],
+      { session },
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+    return true;
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    throw err;
   }
+}
+
 
   async countActiveBookings(
     trainerId: string,
@@ -182,7 +236,7 @@ export class BookingRepository implements IBookingRepository {
       trainerId,
       date: dateStr,
       timeSlot: `${slotStart}-${slotEnd}`,
-      status: { $ne: 'CANCELLED' },
+      status: { $ne: 'cancelled' },
     });
   }
 

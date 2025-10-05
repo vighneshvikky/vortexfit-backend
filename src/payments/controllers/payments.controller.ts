@@ -10,7 +10,6 @@ import {
 import { Types } from 'mongoose';
 import { GetUser } from 'src/common/decorator/get-user.decorator';
 
-import { BookingStatus } from 'src/booking/enums/booking.enum';
 import {
   BOOKING_SERVICE,
   IBookingService,
@@ -21,6 +20,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ILogger } from 'src/common/logger/log.interface';
 import {
   CreateOrderDto,
+  LockSlotDto,
   VerifyPaymentDto,
   VerifySubscriptionPaymentDto,
 } from '../dtos/payment.dto';
@@ -78,7 +78,6 @@ export class PaymentsController {
     this.logger.log(body);
     const {
       trainerId,
-      sessionType,
       date,
       timeSlot,
       amount,
@@ -91,54 +90,49 @@ export class PaymentsController {
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
       .update(razorpay_order_id + '|' + razorpay_payment_id)
       .digest('hex');
-    const existingBooking = await this._bookingService.findOne(
-      trainerId,
-      date,
-      timeSlot,
-    );
 
-    if (existingBooking) {
-      throw new ConflictException(
-        'Booking already exists for the given slot please select another slot.',
-      );
-    }
-    if (expectedSignature === razorpay_signature) {
-      const booking = await this._bookingService.create({
-        userId,
+    if (expectedSignature !== razorpay_signature) {
+      await this._bookingService.unlockOrConfirmSlot(
         trainerId,
         date,
         timeSlot,
-        amount,
-        sessionType,
-        status: BookingStatus.PENDING,
-        orderId: razorpay_order_id,
-        paymentId: razorpay_payment_id,
-        paymentSignature: razorpay_signature,
-        bookingMethod: 'Razorpay',
-      });
-
-      if (!booking) {
-        throw new NotFoundException('Booking not found');
-      }
-
-      await this._transactionService.recordTransaction({
-        fromUser: new Types.ObjectId(userId),
-        fromModel: 'User',
-        toUser: new Types.ObjectId(trainerId),
-        toModel: 'Trainer',
-        amount,
-        sourceType: 'BOOKING',
-        sourceId: booking._id,
-        orderId: razorpay_order_id,
-        paymentId: razorpay_payment_id,
-        paymentSignature: razorpay_signature,
-        bookingMethod: 'Razorpay',
-      });
-
-      return { status: 'success', bookingId: booking._id };
-    } else {
-      return { status: 'failure' };
+        'FAILED',
+        razorpay_payment_id
+      );
+      return { status: 'failure', message: 'Invalid payment signature' };
     }
+
+
+  const booking = await this._bookingService.unlockOrConfirmSlot(
+    trainerId,
+    date,
+    timeSlot,
+    'SUCCESS',
+    razorpay_payment_id
+  );
+
+    if (!booking) {
+      throw new NotFoundException('Booking could not be created or locked.');
+    }
+
+
+  await this._transactionService.recordTransaction({
+    fromUser: new Types.ObjectId(userId),
+    fromModel: 'User',
+    toUser: new Types.ObjectId(trainerId),
+    toModel: 'Trainer',
+    amount,
+    sourceType: 'BOOKING',
+    sourceId: booking._id,
+    orderId: razorpay_order_id,
+    paymentId: razorpay_payment_id,
+    paymentSignature: razorpay_signature,
+    bookingMethod: 'Razorpay',
+  });
+
+  return { status: 'success', bookingId: booking._id };
+
+   
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -262,5 +256,22 @@ export class PaymentsController {
         message: 'Payment verification failed',
       };
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('lock-slot')
+  async lockSlot(@GetUser('sub') userId: string, @Body() body: LockSlotDto) {
+    const { trainerId, date, timeSlot, amount, sessionType } = body;
+
+    const booking = await this._bookingService.lockSlot(
+      trainerId,
+      date,
+      timeSlot,
+      userId,
+      amount,
+      sessionType,
+    );
+
+    return { booking };
   }
 }

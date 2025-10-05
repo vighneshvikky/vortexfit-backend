@@ -45,9 +45,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('send-message')
-  async handleMessage(
-    @MessageBody() message: ChatMessage,
-  ) {
+  async handleMessage(@MessageBody() message: ChatMessage) {
     console.log('Received message:', message);
 
     const saved = await this.messageService.saveMessage(

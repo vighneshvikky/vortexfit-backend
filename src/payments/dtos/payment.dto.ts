@@ -60,3 +60,30 @@ export class VerifySubscriptionPaymentDto {
   @IsNotEmpty()
   razorpay_signature: string;
 }
+
+
+
+
+
+export class LockSlotDto {
+  @IsNotEmpty()
+  @IsString()
+  trainerId: string;
+
+
+  @IsNotEmpty()
+  @IsString()
+  date: string;
+
+  @IsNotEmpty()
+  @IsString()
+  timeSlot: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  amount: number;
+
+  @IsNotEmpty()
+  @IsString()
+  sessionType: string;
+}

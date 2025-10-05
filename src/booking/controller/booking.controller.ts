@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  Param,
   Patch,
   Query,
   UseGuards,
@@ -106,5 +107,10 @@ export class BookingController {
       });
 
     return { bookings, totalRecords };
+  }
+
+  @Patch(':id/cancel')
+  async cancelBooking(@Param('id') id: string, @GetUser('sub') userId: string) {
+    return this._bookingService.cancelBooking(id, userId);
   }
 }

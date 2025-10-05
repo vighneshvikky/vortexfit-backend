@@ -28,11 +28,7 @@ export interface IBookingRepository {
     slotEnd: string,
   ): Promise<number>;
 
-  findOne(
-    trainerId: string,
-    date: string,
-    timeSlot: string,
-  ): Promise<Booking | null>;
+  findOne(filter: Partial<Booking>): Promise<Booking | null>;
 
   getFilteredBookings(
     trainerId: string,
@@ -53,4 +49,11 @@ export interface IBookingRepository {
     bookingId: string,
     status: BookingStatus,
   ): Promise<Booking | null>;
+
+  findById(id: string): Promise<Booking | null>;
+  updateOne(
+    filter: Partial<Booking>,
+    data: Partial<Booking>,
+  ): Promise<Booking | null>;
+  deleteOne(filter: Partial<Booking>): Promise<void>;
 }

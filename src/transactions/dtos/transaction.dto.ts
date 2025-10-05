@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsDateString,
   IsNumberString,
+  IsBoolean,
 } from 'class-validator';
 import { Types } from 'mongoose';
 
@@ -60,4 +61,8 @@ export class TransactionFilterDto {
 
   @IsOptional()
   sortOrder?: 'asc' | 'desc';
+
+  @IsOptional()
+  @IsBoolean()
+  isCancelled?: boolean;
 }

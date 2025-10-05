@@ -1,7 +1,7 @@
-import { BookingModel } from 'src/booking/models/booking.model';
+import { BookingModel } from '@/booking/models/booking.model';
 import { Types } from 'mongoose';
-import { BookingStatus } from 'src/booking/enums/booking.enum';
-import { BookingFilterDto } from 'src/booking/dtos/booking-dto.interface';
+import { BookingStatus } from '@/booking/enums/booking.enum';
+import { BookingFilterDto } from '@/booking/dtos/booking-dto.interface';
 
 export const BOOKING_SERVICE = 'BOOKING_SERVICE';
 
@@ -35,6 +35,11 @@ export interface IBookingService {
 
   changeStatus(id: string, status: BookingStatus): Promise<BookingModel | null>;
 
+  cancelBooking(bookingId: string, userId: string): Promise<{
+    message: string;
+    booking: BookingModel
+  }>
+
   getUserFilteredBookings(
     userId: string,
     filters: BookingFilterDto,
@@ -45,6 +50,17 @@ export interface IBookingService {
     date: string,
     timeSlot: string,
   ): Promise<BookingModel | null>;
+
+    lockSlot(trainerId: string, date: string, timeSlot: string, userId: string, amount: number, sessionType: string): Promise<BookingModel | null>;
+  unlockOrConfirmSlot(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+    status: 'SUCCESS' | 'FAILED',
+     paymentId: string,
+  ):  Promise<BookingModel | null>;
+
+   
 }
 
 export interface CreateBookingDto {

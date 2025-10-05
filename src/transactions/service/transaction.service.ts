@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Transaction } from '../schema/transaction.schema';
 import { TransactionFilterDto } from '../dtos/transaction.dto';
 import { Types } from 'mongoose';
@@ -47,11 +47,37 @@ export class TransactionService implements ITransactionService {
     return transactions.map(mapTransactionToDto);
   }
 
-  async getEarnings(userId: Types.ObjectId, role: string) {
-    return this._transactionRepository.sumCredits(userId, role);
+  // async getEarnings(userId: Types.ObjectId, role: string) {
+  //   return this._transactionRepository.sumCredits(userId, role);
+  // }
+
+  async updateCancellation(
+    transactionId: Types.ObjectId,
+  ): Promise<TransactionDto> {
+    const transactionData =
+      await this._transactionRepository.updateCancellation(transactionId);
+    if (!transactionData) {
+      throw new NotFoundException('Transaction not found');
+    }
+    return mapTransactionToDto(transactionData);
+  }
+
+  async getTransactionByPaymentId(paymentId: string): Promise<TransactionDto> {
+    const transactionData =
+      await this._transactionRepository.getTransactionByPaymentId(paymentId);
+
+    if (!transactionData) {
+      throw new NotFoundException('Transaction not found');
+    }
+
+    return mapTransactionToDto(transactionData);
   }
 
   async getExpenses(userId: Types.ObjectId) {
     return this._transactionRepository.sumDebits(userId);
+  }
+
+  async deleteTransaction(tId: string){
+    return this._transactionRepository.deleteTransaction(tId)
   }
 }

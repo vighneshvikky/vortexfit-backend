@@ -49,6 +49,9 @@ export class Transaction {
   @Prop({ required: true })
   bookingMethod?: string;
 
+  @Prop({ default: false })
+  isCancelled?: boolean;
+
   @Prop()
   createdAt: Date;
 }

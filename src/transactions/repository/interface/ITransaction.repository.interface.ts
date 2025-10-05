@@ -12,6 +12,9 @@ export interface ITransactionRepository {
   ): Promise<Transaction[]>;
   getTrainerTransactions(trainerId: string): Promise<Transaction[]>;
   getAdminTransactions(adminId: string): Promise<Transaction[]>;
-  sumCredits(userId: Types.ObjectId, role: string): Promise<number>;
+  // sumCredits(userId: Types.ObjectId, role: string): Promise<number>;
   sumDebits(userId: Types.ObjectId): Promise<number>;
+  updateCancellation(transactionId: Types.ObjectId): Promise<Transaction | null>;
+   getTransactionByPaymentId(paymentId: string): Promise<Transaction | null>;
+   deleteTransaction(tId: string): Promise<{ deletedCount?: number}>;
 }

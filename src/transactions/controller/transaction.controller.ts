@@ -25,13 +25,13 @@ export class transactionController {
     return this._transactionSerivce.getUserTransactions(userId, filters);
   }
 
-  @Get('earnings')
-  getEarnings(
-    @GetUser('role') role: string,
-    @GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId,
-  ) {
-    return this._transactionSerivce.getEarnings(userId, role);
-  }
+  // @Get('earnings')
+  // getEarnings(
+  //   @GetUser('role') role: string,
+  //   @GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId,
+  // ) {
+  //   return this._transactionSerivce.getEarnings(userId, role);
+  // }
 
   @Get('expenses')
   getExpenses(@GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId) {

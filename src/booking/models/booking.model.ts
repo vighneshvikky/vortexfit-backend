@@ -15,6 +15,7 @@ export class BookingModel {
     public readonly orderId?: string,
     public readonly sessionType?: string,
     public readonly paymentSignature?: string,
+    public readonly isLocked?: boolean,
   ) {}
 }
 

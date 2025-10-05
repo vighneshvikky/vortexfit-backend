@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 
 import { JwtModule } from '@nestjs/jwt';
 
@@ -17,7 +17,7 @@ import { IWALLETREPOSITORY } from './repository/interface/IWalletRepository.inte
     MongooseModule.forFeature([{ name: Wallet.name, schema: WalletSchema }]),
     JwtModule.register({}),
     TransactionModule,
-    BookingModule,
+    forwardRef(() => BookingModule),
   ],
   providers: [
     {
@@ -30,6 +30,6 @@ import { IWALLETREPOSITORY } from './repository/interface/IWalletRepository.inte
     },
   ],
   controllers: [WalletController],
-  exports: [MongooseModule],
+  exports: [MongooseModule, IWALLETSERVICE],
 })
 export class WalletModule {}
