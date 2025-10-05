@@ -23,6 +23,9 @@ class PricingDto {
 export class TrainerProfileDto {
   @IsOptional()
   @IsString()
+  _id?: string;
+  @IsOptional()
+  @IsString()
   name?: string;
 
   @IsOptional()
@@ -52,9 +55,8 @@ export class TrainerProfileDto {
   @IsOptional()
   isVerified?: boolean;
 
-    @IsOptional()
+  @IsOptional()
   isBlocked?: boolean;
-
 
   @IsOptional()
   @IsString()
