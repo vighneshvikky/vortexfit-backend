@@ -13,6 +13,7 @@ export class TransactionRepository implements ITransactionRepository {
     private readonly _transactionModel: Model<TransactionDocument>,
   ) {}
 
+  
   async recordTransaction(data: Partial<Transaction>): Promise<Transaction> {
     if (!data.fromModel) {
       throw new Error('fromModel is required (User or Trainer)');

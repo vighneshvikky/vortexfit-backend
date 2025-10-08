@@ -12,4 +12,5 @@ export interface ISubscriptionRepository {
     userId: string,
     planId: string,
   ): Promise<SubscriptionDocument | null>;
+  hasActiveSubscription(userId: string): Promise<boolean>;
 }

@@ -1,9 +1,15 @@
 import {
+  ISubscriptionService,
+  ISUBSCRIPTIONSERVICE,
+} from '@/subscription/service/interface/ISubscription.service';
+import { Inject } from '@nestjs/common';
+import {
   WebSocketGateway,
   WebSocketServer,
   SubscribeMessage,
   MessageBody,
   ConnectedSocket,
+  OnGatewayConnection,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -14,11 +20,43 @@ interface RoomUser {
 }
 
 @WebSocketGateway({ namespace: '/video', cors: { origin: '*' } })
-export class VideoGateway {
+export class VideoGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
   private rooms: Map<string, RoomUser[]> = new Map();
+
+  constructor(
+    @Inject(ISUBSCRIPTIONSERVICE)
+    private readonly _subscriptionService: ISubscriptionService,
+  ) {}
+
+  async handleConnection(client: Socket) {
+    try {
+      const userId = client.handshake.auth?.userId;
+
+      if (!userId) {
+        client.emit('error', { message: 'Unauthorized: No user ID' });
+        client.disconnect(true);
+        return;
+      }
+
+      const hasActiveSub =
+        await this._subscriptionService.hasActiveSubscription(userId);
+
+      if (hasActiveSub) {
+        client.emit('error', { message: 'No active subscription' });
+        client.disconnect(true);
+        return;
+      }
+
+     
+    } catch (error) {
+      console.error('Error verifying subscription:', error);
+      client.emit('error', { message: 'Subscription check failed' });
+      client.disconnect(true);
+    }
+  }
 
   @SubscribeMessage('join-video-room')
   handleJoin(

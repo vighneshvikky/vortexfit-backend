@@ -107,4 +107,8 @@ export class SubscriptionService implements ISubscriptionService {
 
     return SubscriptionMapper.toDto(data);
   }
+
+  hasActiveSubscription(userId: string): Promise<boolean> {
+    return this._subscriptionRepository.hasActiveSubscription(userId);
+  }
 }

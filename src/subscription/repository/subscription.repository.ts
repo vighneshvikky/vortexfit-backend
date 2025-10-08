@@ -38,4 +38,14 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       })
       .exec();
   }
+
+  async hasActiveSubscription(userId: string): Promise<boolean> {
+    const now = new Date();
+    const sub = await this._subscriptionModel.findOne({
+      userId: new Types.ObjectId(userId),
+      status: 'ACTIVE',
+    });
+
+    return !sub;
+  }
 }

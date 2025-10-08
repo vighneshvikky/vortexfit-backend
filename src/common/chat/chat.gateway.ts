@@ -1,3 +1,7 @@
+import {
+  ISubscriptionService,
+  ISUBSCRIPTIONSERVICE,
+} from '@/subscription/service/interface/ISubscription.service';
 import { Inject } from '@nestjs/common';
 import {
   WebSocketGateway,
@@ -6,6 +10,7 @@ import {
   MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { Types } from 'mongoose';
 import { Server, Socket } from 'socket.io';
 import { ChatMessage } from 'src/messages/schemas/message.schema';
 import {
@@ -24,7 +29,28 @@ export class ChatGateway {
 
   constructor(
     @Inject(MESSAGE_SERVICE) private readonly messageService: IMessageService,
+    @Inject(ISUBSCRIPTIONSERVICE)
+    private readonly _subscriptionService: ISubscriptionService,
   ) {}
+
+  async handleConnection(client: Socket) {
+    const userId = client.handshake.auth?.userId;
+
+    if (!userId) {
+      client.emit('error', { message: 'Unauthorized' });
+      client.disconnect(true);
+      return;
+    }
+
+    const hasActiveSub =
+      await this._subscriptionService.hasActiveSubscription(userId);
+
+    if (hasActiveSub) {
+      client.emit('error', { message: 'No active subscription' });
+      client.disconnect(true);
+      return;
+    }
+  }
 
   @SubscribeMessage('join-room')
   handleJoinRoom(
@@ -48,9 +74,12 @@ export class ChatGateway {
   async handleMessage(@MessageBody() message: ChatMessage) {
     console.log('Received message:', message);
 
+    const senderObjId = new Types.ObjectId(message.senderId);
+  const receiverObjId = new Types.ObjectId(message.receiverId);
+
     const saved = await this.messageService.saveMessage(
-      message.senderId,
-      message.receiverId,
+      senderObjId,
+      receiverObjId,
       message.content,
     );
 

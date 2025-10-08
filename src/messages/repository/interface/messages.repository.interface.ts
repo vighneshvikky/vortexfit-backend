@@ -1,18 +1,27 @@
+import { Types } from 'mongoose';
 import { ChatMessage } from '../../schemas/message.schema';
 
 export const MESSAGE_REPOSITORY = Symbol('MESSAGE_REPOSITORY');
 export interface IMessageRepository {
-  // Persist a message between two users and return the stored entity
   saveMessage(
-    senderId: string,
-    receiverId: string,
+    senderId: Types.ObjectId,
+    receiverId: Types.ObjectId,
     content: string,
+
   ): Promise<ChatMessage>;
 
-  // Fetch paginated history for a given room
   getHistory(
     roomId: string,
     skip?: number,
     limit?: number,
   ): Promise<ChatMessage[]>;
+
+  getAllChatsByUserOrTrainer(userId: string, role: string): Promise<  {
+      lastMessage: string;
+      lastUpdated: Date;
+      participantId: string;
+      name: string;
+      email: string;
+      image?: string;
+    }[]>;
 }

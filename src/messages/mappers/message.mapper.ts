@@ -30,16 +30,18 @@ export class MessageMapper {
 
   toDto(entity: ChatMessage): MessageResponseDto {
     const dto = new MessageResponseDto();
-    dto.id = entity['_id']?.toString();
+    dto.id = entity._id.toString();
     dto.content = entity.content;
-    dto.senderId = entity.senderId;
-    dto.receiverId = entity.receiverId;
+
+    // Convert ObjectId to string for DTO
+    dto.senderId = entity.senderId?.toString();
+    dto.receiverId = entity.receiverId?.toString();
+
     dto.roomId = entity.roomId;
     dto.messageType = entity.messageType;
     dto.isRead = entity.isRead;
     dto.isDelivered = entity.isDelivered;
-    dto.createdAt = entity['createdAt'];
-    dto.updatedAt = entity['updatedAt'];
+  
     return dto;
   }
 
