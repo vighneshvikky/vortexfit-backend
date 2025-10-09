@@ -138,14 +138,14 @@ export class AuthController {
 
     setTokenCookies(res, accessToken, refreshToken);
 
-    const redirectUrl = new URL('http://localhost:4200/auth/callback');
+    const redirectUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
     redirectUrl.searchParams.set('email', user.email);
     redirectUrl.searchParams.set('name', user.name);
     redirectUrl.searchParams.set('role', user.role);
     redirectUrl.searchParams.set('isVerified', String(user.isVerified));
 
     return res.redirect(
-      `http://localhost:4200/auth/callback?user=${encodeURIComponent(JSON.stringify(user))}`,
+      `${process.env.FRONTEND_URL}/auth/callback?user=${encodeURIComponent(JSON.stringify(user))}`,
     );
   }
 
