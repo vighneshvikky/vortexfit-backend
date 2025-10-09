@@ -48,14 +48,12 @@ export class UserDashboardRepository implements IUserDashboardRepository {
   }
 
   async getActiveSubscription(userId: Types.ObjectId) {
-
     return this._subscriptionModel
       .findOne({
         userId,
         endDate: { $gte: new Date() },
       })
       .populate('planId')
-      .lean()
       .exec();
   }
 
@@ -65,7 +63,6 @@ export class UserDashboardRepository implements IUserDashboardRepository {
       .sort({ createdAt: -1 })
       .limit(limit)
       .populate('trainerId', 'name email')
-      .lean()
       .exec();
   }
 
@@ -75,12 +72,11 @@ export class UserDashboardRepository implements IUserDashboardRepository {
       .sort({ createdAt: -1 })
       .limit(5)
       .populate('toUser', 'name email')
-      .lean()
       .exec();
   }
 
   async getWalletBalance(userId: Types.ObjectId) {
-    return this._walletModel.findOne({ userId }).lean().exec();
+    return this._walletModel.findOne({ userId }).exec();
   }
 
   async getTotalSpent(userId: Types.ObjectId): Promise<number> {
@@ -93,6 +89,6 @@ export class UserDashboardRepository implements IUserDashboardRepository {
   }
 
   async getAllTransactions(userId: Types.ObjectId) {
-    return this._transactionModel.find({ fromUser: userId }).lean().exec();
+    return this._transactionModel.find({ fromUser: userId }).exec();
   }
 }
