@@ -93,7 +93,7 @@ export class TransactionRepository implements ITransactionRepository {
     return this._transactionModel.findOne({ paymentId }).exec();
   }
 
-  async deleteTransaction(tId: string) {
+  async deleteTransaction(tId: string): Promise<{ deletedCount: number}> {
     let txId = new Types.ObjectId(tId);
     return this._transactionModel.deleteOne({ _id: txId });
   }

@@ -16,5 +16,5 @@ export interface ITransactionService {
   getExpenses(userId: Types.ObjectId): Promise<number>;
   updateCancellation(transactionId: Types.ObjectId): Promise<TransactionDto>;
    getTransactionByPaymentId(paymentId: string): Promise<TransactionDto>
-    deleteTransaction(tId: string): Promise<{ deletedCount?: number }>;
+    deleteTransaction(tId: string): Promise<{ deletedCount: number }>;
 }

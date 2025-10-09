@@ -77,7 +77,7 @@ export class TransactionService implements ITransactionService {
     return this._transactionRepository.sumDebits(userId);
   }
 
-  async deleteTransaction(tId: string){
+  async deleteTransaction(tId: string): Promise<{ deletedCount: number}>{
     return this._transactionRepository.deleteTransaction(tId)
   }
 }
