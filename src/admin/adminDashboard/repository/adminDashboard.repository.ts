@@ -377,7 +377,6 @@ export class AdminDashboardRepository implements IAdminDashboardRepository {
       .populate('fromUser', 'name email')
       .populate('toUser', 'name email')
       .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean();
+      .limit(limit);
   }
 }
