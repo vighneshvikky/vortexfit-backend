@@ -306,15 +306,15 @@ export class BookingService implements IBookingService {
     paymentId: string,
   ): Promise<BookingModel | null> {
     if (status === 'SUCCESS') {
-      // Convert locked booking to confirmed
-      const updatedBooking = await this._bookingRepository.updateOne(
-        { trainerId, date, timeSlot, isLocked: true },
-        { isLocked: false, status: BookingStatus.PENDING, paymentId }, // or CONFIRMED if you want
+      const updatedBooking = await this._bookingRepository.unlockSlot(
+        trainerId,
+        date,
+        timeSlot,
+        paymentId,
       );
 
-      return updatedBooking ? BookingMapper.toDomain(updatedBooking) : null; // return domain model
+      return updatedBooking ? BookingMapper.toDomain(updatedBooking) : null;
     } else {
-      // Unlock slot if payment failed
       await this._bookingRepository.deleteOne({
         trainerId,
         date,

@@ -59,8 +59,13 @@ export class BookingRepository implements IBookingRepository {
     return this._bookingModel.findById({ _id: bookingId }).exec();
   }
 
-    async updateOne(filter: Partial<Booking>, data: Partial<Booking>): Promise<Booking | null> {
-    return this._bookingModel.findOneAndUpdate(filter, data, { new: true }).exec();
+  async updateOne(
+    filter: Partial<Booking>,
+    data: Partial<Booking>,
+  ): Promise<Booking | null> {
+    return this._bookingModel
+      .findOneAndUpdate(filter, data, { new: true })
+      .exec();
   }
 
   async deleteOne(filter: Partial<Booking>): Promise<void> {
@@ -181,50 +186,50 @@ export class BookingRepository implements IBookingRepository {
     return this._bookingModel.findOne(filter);
   }
 
+  async lockSlot(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+  ): Promise<boolean> {
+    const session = await this._bookingModel.db.startSession();
+    session.startTransaction();
 
-async lockSlot(trainerId: string, date: string, timeSlot: string): Promise<boolean> {
-  const session = await this._bookingModel.db.startSession();
-  session.startTransaction();
+    try {
+      const existing = await this._bookingModel.findOne({
+        trainerId,
+        date,
+        timeSlot,
+        $or: [{ isLocked: true }, { status: { $ne: 'CANCELLED' } }],
+      });
 
-  try {
-   
-    const existing = await this._bookingModel.findOne({
-      trainerId,
-      date,
-      timeSlot,
-      $or: [{ isLocked: true }, { status: { $ne: 'CANCELLED' } }],
-    });
+      if (existing) {
+        await session.abortTransaction();
+        session.endSession();
+        return false;
+      }
 
-    if (existing) {
+      await this._bookingModel.create(
+        [
+          {
+            trainerId,
+            date,
+            timeSlot,
+            isLocked: true,
+            status: 'LOCKED',
+          },
+        ],
+        { session },
+      );
+
+      await session.commitTransaction();
+      session.endSession();
+      return true;
+    } catch (err) {
       await session.abortTransaction();
       session.endSession();
-      return false; 
+      throw err;
     }
-
-  
-    await this._bookingModel.create(
-      [
-        {
-          trainerId,
-          date,
-          timeSlot,
-          isLocked: true,
-          status: 'LOCKED',
-        },
-      ],
-      { session },
-    );
-
-    await session.commitTransaction();
-    session.endSession();
-    return true;
-  } catch (err) {
-    await session.abortTransaction();
-    session.endSession();
-    throw err;
   }
-}
-
 
   async countActiveBookings(
     trainerId: string,
@@ -307,6 +312,30 @@ async lockSlot(trainerId: string, date: string, timeSlot: string): Promise<boole
   ): Promise<Booking | null> {
     return this._bookingModel
       .findByIdAndUpdate(bookingId, { status: bookingStatus }, { new: true })
+      .exec();
+  }
+
+  async unlockSlot(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+    paymentId: string,
+  ): Promise<Booking | null> {
+    return this._bookingModel
+      .findOneAndUpdate(
+        { trainerId, date, timeSlot, isLocked: true },
+        {
+          $set: {
+            isLocked: false,
+            status: BookingStatus.PENDING,
+            paymentId,
+          },
+          $unset: {
+            lockExpiresAt: '',
+          },
+        },
+        { new: true },
+      )
       .exec();
   }
 }

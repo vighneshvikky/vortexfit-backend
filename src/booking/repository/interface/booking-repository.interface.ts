@@ -56,4 +56,11 @@ export interface IBookingRepository {
     data: Partial<Booking>,
   ): Promise<Booking | null>;
   deleteOne(filter: Partial<Booking>): Promise<void>;
+
+     unlockSlot(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+    paymentId: string,
+  ): Promise<Booking | null> 
 }
