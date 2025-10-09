@@ -137,6 +137,7 @@ export class AuthController {
       await this._authService.googleLogin(code, role);
 
     setTokenCookies(res, accessToken, refreshToken);
+    console.log('Google callback hit', { code, role, user });
 
     const redirectUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
     redirectUrl.searchParams.set('email', user.email);
