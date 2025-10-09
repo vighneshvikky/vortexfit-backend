@@ -247,7 +247,7 @@ export class AdminDashboardRepository implements IAdminDashboardRepository {
       .populate('trainerId', 'name email')
       .sort({ createdAt: -1 })
       .limit(limit)
-      .lean();
+      .exec();
   }
 
   async getSubscriptionsByPlan() {
