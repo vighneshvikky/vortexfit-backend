@@ -15,7 +15,7 @@ async function bootstrap() {
   app.useLogger(logger);
   app.use(cookieParser());
   app.enableCors({
-    origin: ['http://localhost:4200'],
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   });
 
@@ -31,6 +31,7 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+
 }
 bootstrap();
