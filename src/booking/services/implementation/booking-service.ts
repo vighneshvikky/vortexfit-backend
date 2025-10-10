@@ -45,7 +45,10 @@ export class BookingService implements IBookingService {
     @Inject(ITRANSACTIONSERVICE)
     private readonly _transactionService: ITransactionService,
   ) {}
-
+/**
+ * 
+ * 
+ */
   async create(data: CreateBookingDto): Promise<BookingModel | null> {
     console.log('data for booking', data);
     const bookingDoc = await this._bookingRepository.create(data);
