@@ -1,8 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-
+import dotenv from 'dotenv';
 
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
