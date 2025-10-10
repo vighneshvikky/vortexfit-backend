@@ -28,6 +28,12 @@ export class BookingRepository implements IBookingRepository {
     return result.deletedCount > 0;
   }
 
+  /**
+   * 
+   * This is for finding specific slot for trainers
+   * 
+   */
+
   async findBySlot(
     trainerId: string,
     date: string,
