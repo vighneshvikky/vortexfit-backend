@@ -45,7 +45,6 @@ winston.addColors({
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.env.${process.env.NODE_ENV}` || '.env',
       isGlobal: true,
     }),
     MongooseModule.forRootAsync({
