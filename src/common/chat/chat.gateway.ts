@@ -20,7 +20,7 @@ import {
 @WebSocketGateway({
   namespace: '/chat',
   cors: {
-    origin: '*',
+    origin: ['https://vortex-fit.space', 'https://www.vortex-fit.space', process.env.FRONTEND_URL],
   },
 })
 export class ChatGateway {
@@ -75,7 +75,7 @@ export class ChatGateway {
     console.log('Received message:', message);
 
     const senderObjId = new Types.ObjectId(message.senderId);
-  const receiverObjId = new Types.ObjectId(message.receiverId);
+    const receiverObjId = new Types.ObjectId(message.receiverId);
 
     const saved = await this.messageService.saveMessage(
       senderObjId,
