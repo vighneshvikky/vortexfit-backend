@@ -20,7 +20,11 @@ import {
 @WebSocketGateway({
   namespace: '/chat',
   cors: {
-    origin: ['https://vortex-fit.space', 'https://www.vortex-fit.space', process.env.FRONTEND_URL],
+    origin: [
+      'https://vortex-fit.space',
+      'https://www.vortex-fit.space',
+      process.env.FRONTEND_URL,
+    ],
   },
 })
 export class ChatGateway {
