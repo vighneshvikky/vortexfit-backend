@@ -16,6 +16,7 @@ export class BookingRepository implements IBookingRepository {
     private readonly _userModel: Model<UserDocument>,
   ) {}
 
+  
   async create(data: Partial<Booking>): Promise<Booking> {
     const booking = new this._bookingModel(data);
 
