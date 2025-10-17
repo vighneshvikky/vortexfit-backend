@@ -43,7 +43,7 @@ export class SubscriptionService implements ISubscriptionService {
 
     const adminID = process.env.ADMIN_ID!;
     const message = `You have successfully subscribed plan.`;
-    const adminMessage = `${userId} subscribed to the plan ${planId}`;
+    const adminMessage = `Vighnesh subscribed to the plan BASIC_USER`;
 
     if (plan.billingCycle === 'monthly') {
       endDate = new Date(startDate);

@@ -17,6 +17,22 @@ export class BookingRepository implements IBookingRepository {
   ) {}
 
   async create(data: Partial<Booking>): Promise<Booking> {
+    // if (data.date) {
+    //   let dateChecker = new Date(data.date);
+    //   let getDay = dateChecker.getDay();
+    //   let weekDate = new Date(dateChecker.getDay() + getDay);
+
+    //   let count = await this._bookingModel.countDocuments({
+    //     status: BookingStatus.CANCELLED,
+    //     date: weekDate,
+    //   });
+
+    //   if (count && count === 3) {
+    //     let price = data.amount! * 0.9;
+    //     data = { ...data, amount: price };
+    //   }
+    // }
+
     const booking = new this._bookingModel(data);
 
     return booking.save();
@@ -29,9 +45,9 @@ export class BookingRepository implements IBookingRepository {
   }
 
   /**
-   * 
+   *
    * This is for finding specific slot for trainers
-   * 
+   *
    */
 
   async findBySlot(
