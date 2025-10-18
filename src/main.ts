@@ -8,7 +8,17 @@ import morgan from 'morgan';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 dotenv.config();
-const allowedOrigins = process.env.FRONTEND_URL!.split(',');
+  const allowedOrigins = [
+    'http://localhost:4200',
+    'http://vortex-fit.space',
+    'https://vortex-fit.space',
+    'http://www.vortex-fit.space',
+    'https://www.vortex-fit.space',
+  ];
+	 if (process.env.FRONTEND_URL) {
+    const envOrigins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
+    allowedOrigins.push(...envOrigins);
+  }
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -16,9 +26,17 @@ async function bootstrap() {
   app.useLogger(logger);
   app.use(cookieParser());
 
-  app.enableCors({
-    origin: allowedOrigins,
+     app.enableCors({
+    origin: [
+      'https://vortex-fit.space',           // HTTPS (primary)
+      'https://www.vortex-fit.space',       // HTTPS www
+      'http://vortex-fit.space',            // HTTP (will redirect)
+      'http://www.vortex-fit.space',        // HTTP www (will redirect)
+      'http://localhost:4200',              // Local development
+    ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.use(morgan('dev'));
