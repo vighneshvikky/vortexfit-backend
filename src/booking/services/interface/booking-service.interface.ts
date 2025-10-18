@@ -11,13 +11,14 @@ export interface IBookingService {
     trainerId: string,
     page: number,
     limit: number,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }>;
+
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number,currentPage: number, totalPages: number }>;
 
   getUserBookings(
     userId: string,
     page: number,
     limit: number,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }>;
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number,currentPage: number, totalPages: number }>;
 
   update(
     id: string,
@@ -31,7 +32,7 @@ export interface IBookingService {
   getFilteredBookings(
     trainerId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }>;
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number,currentPage: number, totalPages: number }>;
 
   changeStatus(id: string, status: BookingStatus): Promise<BookingModel | null>;
 
@@ -43,7 +44,7 @@ export interface IBookingService {
   getUserFilteredBookings(
     userId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }>;
+  ): Promise<{ bookings: BookingModel[]; totalRecords: number,currentPage: number, totalPages: number  }>;
 
   findOne(
     trainerId: string,

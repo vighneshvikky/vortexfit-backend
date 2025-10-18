@@ -21,8 +21,8 @@ import {
   namespace: '/chat',
   cors: {
     origin: [
-      'https://vortex-fit.space',
-      'https://www.vortex-fit.space',
+      process.env.HOST_API,
+      process.env.WWW_API,
       process.env.FRONTEND_URL,
     ],
   },

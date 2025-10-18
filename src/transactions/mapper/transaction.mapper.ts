@@ -8,7 +8,7 @@ export interface TransactionDto {
   toUser: { _id: string; name: string; email: string };
   amount: number;
   currency: string;
-  sourceType: 'BOOKING' | 'SUBSCRIPTION';
+  sourceType: 'BOOKING' | 'SUBSCRIPTION' | 'CREDIT';
   sourceId?: string;
   paymentId?: string;
   orderId?: string;

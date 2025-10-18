@@ -31,5 +31,9 @@ export interface ITrainerRepository extends IBaseRepository<Trainer> {
     },
   ): Promise<Trainer | null>;
 
-  findTrainersBySearch(search?: string): Promise<Trainer[]>;
+
+  findTrainersBySearch(search: string, page: number, limit: number): Promise<Trainer[]>
+  countTrainersBySearch(search: string): Promise<number>;
+  countBlockedTrainers(search: string): Promise<number>;
+  findBlockedTrainers(search: string): Promise<Trainer[]>;
 }

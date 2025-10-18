@@ -17,22 +17,6 @@ export class BookingRepository implements IBookingRepository {
   ) {}
 
   async create(data: Partial<Booking>): Promise<Booking> {
-    // if (data.date) {
-    //   let dateChecker = new Date(data.date);
-    //   let getDay = dateChecker.getDay();
-    //   let weekDate = new Date(dateChecker.getDay() + getDay);
-
-    //   let count = await this._bookingModel.countDocuments({
-    //     status: BookingStatus.CANCELLED,
-    //     date: weekDate,
-    //   });
-
-    //   if (count && count === 3) {
-    //     let price = data.amount! * 0.9;
-    //     data = { ...data, amount: price };
-    //   }
-    // }
-
     const booking = new this._bookingModel(data);
 
     return booking.save();
@@ -97,7 +81,12 @@ export class BookingRepository implements IBookingRepository {
   async getFilteredBookings(
     trainerId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const {
       clientId,
       status,
@@ -114,48 +103,50 @@ export class BookingRepository implements IBookingRepository {
       trainerId: trainerId,
     };
 
-    if (status) {
-      query.status = status;
-    }
+    if (status) query.status = status;
+    if (clientId) query.userId = clientId;
 
     if (dateFrom || dateTo) {
       query.date = {};
-      if (dateFrom) query.date.$gte = dateFrom;
-      if (dateTo) query.date.$lte = dateTo;
-    }
-
-    if (clientId) {
-      query.userId = clientId;
+      if (dateFrom) query.date.$gte = new Date(dateFrom);
+      if (dateTo) query.date.$lte = new Date(dateTo);
     }
 
     if (searchTerm) {
       const regex = new RegExp(searchTerm, 'i');
-      query.$or = [{ status: regex }, { sessionType: regex }, { date: regex }];
+      query.$or = [{ status: regex }, { sessionType: regex }];
     }
 
     const skip = (page - 1) * limit;
-    const sort: Record<string, 1 | -1> = {
-      [sortBy]: sortOrder === 'desc' ? -1 : 1,
-    };
+    const sortField = sortBy;
+    const sortDirection = sortOrder === 'desc' ? -1 : 1;
 
-    const bookings = await this._bookingModel
-      .find(query)
-      .populate('userId', 'name email image')
-      .populate('trainerId', 'name image')
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .exec();
+    const [bookings, totalRecords] = await Promise.all([
+      this._bookingModel
+        .find(query)
+        .populate('userId', 'name email image')
+        .populate('trainerId', 'name image')
+        .sort({ [sortField]: sortDirection })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._bookingModel.countDocuments(query),
+    ]);
 
-    const totalRecords = await this._bookingModel.countDocuments(query);
+    const totalPages = Math.ceil(totalRecords / limit);
 
-    return { bookings, totalRecords };
+    return { bookings, totalRecords, currentPage: page, totalPages };
   }
 
   async getUserFilteredBookings(
     userId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const {
       status,
       dateFrom,
@@ -186,22 +177,22 @@ export class BookingRepository implements IBookingRepository {
     }
 
     const skip = (page - 1) * limit;
-    const sort: Record<string, 1 | -1> = {
-      [sortBy]: sortOrder === 'desc' ? -1 : 1,
-    };
+    const sortField = 'date';
+    const sortDirection = 1;
 
     const bookings = await this._bookingModel
       .find(query)
       .populate('trainerId', 'name email image')
       .populate('userId', 'name _id image')
-      .sort(sort)
+      .sort({ [sortField]: sortDirection })
       .skip(skip)
       .limit(limit)
       .exec();
 
     const totalRecords = await this._bookingModel.countDocuments(query);
+    const totalPages = Math.ceil(totalRecords / limit);
 
-    return { bookings, totalRecords };
+    return { bookings, totalRecords, currentPage: page, totalPages };
   }
 
   async findOne(filter: Partial<Booking>) {
@@ -280,52 +271,70 @@ export class BookingRepository implements IBookingRepository {
     trainerId: string,
     page: number = 1,
     limit: number = 5,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const skip = (page - 1) * limit;
-    const today = new Date().toISOString().split('T')[0];
 
+    const sortField = 'date';
+    const sortDirection = 1;
     const query = {
       trainerId,
-      date: { $gte: today },
     };
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
         .find(query)
         .populate('userId', '_id name image')
-        .sort({ createdAt: 1 })
+        .sort({ [sortField]: sortDirection })
         .skip(skip)
         .limit(limit)
         .exec(),
       this._bookingModel.countDocuments({ trainerId }),
     ]);
 
-    return { bookings, totalRecords };
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return { bookings, totalRecords, currentPage: page, totalPages };
   }
 
   async bookingOfUserId(
     userId: string,
     page: number = 1,
     limit: number = 5,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const skip = (page - 1) * limit;
-    const today = new Date().toISOString().split('T')[0];
+
     const query = {
       userId,
-      date: { $gte: today },
     };
+
+    const sortField = 'date';
+    const sortDirection = 1;
+
+    console.log('query', query);
     const [bookings, totalRecords] = await Promise.all([
       this._bookingModel
         .find(query)
         .populate('trainerId', '_id name image')
         .populate('userId', '_id name image')
-        .sort({ createdAt: 1 })
+        .sort({ [sortField]: sortDirection })
         .skip(skip)
         .limit(limit)
         .exec(),
       this._bookingModel.countDocuments({ userId }),
     ]);
 
-    return { bookings, totalRecords };
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return { bookings, totalRecords, currentPage: page, totalPages };
   }
 
   async changeStatus(

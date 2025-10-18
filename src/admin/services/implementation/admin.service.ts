@@ -89,11 +89,10 @@ export class AdminService implements IAdminService {
   async getUsers({
     search,
     page = 1,
-    limit = 10,
     filter,
   }: GetUsersOptions): Promise<PaginatedResult<AdminUserDto>> {
     page = Number(page);
-    limit = Number(limit);
+    let limit = 10;
 
     if (!limit || limit <= 0) {
       throw new BadRequestException('Limit must be greater than 0');
@@ -101,31 +100,53 @@ export class AdminService implements IAdminService {
 
     let users: User[] = [];
     let trainers: Trainer[] = [];
+    let userCount = 0;
+    let trainerCount = 0;
 
-    if (filter === UserFilter.ALL || filter === UserFilter.USER) {
-      users = await this._userRepository.findUsersBySearch(search);
+    if (filter === UserFilter.USER) {
+      [users, userCount] = await Promise.all([
+        this._userRepository.findUsersBySearch(search ?? '', page, limit),
+        this._userRepository.countUsersBySearch(search ?? ''),
+      ]);
+    } else if (filter === UserFilter.TRAINER) {
+      [trainers, trainerCount] = await Promise.all([
+        this._trainerRepository.findTrainersBySearch(search ?? '', page, limit),
+        this._trainerRepository.countTrainersBySearch(search ?? ''),
+      ]);
+    } else if (filter === UserFilter.BLOCKED) {
+      [users, trainers, userCount, trainerCount] = await Promise.all([
+        this._userRepository.findBlockedUsers(search ?? ''),
+        this._trainerRepository.findBlockedTrainers(search ?? ''),
+        this._userRepository.countBlockedUsers(search ?? ''),
+        this._trainerRepository.countBlockedTrainers(search ?? ''),
+      ]);
+
+      const combined = [...users, ...trainers].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+
+      const startIndex = (page - 1) * limit;
+      const paginated = combined.slice(startIndex, startIndex + limit);
+      const total = userCount + trainerCount;
+
+      const mapped = paginated.map((entity) =>
+        AdminUserMapper.toAdminUserDto(entity),
+      );
+
+      return {
+        data: mapped,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
     }
 
-    if (filter === UserFilter.ALL || filter === UserFilter.TRAINER) {
-      trainers = await this._trainerRepository.findTrainersBySearch(search);
-    }
+    const combined = [...users, ...trainers];
+    const total = userCount + trainerCount;
 
-    if (filter === UserFilter.ALL || filter === UserFilter.BLOCKED) {
-      users = await this._userRepository.find({ isBlocked: true });
-      trainers = await this._trainerRepository.find({ isBlocked: true });
-    }
-
-    const combined = [...users, ...trainers].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
-
-    const total = combined.length;
-    const totalPages = Math.ceil(total / limit);
-    const startIndex = (page - 1) * limit;
-    const paginated = combined.slice(startIndex, startIndex + limit);
-
-    const mapped = paginated.map((entity) =>
+    const mapped = combined.map((entity) =>
       AdminUserMapper.toAdminUserDto(entity),
     );
 
@@ -134,7 +155,7 @@ export class AdminService implements IAdminService {
       total,
       page,
       limit,
-      totalPages,
+      totalPages: Math.ceil(total / limit),
     };
   }
 
@@ -170,8 +191,8 @@ export class AdminService implements IAdminService {
 
   async getUnverifiedTrainers({
     page = 1,
-    limit = 10,
   }: GetUsersOptions): Promise<PaginatedResult<AdminUserDto>> {
+    let limit = 6
     const query = {
       isVerified: false,
       verificationStatus: VerificationStatus.Pending,

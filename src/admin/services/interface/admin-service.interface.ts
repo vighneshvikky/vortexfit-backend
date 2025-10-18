@@ -8,8 +8,7 @@ export interface GetUsersOptions {
   search?: string;
   role?: 'user' | 'trainer';
   page?: number;
-  limit?: number;
-  filter?: 'all' | 'user' | 'trainer' | 'blocked';
+  filter?:  'user' | 'trainer' | 'blocked';
 }
 
 export interface IAdminService {

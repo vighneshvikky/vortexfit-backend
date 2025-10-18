@@ -1,6 +1,4 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Trainer, TraninerDocument } from '../schemas/trainer.schema';
@@ -54,16 +52,49 @@ export class TrainerRepository
       .exec();
   }
 
-  async findTrainersBySearch(search?: string): Promise<Trainer[]> {
-    const query = search
-      ? {
-          $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { email: { $regex: search, $options: 'i' } },
-          ],
-        }
-      : {};
+  async findTrainersBySearch(
+    search: string,
+    page: number,
+    limit: number,
+  ): Promise<Trainer[]> {
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {};
 
-    return this.model.find(query).exec();
+    return this.model
+      .find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
   }
+
+  async countTrainersBySearch(search: string) {
+    const query = search ? { fullName: { $regex: search, $options: 'i' } } : {};
+    return this.model.countDocuments(query).exec();
+  }
+
+  async findBlockedTrainers(search: string): Promise<Trainer[]> {
+  const query: any = { isBlocked: true };
+  
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+    ];
+  }
+  
+  return this.find(query);
+}
+
+async countBlockedTrainers(search: string): Promise<number> {
+  const query: any = { isBlocked: true };
+  
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+    ];
+  }
+  
+  return this.model.countDocuments(query).exec();
+}
 }

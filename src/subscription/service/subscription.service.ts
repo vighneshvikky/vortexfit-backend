@@ -17,6 +17,10 @@ import {
 } from 'src/notifications/services/interface/INotification.service.interface';
 import { NotificationType } from 'src/notifications/schema/notification.schema';
 import { NotificationGateway } from 'src/notifications/notification.gateway';
+import { PLANACTION, PLANCYCLEENUM } from '../enum/subscription.enum';
+import { IUserRepository } from '@/user/interfaces/user-repository.interface';
+import { ITrainerRepository } from '@/trainer/interfaces/trainer-repository.interface';
+import { ROLE } from '@/common/enums/role.enum';
 
 @Injectable()
 export class SubscriptionService implements ISubscriptionService {
@@ -27,8 +31,14 @@ export class SubscriptionService implements ISubscriptionService {
     @Inject(INOTIFICATIONSERVICE)
     private readonly _notificationService: INotificationService,
     private readonly _notificationGateway: NotificationGateway,
+    @Inject(IUserRepository)
+    private readonly _userRepository: IUserRepository,
+    @Inject(ITrainerRepository)
+    private readonly _trainerRepository: ITrainerRepository,
   ) {}
+
   async subscribeUserToPlan(
+    role: string,
     userId: string,
     planId: string,
     razorpay_order_id?: string,
@@ -38,27 +48,53 @@ export class SubscriptionService implements ISubscriptionService {
     const plan = await this._planRepository.findById(planId);
     if (!plan) throw new NotFoundException('Plan not found');
 
+    let name: string;
+
+    if (role === ROLE.USER) {
+      const user = await this._userRepository.findById(userId);
+      if (!user) throw new NotFoundException('User not found');
+      name = user.name;
+    } else if (role === ROLE.TRAINER) {
+      const trainer = await this._trainerRepository.findById(userId);
+      if (!trainer) throw new NotFoundException('Trainer not found');
+      name = trainer.name;
+    } else {
+      throw new NotFoundException('Invalid role');
+    }
+
     const startDate = new Date();
     let endDate: Date;
 
-    const adminID = process.env.ADMIN_ID!;
-    const message = `You have successfully subscribed plan.`;
-    const adminMessage = `Vighnesh subscribed to the plan BASIC_USER`;
-
-    if (plan.billingCycle === 'monthly') {
+    if (plan.billingCycle === PLANCYCLEENUM.MONTHLY) {
       endDate = new Date(startDate);
       endDate.setMonth(startDate.getMonth() + 1);
-    } else if (plan.billingCycle === 'yearly') {
+    } else if (plan.billingCycle === PLANCYCLEENUM.YEARLY) {
       endDate = new Date(startDate);
       endDate.setFullYear(startDate.getFullYear() + 1);
     } else {
       throw new NotFoundException('Invalid plan duration');
     }
 
+    const subscription = await this._subscriptionRepository.create({
+      userId: new Types.ObjectId(userId),
+      planId: new Types.ObjectId(planId),
+      startDate,
+      endDate,
+      status: PLANACTION.ACTIVE,
+      price: plan.price,
+      orderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+      paymentSignature: razorpay_signature,
+    });
+
+    const adminID = process.env.ADMIN_ID!;
+    const userMessage = `You have successfully subscribed to the plan "${plan.name}".`;
+    const adminMessage = `${name} subscribed to the plan "${plan.name}".`;
+
     const notificationUser = await this._notificationService.createNotification(
       userId,
       NotificationType.SUBSCRIPTION,
-      message,
+      userMessage,
     );
 
     const notificationAdmin =
@@ -69,20 +105,7 @@ export class SubscriptionService implements ISubscriptionService {
       );
 
     this._notificationGateway.sendNotification(userId, notificationUser);
-
     this._notificationGateway.sendNotification(adminID, notificationAdmin);
-
-    const subscription = await this._subscriptionRepository.create({
-      userId: new Types.ObjectId(userId),
-      planId: new Types.ObjectId(planId),
-      startDate,
-      endDate,
-      status: 'ACTIVE',
-      price: plan.price,
-      orderId: razorpay_order_id,
-      paymentId: razorpay_payment_id,
-      paymentSignature: razorpay_signature,
-    });
 
     return SubscriptionMapper.toDto(subscription);
   }

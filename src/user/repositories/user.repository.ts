@@ -22,16 +22,49 @@ export class UserRepository
     return user;
   }
 
-  async findUsersBySearch(search?: string): Promise<UserDocument[]> {
-    const query = search
-      ? {
-          $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { email: { $regex: search, $options: 'i' } },
-          ],
-        }
-      : {};
+  async findUsersBySearch(
+    search: string,
+    page: number,
+    limit: number,
+  ): Promise<UserDocument[]> {
+    const query = search ? { name: { $regex: search, $options: 'i' } } : {};
 
-    return this.model.find(query).exec();
+    return this.model
+      .find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
+  }
+
+  async countUsersBySearch(search: string) {
+    const query = search ? { fullName: { $regex: search, $options: 'i' } } : {};
+    return this.model.countDocuments(query).exec();
+  }
+
+  async findBlockedUsers(search: string): Promise<User[]> {
+    const query: any = { isBlocked: true };
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    return this.find(query);
+  }
+
+  async countBlockedUsers(search: string): Promise<number> {
+    const query: any = { isBlocked: true };
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    return this.model.countDocuments(query).exec();
   }
 }

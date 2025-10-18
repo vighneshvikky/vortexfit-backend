@@ -188,6 +188,7 @@ export class PaymentsController {
 
         const subscription =
           await this._subscriptionService.subscribeUserToPlan(
+            role,
             userId,
             planId,
             razorpay_order_id,

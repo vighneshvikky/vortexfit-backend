@@ -9,11 +9,20 @@ export interface ITransactionRepository {
   getUserTransactions(
     userId: Types.ObjectId,
     filters?: TransactionFilterDto,
+    page?: number,
+    limit?: number,
   ): Promise<Transaction[]>;
   getTrainerTransactions(trainerId: string): Promise<Transaction[]>;
   getAdminTransactions(adminId: string): Promise<Transaction[]>;
   sumDebits(userId: Types.ObjectId): Promise<number>;
-  updateCancellation(transactionId: Types.ObjectId): Promise<Transaction | null>;
-   getTransactionByPaymentId(paymentId: string): Promise<Transaction | null>;
-   deleteTransaction(tId: string): Promise<{ deletedCount: number}>;
+  updateCancellation(
+    transactionId: Types.ObjectId,
+  ): Promise<Transaction | null>;
+  getTransactionByPaymentId(paymentId: string): Promise<Transaction | null>;
+  deleteTransaction(tId: string): Promise<{ deletedCount: number }>;
+  countUserTransactions(
+    userId: Types.ObjectId,
+    filters: TransactionFilterDto,
+  ): Promise<number>;
+  earnings(userId: Types.ObjectId): Promise<number>
 }

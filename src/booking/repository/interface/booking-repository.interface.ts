@@ -11,13 +11,13 @@ export interface IBookingRepository {
     trainerId: string,
     page: number,
     limit: number,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
+  ): Promise<{ bookings: Booking[]; totalRecords: number,currentPage: number, totalPages: number }>;
 
   bookingOfUserId(
     userId: string,
     page: number,
     limit: number,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
+  ): Promise<{ bookings: Booking[]; totalRecords: number,currentPage: number, totalPages: number }>;
 
   update(id: string, data: Partial<Booking>): Promise<Booking | null>;
 
@@ -33,12 +33,12 @@ export interface IBookingRepository {
   getFilteredBookings(
     trainerId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
+  ): Promise<{ bookings: Booking[]; totalRecords: number,currentPage: number, totalPages: number }>;
 
   getUserFilteredBookings(
     userId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: Booking[]; totalRecords: number }>;
+  ): Promise<{ bookings: Booking[]; totalRecords: number,currentPage: number, totalPages: number}>;
 
   updateByOrderId(
     orderId: string,

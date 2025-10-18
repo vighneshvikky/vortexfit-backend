@@ -10,12 +10,17 @@ import { planModule } from 'src/plans/plan.module';
 import { ISUBSCRIPTIONREPOSITORY } from './repository/interface/subscription.inteface.repository';
 import { ISUBSCRIPTIONSERVICE } from './service/interface/ISubscription.service';
 import { NotificationModule } from 'src/notifications/notification.module';
+import { UserModel } from '@/user/model/user.model';
+import { UserModule } from '@/user/user.module';
+import { TrainerModule } from '@/trainer/trainer.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Subscription.name, schema: SubscriptionSchema },
     ]),
+    UserModule,
+    TrainerModule,
     JwtModule.register({}),
     planModule,
     NotificationModule,

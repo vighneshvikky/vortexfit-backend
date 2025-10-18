@@ -4,6 +4,7 @@ export const ISUBSCRIPTIONSERVICE = Symbol('ISUBSCRIPTIONSERVICE');
 
 export interface ISubscriptionService {
   subscribeUserToPlan(
+    role: string,
     userId: string,
     planId: string,
     razorpay_order_id?: string,

@@ -10,11 +10,12 @@ export interface ITransactionService {
   getUserTransactions(
     userId: Types.ObjectId,
     filters?: TransactionFilterDto,
-  ): Promise<TransactionDto[]>;
+  ): Promise<{ transactions: TransactionFilterDto[]; total: number; currentPage: number; totalPages: number }>;
   getTrainerTransactions(trainerId: string): Promise<TransactionDto[]>;
   getAdminTransactions(adminId: string): Promise<TransactionDto[]>;
   getExpenses(userId: Types.ObjectId): Promise<number>;
   updateCancellation(transactionId: Types.ObjectId): Promise<TransactionDto>;
    getTransactionByPaymentId(paymentId: string): Promise<TransactionDto>
     deleteTransaction(tId: string): Promise<{ deletedCount: number }>;
+    earnings(userId: Types.ObjectId): Promise<number>
 }

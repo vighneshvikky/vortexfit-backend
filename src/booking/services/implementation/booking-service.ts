@@ -45,10 +45,10 @@ export class BookingService implements IBookingService {
     @Inject(ITRANSACTIONSERVICE)
     private readonly _transactionService: ITransactionService,
   ) {}
-/**
- * 
- * 
- */
+  /**
+   *
+   *
+   */
   async create(data: CreateBookingDto): Promise<BookingModel | null> {
     console.log('data for booking', data);
     const bookingDoc = await this._bookingRepository.create(data);
@@ -102,7 +102,12 @@ export class BookingService implements IBookingService {
     trainerId: string,
     page: number,
     limit: number,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: BookingModel[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const result = await this._bookingRepository.bookingOfTrainerId(
       trainerId,
       page,
@@ -111,14 +116,24 @@ export class BookingService implements IBookingService {
     const mappedBookings = result.bookings.map(
       (b) => BookingMapper.toDomain(b)!,
     );
-    return { bookings: mappedBookings, totalRecords: result.totalRecords };
+    return {
+      bookings: mappedBookings,
+      totalRecords: result.totalRecords,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+    };
   }
 
   async getUserBookings(
     userId: string,
     page: number,
     limit: number,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: BookingModel[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const result = await this._bookingRepository.bookingOfUserId(
       userId,
       page,
@@ -127,18 +142,29 @@ export class BookingService implements IBookingService {
     const mappedBookings = result.bookings.map(
       (b) => BookingMapper.toDomain(b)!,
     );
-    return { bookings: mappedBookings, totalRecords: result.totalRecords };
+    return {
+      bookings: mappedBookings,
+      totalRecords: result.totalRecords,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+    };
   }
 
   async getFilteredBookings(
     trainerId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: BookingModel[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const result = await this._bookingRepository.getFilteredBookings(
       trainerId,
       filters,
     );
-    if (!result) return { bookings: [], totalRecords: 0 };
+    if (!result)
+      return { bookings: [], totalRecords: 0, currentPage: 0, totalPages: 0 };
 
     const { bookings, totalRecords } = result;
 
@@ -146,18 +172,29 @@ export class BookingService implements IBookingService {
       .map((b) => BookingMapper.toDomain(b)!)
       .filter(Boolean);
 
-    return { bookings: mappedBookings, totalRecords };
+    return {
+      bookings: mappedBookings,
+      totalRecords: result.totalRecords,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+    };
   }
 
   async getUserFilteredBookings(
     userId: string,
     filters: BookingFilterDto,
-  ): Promise<{ bookings: BookingModel[]; totalRecords: number }> {
+  ): Promise<{
+    bookings: BookingModel[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
     const result = await this._bookingRepository.getUserFilteredBookings(
       userId,
       filters,
     );
-    if (!result) return { bookings: [], totalRecords: 0 };
+    if (!result)
+      return { bookings: [], totalRecords: 0, currentPage: 0, totalPages: 0 };
 
     const { bookings, totalRecords } = result;
 
@@ -165,7 +202,7 @@ export class BookingService implements IBookingService {
       .map((b) => BookingMapper.toDomain(b)!)
       .filter(Boolean);
 
-    return { bookings: mappedBookings, totalRecords };
+     return { bookings: mappedBookings, totalRecords: result.totalRecords, currentPage: result.currentPage, totalPages: result.totalPages};
   }
 
   async changeStatus(

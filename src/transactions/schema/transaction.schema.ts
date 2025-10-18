@@ -28,8 +28,8 @@ export class Transaction {
   @Prop({ required: true })
   amount: number;
 
-  @Prop({ enum: ['BOOKING', 'SUBSCRIPTION'], required: true })
-  sourceType: 'BOOKING' | 'SUBSCRIPTION';
+  @Prop({ enum: ['BOOKING', 'SUBSCRIPTION', 'CREDIT'], required: true })
+  sourceType: 'BOOKING' | 'SUBSCRIPTION' | 'CREDIT';
 
   @Prop({ type: Types.ObjectId })
   sourceId: Types.ObjectId;

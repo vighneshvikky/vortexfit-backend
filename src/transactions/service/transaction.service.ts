@@ -27,12 +27,40 @@ export class TransactionService implements ITransactionService {
   async getUserTransactions(
     userId: Types.ObjectId,
     filters?: TransactionFilterDto,
-  ): Promise<TransactionDto[]> {
-    const transactions = await this._transactionRepository.getUserTransactions(
-      userId,
-      filters,
-    );
-    return transactions.map(mapTransactionToDto);
+  ): Promise<{
+    transactions: TransactionFilterDto[];
+    total: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
+    const page = filters?.page || 1;
+    const limit = filters?.limit || 10;
+
+    console.log('page', page);
+    console.log('limit', limit);
+ const { page: _, limit: __, ...filterParams } = filters || {};
+
+ console.log('filterParams', filterParams)
+    const [transactions, total] = await Promise.all([
+      this._transactionRepository.getUserTransactions(
+        userId,
+        filterParams,
+        page,
+        limit,
+      ),
+      this._transactionRepository.countUserTransactions(userId, filterParams!),
+    ]);
+
+    const userTransactions = transactions.map(mapTransactionToDto);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      transactions: userTransactions,
+      total,
+      currentPage: page,
+      totalPages,
+    };
   }
 
   async getTrainerTransactions(trainerId: string): Promise<TransactionDto[]> {
@@ -47,9 +75,7 @@ export class TransactionService implements ITransactionService {
     return transactions.map(mapTransactionToDto);
   }
 
-  // async getEarnings(userId: Types.ObjectId, role: string) {
-  //   return this._transactionRepository.sumCredits(userId, role);
-  // }
+
 
   async updateCancellation(
     transactionId: Types.ObjectId,
@@ -77,7 +103,11 @@ export class TransactionService implements ITransactionService {
     return this._transactionRepository.sumDebits(userId);
   }
 
-  async deleteTransaction(tId: string): Promise<{ deletedCount: number}>{
-    return this._transactionRepository.deleteTransaction(tId)
+  async deleteTransaction(tId: string): Promise<{ deletedCount: number }> {
+    return this._transactionRepository.deleteTransaction(tId);
+  }
+
+  earnings(userId: Types.ObjectId): Promise<number> {
+    return this._transactionRepository.earnings(userId)
   }
 }

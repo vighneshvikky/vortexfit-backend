@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsEnum,
   IsMongoId,
@@ -6,6 +7,9 @@ import {
   IsDateString,
   IsNumberString,
   IsBoolean,
+  IsInt,
+  Min,
+  Max,
 } from 'class-validator';
 import { Types } from 'mongoose';
 
@@ -20,7 +24,7 @@ export class CreateTransactionDto {
   amount: number;
 
   @IsEnum(['BOOKING', 'SUBSCRIPTION'])
-  sourceType: 'BOOKING' | 'SUBSCRIPTION';
+  sourceType: 'BOOKING' | 'SUBSCRIPTION' | 'CREDIT';
 
   @IsMongoId()
   sourceId: Types.ObjectId;
@@ -46,15 +50,7 @@ export class TransactionFilterDto {
 
   @IsOptional()
   @IsEnum(['BOOKING', 'SUBSCRIPTION'])
-  sourceType?: 'BOOKING' | 'SUBSCRIPTION';
-
-  @IsOptional()
-  @IsNumberString()
-  page?: string;
-
-  @IsOptional()
-  @IsNumberString()
-  limit?: string;
+  sourceType?: 'BOOKING' | 'SUBSCRIPTION' | 'CREDIT'; 
 
   @IsOptional()
   sortBy?: 'createdAt' | 'amount';
@@ -65,4 +61,17 @@ export class TransactionFilterDto {
   @IsOptional()
   @IsBoolean()
   isCancelled?: boolean;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 }

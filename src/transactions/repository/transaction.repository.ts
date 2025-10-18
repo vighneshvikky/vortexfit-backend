@@ -13,7 +13,6 @@ export class TransactionRepository implements ITransactionRepository {
     private readonly _transactionModel: Model<TransactionDocument>,
   ) {}
 
-  
   async recordTransaction(data: Partial<Transaction>): Promise<Transaction> {
     if (!data.fromModel) {
       throw new Error('fromModel is required (User or Trainer)');
@@ -29,6 +28,8 @@ export class TransactionRepository implements ITransactionRepository {
   async getUserTransactions(
     userId: Types.ObjectId,
     filters?: TransactionFilterDto,
+    page: number = 1,
+    limit: number = 4,
   ) {
     const query: FilterQuery<TransactionDocument> = {
       $or: [{ fromUser: userId }, { toUser: userId }],
@@ -50,9 +51,13 @@ export class TransactionRepository implements ITransactionRepository {
       }
     }
 
+    const skip = (page - 1) * limit;
+
     return this._transactionModel
       .find(query)
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate('fromUser', 'name email')
       .populate('toUser', 'name email')
       .exec();
@@ -93,8 +98,35 @@ export class TransactionRepository implements ITransactionRepository {
     return this._transactionModel.findOne({ paymentId }).exec();
   }
 
-  async deleteTransaction(tId: string): Promise<{ deletedCount: number}> {
+  async earnings(userId: Types.ObjectId): Promise<number>{
+const result = await  this._transactionModel.aggregate([
+  {$match: {toUser: userId, isCancelled: false}},
+  {$group: {_id: null, totalEarnings: {$sum: "$amount"}}}
+])
+
+return result.length > 0 ? result[0].totalEarnings : 0;
+  }
+
+  async deleteTransaction(tId: string): Promise<{ deletedCount: number }> {
     const txId = new Types.ObjectId(tId);
     return this._transactionModel.deleteOne({ _id: txId });
+  }
+
+  async countUserTransactions(
+    userId: Types.ObjectId,
+    filters: TransactionFilterDto,
+  ): Promise<number> {
+    const query: FilterQuery<TransactionDocument> = {
+      $or: [{ fromUser: userId }, { toUser: userId }],
+    };
+
+    if (filters?.sourceType) query.sourceType = filters.sourceType;
+    if (filters?.fromDate || filters?.toDate) {
+      query.createdAt = {};
+      if (filters.fromDate) query.createdAt.$gte = filters.fromDate;
+      if (filters.toDate) query.createdAt.$lte = filters.toDate;
+    }
+
+    return this._transactionModel.countDocuments(query);
   }
 }

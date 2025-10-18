@@ -21,20 +21,18 @@ export class transactionController {
     @Query() filters: TransactionFilterDto,
     @GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId,
   ) {
+    console.log('filters', filters);
     console.log('userId', userId);
     return this._transactionSerivce.getUserTransactions(userId, filters);
   }
 
-  // @Get('earnings')
-  // getEarnings(
-  //   @GetUser('role') role: string,
-  //   @GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId,
-  // ) {
-  //   return this._transactionSerivce.getEarnings(userId, role);
-  // }
-
   @Get('expenses')
   getExpenses(@GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId) {
     return this._transactionSerivce.getExpenses(userId);
+  }
+
+  @Get('earnings')
+  earnings(@GetUser('sub', ParseObjectIdPipe) userId: Types.ObjectId) {
+    return this._transactionSerivce.earnings(userId);
   }
 }
