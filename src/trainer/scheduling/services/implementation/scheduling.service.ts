@@ -9,6 +9,10 @@ import { ScheduleMapper } from '../../mapper/implementation/schedule.mapper';
 import { ScheduleDto } from '../../mapper/interface/schedule.mapper.interface';
 import dayjs from 'dayjs';
 import { IBookingRepository } from 'src/booking/repository/interface/booking-repository.interface';
+import {
+  ISubscriptionService,
+  ISUBSCRIPTIONSERVICE,
+} from '@/subscription/service/interface/ISubscription.service';
 
 export class SlotDto {
   time: string;
@@ -25,6 +29,8 @@ export class ScheduleService implements ISchedulingService {
     private readonly logger: WinstonLogger,
     @Inject(IBookingRepository)
     private readonly _bookingRepository: IBookingRepository,
+    @Inject(ISUBSCRIPTIONSERVICE)
+    private readonly _subscriptionService: ISubscriptionService,
   ) {}
 
   async createSchedule(
@@ -104,14 +110,20 @@ export class ScheduleService implements ISchedulingService {
   }
 
   async getSchedulesOfTrainer(id: string): Promise<ScheduleDto[] | null> {
+    const hasActiveSub =
+      await this._subscriptionService.hasActiveSubscription(id);
+
+    if (hasActiveSub) {
+      throw new BadRequestException(
+        'No active subscription found. Please activate a plan to access your schedule.',
+      );
+    }
     const data = await this._scheduleRepository.findByTrainerId(id);
     if (!data || data.length === 0) {
       return null;
     }
     return ScheduleMapper.toDtoArray(data);
   }
-
-  //showing slots for users
 
   async getAvailableSlots(trainerId: string, dateStr: string) {
     const date = dayjs(dateStr, 'YYYY-MM-DD', true);

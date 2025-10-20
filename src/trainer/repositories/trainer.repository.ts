@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { Trainer, TraninerDocument } from '../schemas/trainer.schema';
 import { BaseRepository } from '../../common/repositories/base.repository';
 import { ITrainerRepository } from '../interfaces/trainer-repository.interface';
@@ -73,7 +73,7 @@ export class TrainerRepository
   }
 
   async findBlockedTrainers(search: string): Promise<Trainer[]> {
-  const query: any = { isBlocked: true };
+  const query: FilterQuery<Trainer> = { isBlocked: true };
   
   if (search) {
     query.$or = [
@@ -86,7 +86,7 @@ export class TrainerRepository
 }
 
 async countBlockedTrainers(search: string): Promise<number> {
-  const query: any = { isBlocked: true };
+  const query: FilterQuery<Trainer> = { isBlocked: true };
   
   if (search) {
     query.$or = [

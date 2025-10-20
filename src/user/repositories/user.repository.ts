@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { BaseRepository } from 'src/common/repositories/base.repository';
 import { IUserRepository } from '../interfaces/user-repository.interface';
@@ -43,7 +43,7 @@ export class UserRepository
   }
 
   async findBlockedUsers(search: string): Promise<User[]> {
-    const query: any = { isBlocked: true };
+    const query: FilterQuery<User> = { isBlocked: true };
 
     if (search) {
       query.$or = [
@@ -56,7 +56,7 @@ export class UserRepository
   }
 
   async countBlockedUsers(search: string): Promise<number> {
-    const query: any = { isBlocked: true };
+    const query: FilterQuery<User> = { isBlocked: true };
 
     if (search) {
       query.$or = [

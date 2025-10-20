@@ -44,6 +44,7 @@ export class TrainerMapper {
       email: domain.email,
       phoneNumber: domain.phoneNumber,
       specialization: domain.specialization,
+      category: domain.category,
       experience: domain.experience,
       bio: domain.bio,
       certificationUrl: domain.certificationUrl,
