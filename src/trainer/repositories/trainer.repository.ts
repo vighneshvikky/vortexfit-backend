@@ -73,28 +73,28 @@ export class TrainerRepository
   }
 
   async findBlockedTrainers(search: string): Promise<Trainer[]> {
-  const query: FilterQuery<Trainer> = { isBlocked: true };
-  
-  if (search) {
-    query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-    ];
-  }
-  
-  return this.find(query);
-}
+    const query: FilterQuery<Trainer> = { isBlocked: true };
 
-async countBlockedTrainers(search: string): Promise<number> {
-  const query: FilterQuery<Trainer> = { isBlocked: true };
-  
-  if (search) {
-    query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-    ];
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    return this.find(query);
   }
-  
-  return this.model.countDocuments(query).exec();
-}
+
+  async countBlockedTrainers(search: string): Promise<number> {
+    const query: FilterQuery<Trainer> = { isBlocked: true };
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    return this.model.countDocuments(query).exec();
+  }
 }

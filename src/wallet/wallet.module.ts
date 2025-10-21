@@ -11,6 +11,7 @@ import { TransactionModule } from 'src/transactions/transaction.module';
 import { BookingModule } from 'src/booking/booking.module';
 import { IWALLETSERVICE } from './service/interface/IWalletService.interface';
 import { IWALLETREPOSITORY } from './repository/interface/IWalletRepository.interface';
+import { NotificationModule } from '@/notifications/notification.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { IWALLETREPOSITORY } from './repository/interface/IWalletRepository.inte
     JwtModule.register({}),
     TransactionModule,
     forwardRef(() => BookingModule),
+    NotificationModule,
   ],
   providers: [
     {

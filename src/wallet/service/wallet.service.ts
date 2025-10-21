@@ -19,6 +19,12 @@ import {
   IWalletRepository,
   IWALLETREPOSITORY,
 } from '../repository/interface/IWalletRepository.interface';
+import {
+  INotificationService,
+  INOTIFICATIONSERVICE,
+} from '@/notifications/services/interface/INotification.service.interface';
+import { NotificationGateway } from '@/notifications/notification.gateway';
+import { NotificationType } from '@/notifications/schema/notification.schema';
 
 @Injectable()
 export class WalletService {
@@ -29,6 +35,9 @@ export class WalletService {
     private readonly _transactionService: ITransactionService,
     @Inject(BOOKING_SERVICE)
     private readonly _bookingService: IBookingService,
+    @Inject(INOTIFICATIONSERVICE)
+    private readonly _notificationService: INotificationService,
+    private readonly _notificationGateway: NotificationGateway,
   ) {}
 
   async handleFailedPayment(
@@ -42,12 +51,22 @@ export class WalletService {
   ) {
     let wallet = await this._walletRepository.findByUserId(userId);
     const amount = body.amount / 100;
+    const userMessage = `${amount} has been credited to your Wallet.`;
+    const notificationUser = await this._notificationService.createNotification(
+      userId.toString(),
+      NotificationType.WALLET,
+      userMessage,
+    );
 
+    this._notificationGateway.sendNotification(
+      userId.toString(),
+      notificationUser,
+    );
     if (!wallet) {
       wallet = await this._walletRepository.createWallet(userId, amount);
     } else {
       wallet.balance += amount;
-      wallet = await wallet.save();
+     await wallet.save();
     }
 
     return { success: true, wallet: WalletMapper.toResponse(wallet) };

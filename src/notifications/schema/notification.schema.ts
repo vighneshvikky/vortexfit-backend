@@ -6,6 +6,7 @@ export type NotificationDocument = HydratedDocument<Notification>;
 export enum NotificationType {
   BOOKING = 'booking',
   SUBSCRIPTION = 'subscription',
+  WALLET = 'wallet',
   PAYMENT = 'payment',
   SYSTEM = 'system',
 }
