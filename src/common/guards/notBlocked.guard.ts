@@ -18,8 +18,8 @@ import {
 @Injectable()
 export class NotBlockedGuard implements CanActivate {
   constructor(
-    @Inject(USER_SERVICE) private readonly userService: IUserService,
-    @Inject(TRAINER_SERVICE) private readonly trainerService: ITrainerService,
+    @Inject(USER_SERVICE) private readonly _userService: IUserService,
+    @Inject(TRAINER_SERVICE) private readonly _trainerService: ITrainerService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -30,12 +30,12 @@ export class NotBlockedGuard implements CanActivate {
     }
 
     if (user.role === 'user') {
-      const dbUser = await this.userService.findById(user.sub);
+      const dbUser = await this._userService.findById(user.sub);
       if (!dbUser || dbUser.isBlocked) {
         throw new ForbiddenException('User is blocked or not found');
       }
     } else if (user.role === 'trainer') {
-      const dbTrainer = await this.trainerService.findById(user.sub);
+      const dbTrainer = await this._trainerService.findById(user.sub);
 
       if (!dbTrainer || dbTrainer.isBlocked) {
         throw new ForbiddenException('Trainer is blocked or not found');
