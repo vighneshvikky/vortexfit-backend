@@ -47,4 +47,9 @@ export class NotificationController {
   async deleteNotification(@Param('id') id: string) {
     return this._notificationService.deleteNotification(id);
   }
+
+  @Patch('mark-all-read/:userId')
+  async markAllAsRead(@Param('userId') userId: string) {
+    return this._notificationService.markAllAsRead(userId);
+  }
 }

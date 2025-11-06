@@ -11,4 +11,5 @@ export interface INotificationRepository {
   findByUser(userId: Types.ObjectId): Promise<NotificationDocument[]>;
   markAsRead(id: Types.ObjectId): Promise<NotificationDocument | null>;
   delete(id: Types.ObjectId): Promise<void>;
+  markAllAsRead(userId: Types.ObjectId): Promise<{success: boolean}>;
 }

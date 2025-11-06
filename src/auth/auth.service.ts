@@ -119,6 +119,7 @@ export class AuthService implements IAuthService {
       role: user.role,
       isBlocked: false,
     });
+    
     const refreshToken = this._jwtService.signRefreshToken({
       sub: userId,
       role: user.role,
@@ -183,7 +184,7 @@ export class AuthService implements IAuthService {
       isBlocked: false,
     });
 
-    const newRefreshToken =  this._jwtService.signRefreshToken({
+    const newRefreshToken = this._jwtService.signRefreshToken({
       sub: userId,
       role,
       isBlocked: false,

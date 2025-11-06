@@ -6,7 +6,7 @@ export function setTokenCookies(
   refreshToken: string,
 ): void {
   res.cookie('access_token', accessToken, {
-    httpOnly: true,
+    httpOnly: true, 
     secure: true,
     sameSite: 'lax',
     maxAge: 60 * 60 * 1000,

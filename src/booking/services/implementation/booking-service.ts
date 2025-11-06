@@ -45,10 +45,7 @@ export class BookingService implements IBookingService {
     @Inject(ITRANSACTIONSERVICE)
     private readonly _transactionService: ITransactionService,
   ) {}
-  /**
-   *
-   *
-   */
+
   async create(data: CreateBookingDto): Promise<BookingModel | null> {
     console.log('data for booking', data);
     const bookingDoc = await this._bookingRepository.create(data);
@@ -62,12 +59,16 @@ export class BookingService implements IBookingService {
       message,
     );
 
+    console.log('userNotification', userNotification);
+
     const trainerNotification =
       await this._notificationService.createNotification(
         data.trainerId.toString(),
         NotificationType.BOOKING,
         message,
       );
+
+    console.log('trainerNotification', trainerNotification);
 
     this._notificationGateway.sendNotification(
       data.userId.toString(),
@@ -202,7 +203,12 @@ export class BookingService implements IBookingService {
       .map((b) => BookingMapper.toDomain(b)!)
       .filter(Boolean);
 
-     return { bookings: mappedBookings, totalRecords: result.totalRecords, currentPage: result.currentPage, totalPages: result.totalPages};
+    return {
+      bookings: mappedBookings,
+      totalRecords: result.totalRecords,
+      currentPage: result.currentPage,
+      totalPages: result.totalPages,
+    };
   }
 
   async changeStatus(
@@ -339,6 +345,7 @@ export class BookingService implements IBookingService {
   }
 
   async unlockOrConfirmSlot(
+    userId: string,
     trainerId: string,
     date: string,
     timeSlot: string,
@@ -351,6 +358,28 @@ export class BookingService implements IBookingService {
         date,
         timeSlot,
         paymentId,
+      );
+      const message = `Booking cofirmed on ${date} at ${timeSlot}`;
+      console.log('userId for booking', userId);
+      const userNotification =
+        await this._notificationService.createNotification(
+          userId,
+          NotificationType.BOOKING,
+          message,
+        );
+
+      const trainerNotification =
+        await this._notificationService.createNotification(
+          trainerId,
+          NotificationType.BOOKING,
+          message,
+        );
+
+      this._notificationGateway.sendNotification(userId, userNotification);
+
+      this._notificationGateway.sendNotification(
+        trainerId,
+        trainerNotification,
       );
 
       return updatedBooking ? BookingMapper.toDomain(updatedBooking) : null;

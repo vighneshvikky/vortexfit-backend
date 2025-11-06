@@ -6,20 +6,18 @@ import {
   SubscriptionDocument,
 } from '../schema/subscription.schema';
 import { ISubscriptionRepository } from './interface/subscription.inteface.repository';
+import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
-export class SubscriptionRepository implements ISubscriptionRepository {
+export class SubscriptionRepository
+  extends BaseRepository<SubscriptionDocument>
+  implements ISubscriptionRepository
+{
   constructor(
     @InjectModel(Subscription.name)
     private _subscriptionModel: Model<SubscriptionDocument>,
-  ) {}
-  async create(data: Partial<Subscription>): Promise<SubscriptionDocument> {
-    const subscription = new this._subscriptionModel({
-      ...data,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    return subscription.save();
+  ) {
+    super(_subscriptionModel);
   }
 
   async findByUserId(userId: string): Promise<SubscriptionDocument[]> {
@@ -46,5 +44,14 @@ export class SubscriptionRepository implements ISubscriptionRepository {
     });
 
     return !sub;
+  }
+
+  async create(data: Partial<Subscription>): Promise<SubscriptionDocument> {
+    const subscription = new this._subscriptionModel({
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    return subscription.save();
   }
 }

@@ -5,35 +5,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { BookingStatus } from '@/booking/enums/booking.enum';
 import { BookingFilterDto } from '@/booking/dtos/booking-dto.interface';
-import { User, UserDocument } from '@/user/schemas/user.schema';
+import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
-export class BookingRepository implements IBookingRepository {
+export class BookingRepository
+  extends BaseRepository<BookingDocument>
+  implements IBookingRepository
+{
   constructor(
     @InjectModel(Booking.name)
     private readonly _bookingModel: Model<BookingDocument>,
-    @InjectModel(User.name)
-    private readonly _userModel: Model<UserDocument>,
-  ) {}
-
-  async create(data: Partial<Booking>): Promise<Booking> {
-    const booking = new this._bookingModel(data);
-
-    return booking.save();
+  ) {
+    super(_bookingModel);
   }
-
-  async delete(id: string): Promise<boolean> {
-    if (!Types.ObjectId.isValid(id)) return false;
-    const result = await this._bookingModel.deleteOne({ _id: id });
-    return result.deletedCount > 0;
-  }
-
-  /**
-   *
-   * This is for finding specific slot for trainers
-   *
-   *
-   */
 
   async findBySlot(
     trainerId: string,
@@ -77,6 +61,12 @@ export class BookingRepository implements IBookingRepository {
 
   async deleteOne(filter: Partial<Booking>): Promise<void> {
     await this._bookingModel.deleteOne(filter).exec();
+  }
+
+  async delete(id: string): Promise<boolean> {
+    if (!Types.ObjectId.isValid(id)) return false;
+    const result = await this._bookingModel.deleteOne({ _id: id });
+    return result.deletedCount > 0;
   }
 
   async getFilteredBookings(

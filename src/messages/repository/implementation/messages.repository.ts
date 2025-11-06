@@ -3,13 +3,19 @@ import { ChatMessage, ChatMessageDocument } from '../../schemas/message.schema';
 import { Model, Types } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { IMessageRepository } from '../interface/messages.repository.interface';
+import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
-export class MessageRepository implements IMessageRepository {
+export class MessageRepository
+  extends BaseRepository<ChatMessageDocument>
+  implements IMessageRepository
+{
   constructor(
     @InjectModel(ChatMessage.name)
     private readonly _messageModel: Model<ChatMessageDocument>,
-  ) {}
+  ) {
+    super(_messageModel);
+  }
 
   async saveMessage(
     senderId: Types.ObjectId,

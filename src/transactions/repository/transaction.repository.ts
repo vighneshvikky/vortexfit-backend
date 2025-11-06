@@ -5,13 +5,19 @@ import { Transaction, TransactionDocument } from '../schema/transaction.schema';
 import { TransactionFilterDto } from '../dtos/transaction.dto';
 import { FilterQuery } from 'mongoose';
 import { ITransactionRepository } from './interface/ITransaction.repository.interface';
+import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
-export class TransactionRepository implements ITransactionRepository {
+export class TransactionRepository
+  extends BaseRepository<TransactionDocument>
+  implements ITransactionRepository
+{
   constructor(
     @InjectModel(Transaction.name)
     private readonly _transactionModel: Model<TransactionDocument>,
-  ) {}
+  ) {
+    super(_transactionModel);
+  }
 
   async recordTransaction(data: Partial<Transaction>): Promise<Transaction> {
     if (!data.fromModel) {
@@ -98,13 +104,13 @@ export class TransactionRepository implements ITransactionRepository {
     return this._transactionModel.findOne({ paymentId }).exec();
   }
 
-  async earnings(userId: Types.ObjectId): Promise<number>{
-const result = await  this._transactionModel.aggregate([
-  {$match: {toUser: userId, isCancelled: false}},
-  {$group: {_id: null, totalEarnings: {$sum: "$amount"}}}
-])
+  async earnings(userId: Types.ObjectId): Promise<number> {
+    const result = await this._transactionModel.aggregate([
+      { $match: { toUser: userId, isCancelled: false } },
+      { $group: { _id: null, totalEarnings: { $sum: '$amount' } } },
+    ]);
 
-return result.length > 0 ? result[0].totalEarnings : 0;
+    return result.length > 0 ? result[0].totalEarnings : 0;
   }
 
   async deleteTransaction(tId: string): Promise<{ deletedCount: number }> {

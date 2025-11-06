@@ -50,6 +50,11 @@ export class NotificationService implements INotificationService {
     return notification ? NotificationMapper.toDto(notification) : null;
   }
 
+
+    async markAllAsRead(userId: string): Promise<{success: boolean}> {
+      const id = new Types.ObjectId(userId);
+   return this._notificationRepo.markAllAsRead(id)
+  }
   async deleteNotification(notificationId: string): Promise<void> {
     return this._notificationRepo.delete(new Types.ObjectId(notificationId));
   }

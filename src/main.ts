@@ -6,19 +6,21 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 dotenv.config();
-  const allowedOrigins = [
-    'http://localhost:4200',
-    'http://vortex-fit.space',
-    'https://vortex-fit.space',
-    'http://www.vortex-fit.space',
-    'https://www.vortex-fit.space',
-  ];
-	 if (process.env.FRONTEND_URL) {
-    const envOrigins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
-    allowedOrigins.push(...envOrigins);
-  }
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.HOST_API,
+  process.env.WWW_API,
+];
+if (process.env.FRONTEND_URL) {
+  const envOrigins = process.env.FRONTEND_URL.split(',').map((url) =>
+    url.trim(),
+  );
+  allowedOrigins.push(...envOrigins);
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -26,13 +28,11 @@ async function bootstrap() {
   app.useLogger(logger);
   app.use(cookieParser());
 
-     app.enableCors({
+  app.enableCors({
     origin: [
-      'https://vortex-fit.space',           // HTTPS (primary)
-      'https://www.vortex-fit.space',       // HTTPS www
-      'http://vortex-fit.space',            // HTTP (will redirect)
-      'http://www.vortex-fit.space',        // HTTP www (will redirect)
-      'http://localhost:4200',              // Local development
+  process.env.FRONTEND_URL,
+  process.env.HOST_API,
+  process.env.WWW_API,
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -50,6 +50,8 @@ async function bootstrap() {
       disableErrorMessages: false,
     }),
   );
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 

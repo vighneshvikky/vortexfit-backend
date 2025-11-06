@@ -93,6 +93,7 @@ export class PaymentsController {
 
     if (expectedSignature !== razorpay_signature) {
       await this._bookingService.unlockOrConfirmSlot(
+        userId,
         trainerId,
         date,
         timeSlot,
@@ -104,6 +105,7 @@ export class PaymentsController {
 
 
   const booking = await this._bookingService.unlockOrConfirmSlot(
+    userId,
     trainerId,
     date,
     timeSlot,

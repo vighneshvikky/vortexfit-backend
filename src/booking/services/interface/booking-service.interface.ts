@@ -54,6 +54,7 @@ export interface IBookingService {
 
     lockSlot(trainerId: string, date: string, timeSlot: string, userId: string, amount: number, sessionType: string): Promise<BookingModel | null>;
   unlockOrConfirmSlot(
+    userId: string,
     trainerId: string,
     date: string,
     timeSlot: string,

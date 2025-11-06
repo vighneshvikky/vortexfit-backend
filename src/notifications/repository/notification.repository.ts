@@ -4,20 +4,27 @@ import { Model, Types } from 'mongoose';
 import {
   Notification,
   NotificationDocument,
+  NotificationStatus,
 } from '../schema/notification.schema';
 import { INotificationRepository } from './interface/INotification.repository.interface';
+import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
-export class NotificationRepository implements INotificationRepository {
+export class NotificationRepository
+  extends BaseRepository<NotificationDocument>
+  implements INotificationRepository
+{
   constructor(
     @InjectModel(Notification.name)
     private _notificationModel: Model<NotificationDocument>,
-  ) {}
-
-  async create(data: Partial<Notification>): Promise<NotificationDocument> {
-    const notification = new this._notificationModel(data);
-    return notification.save();
+  ) {
+    super(_notificationModel);
   }
+
+  // async create(data: Partial<Notification>): Promise<NotificationDocument> {
+  //   const notification = new this._notificationModel(data);
+  //   return notification.save();
+  // }
 
   async findByUser(userId: Types.ObjectId): Promise<NotificationDocument[]> {
     return this._notificationModel
@@ -32,6 +39,14 @@ export class NotificationRepository implements INotificationRepository {
       { status: 'read' },
       { new: true },
     );
+  }
+
+  async markAllAsRead(userId: Types.ObjectId): Promise<{ success: boolean }> {
+    await this._notificationModel.updateMany(
+      { userId, status: NotificationStatus.UNREAD },
+      { $set: { status: NotificationStatus.READ } },
+    );
+    return { success: true };
   }
 
   async delete(id: Types.ObjectId): Promise<void> {

@@ -106,7 +106,7 @@ export class BookingController {
         limit: limitNumber,
       });
 
-    return { bookings, totalRecords };
+    return { bookings, totalRecords }; 
   }
 
   @Patch(':id/cancel')
