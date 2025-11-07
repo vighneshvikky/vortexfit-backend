@@ -36,6 +36,7 @@ export class NotificationGateway {
   }
 
   sendNotification(userId: string, notification: NotificationDto) {
+    console.log('sending new notifiction')
     this.server.to(userId).emit('newNotification', notification);
   }
 }
