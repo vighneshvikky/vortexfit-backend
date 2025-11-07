@@ -58,4 +58,9 @@ export class NotificationService implements INotificationService {
   async deleteNotification(notificationId: string): Promise<void> {
     return this._notificationRepo.delete(new Types.ObjectId(notificationId));
   }
+
+  async getUnReadCount(userId: string): Promise<Number>{
+     const id = new Types.ObjectId(userId);
+    return this._notificationRepo.getUnReadCount(id)
+  }
 }

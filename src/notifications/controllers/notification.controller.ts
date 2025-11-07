@@ -52,4 +52,9 @@ export class NotificationController {
   async markAllAsRead(@Param('userId') userId: string) {
     return this._notificationService.markAllAsRead(userId);
   }
+
+  @Get('unread-count/:userId')
+  async getUnreadCount(@Param('userId') userId: string){
+    return this._notificationService.getUnReadCount(userId)
+  }
 }

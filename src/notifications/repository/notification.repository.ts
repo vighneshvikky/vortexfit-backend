@@ -8,6 +8,7 @@ import {
 } from '../schema/notification.schema';
 import { INotificationRepository } from './interface/INotification.repository.interface';
 import { BaseRepository } from '@/common/repositories/base.repository';
+import { STATUS_CODES } from 'http';
 
 @Injectable()
 export class NotificationRepository
@@ -21,10 +22,7 @@ export class NotificationRepository
     super(_notificationModel);
   }
 
-  // async create(data: Partial<Notification>): Promise<NotificationDocument> {
-  //   const notification = new this._notificationModel(data);
-  //   return notification.save();
-  // }
+
 
   async findByUser(userId: Types.ObjectId): Promise<NotificationDocument[]> {
     return this._notificationModel
@@ -51,5 +49,9 @@ export class NotificationRepository
 
   async delete(id: Types.ObjectId): Promise<void> {
     await this._notificationModel.findByIdAndDelete(id);
+  }
+
+  async getUnReadCount(userId: Types.ObjectId): Promise<Number>{
+    return await this._notificationModel.countDocuments({status:NotificationStatus.UNREAD })
   }
 }
