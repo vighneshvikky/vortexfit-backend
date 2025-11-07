@@ -11,9 +11,11 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 dotenv.config();
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  process.env.HOST_API,
-  process.env.WWW_API,
+    'http://localhost:4200',
+    'http://vortex-fit.space',
+    'https://vortex-fit.space',
+    'http://www.vortex-fit.space',
+    'https://www.vortex-fit.space',
 ];
 if (process.env.FRONTEND_URL) {
   const envOrigins = process.env.FRONTEND_URL.split(',').map((url) =>
@@ -30,9 +32,11 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-  process.env.FRONTEND_URL,
-  process.env.HOST_API,
-  process.env.WWW_API,
+     'https://vortex-fit.space',           // HTTPS (primary)
+      'https://www.vortex-fit.space',       // HTTPS www
+      'http://vortex-fit.space',            // HTTP (will redirect)
+      'http://www.vortex-fit.space',        // HTTP www (will redirect)
+      'http://localhost:4200',  
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

@@ -97,8 +97,6 @@ export class BookingController {
   ) {
     const pageNumber = Number(page) || 1;
     const limitNumber = Number(limit) || 5;
-    console.log('userId', userId);
-    console.log('filters', filters);
     const { bookings, totalRecords } =
       await this._bookingService.getUserFilteredBookings(userId, {
         ...filters,
