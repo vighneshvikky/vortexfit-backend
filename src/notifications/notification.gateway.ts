@@ -11,7 +11,11 @@ import { NotificationDto } from './dtos/notification.dto';
 @WebSocketGateway({
   namespace: '/notifications',
   cors: {
-    origin: '*',
+    origin: [
+      process.env.HOST_API,
+      process.env.WWW_API,
+      process.env.FRONTEND_URL,
+    ],
   },
 })
 export class NotificationGateway {
@@ -36,7 +40,7 @@ export class NotificationGateway {
   }
 
   sendNotification(userId: string, notification: NotificationDto) {
-    console.log('sending new notifiction')
+    console.log('sending new notifiction');
     this.server.to(userId).emit('newNotification', notification);
   }
 }

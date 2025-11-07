@@ -52,6 +52,6 @@ export class NotificationRepository
   }
 
   async getUnReadCount(userId: Types.ObjectId): Promise<Number>{
-    return await this._notificationModel.countDocuments({status:NotificationStatus.UNREAD })
+    return await this._notificationModel.countDocuments({userId: userId, status:NotificationStatus.UNREAD })
   }
 }
