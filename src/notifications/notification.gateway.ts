@@ -23,7 +23,7 @@ export class NotificationGateway {
   server: Server;
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+     console.log('🔌 Notifications connected:', client.id);
   }
 
   handleDisconnect(client: Socket) {
