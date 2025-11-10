@@ -4,10 +4,9 @@ import { ILogger } from './common/logger/log.interface';
 
 @Injectable()
 export class AppService {
-
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: ILogger){
-
-  }
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: ILogger,
+  ) {}
 
   getHello(): string {
     return 'Hello World!';

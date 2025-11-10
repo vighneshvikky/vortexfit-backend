@@ -14,7 +14,7 @@ import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interfa
 export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
-    @Inject(IJwtTokenService) private readonly jwtService: IJwtTokenService,
+    @Inject(IJwtTokenService) private readonly _jwtService: IJwtTokenService,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -30,7 +30,7 @@ export class JwtAuthGuard implements CanActivate {
 
       if (!secret) throw new Error('ACCESS_TOKEN_SECRET is not defined');
 
-      const payload = this.jwtService.verifyToken(token);
+      const payload = this._jwtService.verifyToken(token);
 
       request['user'] = payload;
       return true;
