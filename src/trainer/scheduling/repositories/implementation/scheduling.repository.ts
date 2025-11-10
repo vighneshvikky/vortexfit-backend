@@ -20,10 +20,7 @@ export class ScheduleRepository
     super(_schedulingRuleModel);
   }
 
-  // async create(data: Partial<SchedulingRule>): Promise<SchedulingRule> {
-  //   const created = new this._schedulingRuleModel(data);
-  //   return created.save();
-  // }
+
 
   async update(
     id: string,

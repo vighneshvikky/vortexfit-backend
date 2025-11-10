@@ -84,7 +84,7 @@ export class ScheduleService implements ISchedulingService {
       for (const day of data.exceptionalDays) {
         const exDay = new Date(day);
         if (exDay < startDate || exDay > endDate) {
-          throw new BadRequestException(
+          throw new BadRequestException(  
             'All exceptionalDays must be between startDate and endDate',
           );
         }
