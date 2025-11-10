@@ -38,9 +38,44 @@ export class NotificationGateway {
     client.join(userId);
     console.log(`Client ${client.id} joined room ${userId}`);
   }
-
+/**
+   * Send a new notification to user
+   */
   sendNotification(userId: string, notification: NotificationDto) {
-    console.log('sending new notifiction');
+    console.log('📤 Sending new notification to user:', userId);
     this.server.to(userId).emit('newNotification', notification);
   }
+
+  /**
+   * Notify that a notification was marked as read
+   */
+  notifyNotificationRead(userId: string, notificationId: string) {
+    console.log('📖 Notifying notification read:', notificationId);
+    this.server.to(userId).emit('notificationRead', { notificationId });
+  }
+
+  /**
+   * Notify that all notifications were marked as read
+   */
+  notifyAllNotificationsRead(userId: string) {
+    console.log('📚 Notifying all notifications marked as read for user:', userId);
+    this.server.to(userId).emit('allNotificationsRead', { userId });
+  }
+
+  /**
+   * Notify that a notification was deleted
+   */
+  notifyNotificationDeleted(userId: string, notificationId: string) {
+    console.log('🗑️ Notifying notification deleted:', notificationId);
+    this.server.to(userId).emit('notificationDeleted', { notificationId });
+  }
+
+  /**
+   * Send updated unread count to user
+   */
+  notifyUnreadCountUpdate(userId: string, count: number) {
+    console.log('🔢 Sending unread count update to user:', userId, 'count:', count);
+    this.server.to(userId).emit('unreadCountUpdate', { count });
+  }
+
 }

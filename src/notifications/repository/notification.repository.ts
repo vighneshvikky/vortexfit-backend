@@ -50,7 +50,15 @@ export class NotificationRepository
     await this._notificationModel.findByIdAndDelete(id);
   }
 
-  async getUnReadCount(userId: Types.ObjectId): Promise<number>{
-    return await this._notificationModel.countDocuments({userId: userId, status:NotificationStatus.UNREAD })
+  async getUnReadCount(userId: Types.ObjectId): Promise<{count: number}>{
+     console.log('🔢 Getting unread count for user:', userId);
+    
+    const count = await this._notificationModel
+      .countDocuments({ userId, status: 'unread' })
+      .exec();
+    
+    console.log('📊 Unread count result:', count);
+    
+    return { count };
   }
 }
