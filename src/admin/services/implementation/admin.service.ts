@@ -92,7 +92,7 @@ export class AdminService implements IAdminService {
     filter,
   }: GetUsersOptions): Promise<PaginatedResult<AdminUserDto>> {
     page = Number(page);
-    let limit = 10;
+    const limit = 10;
 
     if (!limit || limit <= 0) {
       throw new BadRequestException('Limit must be greater than 0');
@@ -192,7 +192,7 @@ export class AdminService implements IAdminService {
   async getUnverifiedTrainers({
     page = 1,
   }: GetUsersOptions): Promise<PaginatedResult<AdminUserDto>> {
-    let limit = 6
+    const limit = 6
     const query = {
       isVerified: false,
       verificationStatus: VerificationStatus.Pending,

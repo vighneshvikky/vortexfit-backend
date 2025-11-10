@@ -16,5 +16,5 @@ export interface INotificationService {
 
   deleteNotification(notificationId: string): Promise<void>;
   markAllAsRead(userId: string): Promise<{success: boolean}>;
-  getUnReadCount(userId: string): Promise<Number>;
+  getUnReadCount(userId: string): Promise<number>;
 }
