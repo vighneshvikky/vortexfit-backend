@@ -1,5 +1,4 @@
-import { User } from 'src/user/schemas/user.schema';
-import { Trainer } from 'src/trainer/schemas/trainer.schema';
+
 import { PaginatedResult } from 'src/common/interface/base-repository.interface';
 import { AdminUserDto } from 'src/admin/dtos/admin-user.dto';
 
@@ -9,8 +8,7 @@ export interface GetUsersOptions {
   search?: string;
   role?: 'user' | 'trainer';
   page?: number;
-  limit?: number;
-  filter?: 'all' | 'user' | 'trainer' | 'blocked';
+  filter?:  'user' | 'trainer' | 'blocked';
 }
 
 export interface IAdminService {

@@ -4,8 +4,6 @@ import {
   Patch,
   UseGuards,
   Inject,
-  Req,
-  Post,
   Get,
   Param,
 } from '@nestjs/common';
@@ -28,8 +26,8 @@ import {
 @Controller('trainers')
 export class TrainerController {
   constructor(
-    @Inject(TRAINER_SERVICE) private readonly trainerService: ITrainerService,
-    @Inject(USER_SERVICE) private readonly userService: IUserService,
+    @Inject(TRAINER_SERVICE) private readonly _trainerService: ITrainerService,
+    @Inject(USER_SERVICE) private readonly _userService: IUserService,
   ) {}
 
   @Patch('update-trainer-profile')
@@ -40,7 +38,11 @@ export class TrainerController {
     trainerId: string,
     @Body() dto: TrainerProfileDto,
   ) {
-    return this.trainerService.updateTrainerProfile(trainerId, dto);
+    const data = await this._trainerService.updateTrainerProfile(
+      trainerId,
+      dto,
+    );
+    return data;
   }
 
   @UseGuards(RolesGuard, NotBlockedGuard)
@@ -49,6 +51,6 @@ export class TrainerController {
   async getUserData(
     @Param('id') id: string,
   ): Promise<UserProfileDto | TrainerProfileDto | null> {
-    return await this.userService.findById(id);
+    return await this._userService.findById(id);
   }
 }

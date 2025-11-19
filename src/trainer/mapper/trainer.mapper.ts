@@ -20,7 +20,6 @@ export class TrainerMapper {
       trainerDoc.pricing,
     );
 
-   
     trainer._id = trainerDoc._id;
     trainer.name = trainerDoc.name;
     trainer.email = trainerDoc.email;
@@ -32,22 +31,27 @@ export class TrainerMapper {
     trainer.image = trainerDoc.image;
     trainer.createdAt = trainerDoc.createdAt;
     trainer.updatedAt = trainerDoc.updatedAt;
+    trainer.image = trainerDoc.image
 
     return trainer;
   }
 
-  static toProfileDto(domain: TrainerModel | null): TrainerProfileDto | null{
-      if (!domain) return null;
+  static toProfileDto(domain: TrainerModel | null): TrainerProfileDto | null {
+    if (!domain) return null;
     return {
+      _id: domain._id.toString(),
       name: domain.name,
       email: domain.email,
       phoneNumber: domain.phoneNumber,
       specialization: domain.specialization,
+      category: domain.category,
       experience: domain.experience,
       bio: domain.bio,
       certificationUrl: domain.certificationUrl,
       idProofUrl: domain.idProofUrl,
       pricing: domain.pricing,
+      isBlocked: domain.isBlocked,
+      image: domain.image
     };
   }
 }
