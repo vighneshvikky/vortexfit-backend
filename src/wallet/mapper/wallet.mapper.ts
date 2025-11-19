@@ -6,6 +6,8 @@ export class WalletMapper {
       _id: wallet._id.toString(),
       userId: wallet.userId.toString(),
       balance: wallet.balance,
+         createdAt: wallet.createdAt,
+      updatedAt: wallet.updatedAt,
     };
   }
 }

@@ -12,6 +12,12 @@ export class Wallet {
 
   @Prop({ default: 0 })
   balance: number;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const WalletSchema = SchemaFactory.createForClass(Wallet);

@@ -25,9 +25,11 @@ import {
 } from '@/notifications/services/interface/INotification.service.interface';
 import { NotificationGateway } from '@/notifications/notification.gateway';
 import { NotificationType } from '@/notifications/schema/notification.schema';
+import { IWalletService } from './interface/IWalletService.interface';
+
 
 @Injectable()
-export class WalletService {
+export class WalletService implements IWalletService{
   constructor(
     @Inject(IWALLETREPOSITORY)
     private readonly _walletRepository: IWalletRepository,
