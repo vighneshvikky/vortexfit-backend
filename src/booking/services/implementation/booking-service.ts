@@ -49,7 +49,6 @@ export class BookingService implements IBookingService {
   async create(data: CreateBookingDto): Promise<BookingModel | null> {
     console.log('data for booking', data);
     const bookingDoc = await this._bookingRepository.create(data);
-    const booking = BookingMapper.toDomain(bookingDoc);
 
     const message = `Booking confirmed on ${data.date} at ${data.timeSlot}.`;
 
@@ -59,16 +58,12 @@ export class BookingService implements IBookingService {
       message,
     );
 
-    console.log('userNotification', userNotification);
-
     const trainerNotification =
       await this._notificationService.createNotification(
         data.trainerId.toString(),
         NotificationType.BOOKING,
         message,
       );
-
-    console.log('trainerNotification', trainerNotification);
 
     this._notificationGateway.sendNotification(
       data.userId.toString(),
@@ -80,7 +75,7 @@ export class BookingService implements IBookingService {
       trainerNotification,
     );
 
-    return booking;
+    return BookingMapper.toDomain(bookingDoc);
   }
 
   async update(
@@ -216,6 +211,71 @@ export class BookingService implements IBookingService {
     status: BookingStatus,
   ): Promise<BookingModel | null> {
     const bookingDoc = await this._bookingRepository.changeStatus(id, status);
+
+    if (status === BookingStatus.CANCELLED) {
+      const booking = await this._bookingRepository.findById(id);
+      console.log('booking', booking);
+
+      if (!booking) throw new NotFoundException('Booking not found');
+
+      const slotDateTime = new Date(`${booking.date}T${booking.timeSlot}`);
+      const now = new Date();
+      const ONE_HOUR = 60 * 60 * 1000;
+      if (slotDateTime.getTime() - now.getTime() < ONE_HOUR)
+        throw new BadRequestException(
+          'Cancellations are allowed only up to 1 hour before the session starts',
+        );
+
+      const refund = await this._razorpayService.refundPayment(
+        booking.paymentId!,
+        booking.amount,
+      );
+
+      booking.status = BookingStatus.CANCELLED;
+      booking.refundId = refund.id;
+      booking.refundStatus =
+        refund.status === 'processed' ? 'processed' : 'pending';
+      booking.refundAmount = refund.amount
+        ? refund.amount / 100
+        : booking.amount;
+      booking.cancelledAt = new Date();
+
+      const updatedBooking = await this._bookingRepository.update(
+        booking._id.toString(),
+        booking,
+      );
+      const userId = new Types.ObjectId(booking.userId);
+      await this._walletService.handleFailedPayment(userId, {
+        orderId: booking.orderId!,
+        paymentId: booking.paymentId!,
+        amount: booking.refundAmount * 100,
+        reason: 'Booking cancellation refund',
+      });
+
+      const transaction =
+        await this._transactionService.getTransactionByPaymentId(
+          booking.paymentId!,
+        );
+      if (!transaction) {
+        throw new NotFoundException('Transaction not found');
+      }
+
+      await this._transactionService.deleteTransaction(transaction._id);
+
+      const message = `Your booking on ${booking?.date} at ${booking?.timeSlot} has been cancelled. The amount has been credited to your wallet.`;
+
+      const userNotification =
+        await this._notificationService.createNotification(
+          booking!.userId.toString(),
+          NotificationType.BOOKING,
+          message,
+        );
+      this._notificationGateway.sendNotification(
+        booking.userId.toString(),
+        userNotification,
+      );
+    }
+
     return bookingDoc ? BookingMapper.toDomain(bookingDoc) : null;
   }
 
