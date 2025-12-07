@@ -18,6 +18,7 @@ import {
 
 import { UserModule } from 'src/user/user.module';
 import { TrainerModule } from '../trainer.module';
+import { SubscriptionModule } from '@/subscription/subscription.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { TrainerModule } from '../trainer.module';
     UserModule,
     TrainerModule,
     BookingModule,
+    SubscriptionModule
   ],
   controllers: [ScheduleController],
   providers: [

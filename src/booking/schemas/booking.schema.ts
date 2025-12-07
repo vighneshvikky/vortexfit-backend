@@ -38,10 +38,33 @@ export class Booking {
 
   @Prop()
   orderId?: string;
+
   @Prop()
   sessionType?: string;
+
   @Prop()
   paymentSignature?: string;
+
+  // lock
+  @Prop({ default: false })
+  isLocked: boolean;
+
+  // when it should expire
+  @Prop({ type: Date, expires: 0 })
+  lockExpiresAt?: Date;
+
+  // cancellation properties
+  @Prop()
+  refundId?: string;
+
+  @Prop()
+  refundAmount?: number;
+
+  @Prop()
+  refundStatus?: 'pending' | 'processed' | 'failed';
+
+  @Prop()
+  cancelledAt?: Date;
 
   @Prop()
   createdAt: Date;
@@ -51,3 +74,12 @@ export class Booking {
 }
 
 export const BookingSchema = SchemaFactory.createForClass(Booking);
+
+BookingSchema.pre<BookingDocument>('save', function (next) {
+  if (this.isLocked && this.status === BookingStatus.PENDING) {
+    this.lockExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+  } else {
+    this.lockExpiresAt = undefined;
+  }
+  next();
+});

@@ -6,7 +6,7 @@ import { BaseModel } from 'src/common/model/base-model';
 export type TraninerDocument = HydratedDocument<Trainer>;
 
 @Schema()
-export class    Trainer extends BaseModel {
+export class Trainer extends BaseModel {
   @Prop({ enum: VerificationStatus, default: VerificationStatus.Pending })
   verificationStatus?: VerificationStatus;
 
