@@ -34,6 +34,7 @@ import { AiModule } from './ai/ai.module';
 import { AdminDashboardModule } from './admin/adminDashboard/adminDashboard.module';
 import { UserDashboardModule } from './user/userDashboard/userDashboard.module';
 import { TrainerDashboardModule } from './trainer/trainerDashboard/trainerDashboard.module';
+import { AWS_S3_SERVICE } from './common/aws/interface/aws-s3-service.interface';
 
 winston.addColors({
   info: 'green',
@@ -80,7 +81,13 @@ winston.addColors({
     TrainerDashboardModule,
   ],
   controllers: [AppController, AwsS3Controller],
-  providers: [AppService, AwsS3Service],
+  providers: [
+    AppService,
+    {
+      useClass: AwsS3Service,
+      provide: AWS_S3_SERVICE,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
