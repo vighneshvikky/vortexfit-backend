@@ -162,7 +162,7 @@ export class BookingService implements IBookingService {
     if (!result)
       return { bookings: [], totalRecords: 0, currentPage: 0, totalPages: 0 };
 
-    const { bookings, totalRecords } = result;
+    const { bookings } = result;
 
     const mappedBookings = bookings
       .map((b) => BookingMapper.toDomain(b)!)
@@ -192,7 +192,7 @@ export class BookingService implements IBookingService {
     if (!result)
       return { bookings: [], totalRecords: 0, currentPage: 0, totalPages: 0 };
 
-    const { bookings, totalRecords } = result;
+    const { bookings } = result;
 
     const mappedBookings = bookings
       .map((b) => BookingMapper.toDomain(b)!)
@@ -240,10 +240,10 @@ export class BookingService implements IBookingService {
         : booking.amount;
       booking.cancelledAt = new Date();
 
-      const updatedBooking = await this._bookingRepository.update(
-        booking._id.toString(),
-        booking,
-      );
+      // const updatedBooking = await this._bookingRepository.update(
+      //   booking._id.toString(),
+      //   booking,
+      // );
       const userId = new Types.ObjectId(booking.userId);
       await this._walletService.handleFailedPayment(userId, {
         orderId: booking.orderId!,

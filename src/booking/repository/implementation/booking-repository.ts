@@ -145,8 +145,7 @@ export class BookingRepository
       page = 1,
       searchTerm,
       limit = 3,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
+
     } = filters;
 
     const query: FilterQuery<BookingDocument> = {

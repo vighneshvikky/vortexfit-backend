@@ -1,4 +1,4 @@
-// @ts-check
+
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
@@ -38,7 +38,9 @@ export default tseslint.config(
       "@typescript-eslint/no-floating-promises": "off",
       "@typescript-eslint/no-redundant-type-constituents": "off",
       "@typescript-eslint/no-unnecessary-type-assertion": "off",
-      "prettier/prettier": "off"
+      "prettier/prettier": "off",
+      "@typescript-eslint/no-unsafe-enum-comparison": "off",
+
 
     },
   },

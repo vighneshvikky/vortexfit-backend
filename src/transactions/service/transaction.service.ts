@@ -38,9 +38,9 @@ export class TransactionService implements ITransactionService {
 
     console.log('page', page);
     console.log('limit', limit);
- const { page: _, limit: __, ...filterParams } = filters || {};
+    const { ...filterParams } = filters || {};
 
- console.log('filterParams', filterParams)
+    console.log('filterParams', filterParams);
     const [transactions, total] = await Promise.all([
       this._transactionRepository.getUserTransactions(
         userId,
@@ -75,8 +75,6 @@ export class TransactionService implements ITransactionService {
     return transactions.map(mapTransactionToDto);
   }
 
-
-
   async updateCancellation(
     transactionId: Types.ObjectId,
   ): Promise<TransactionDto> {
@@ -108,6 +106,6 @@ export class TransactionService implements ITransactionService {
   }
 
   earnings(userId: Types.ObjectId): Promise<number> {
-    return this._transactionRepository.earnings(userId)
+    return this._transactionRepository.earnings(userId);
   }
 }
