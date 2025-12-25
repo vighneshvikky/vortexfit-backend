@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 
 
 dotenv.config();
@@ -54,7 +53,7 @@ async function bootstrap() {
     }),
   );
 
-   app.useGlobalFilters(new AllExceptionsFilter());
+   
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 
