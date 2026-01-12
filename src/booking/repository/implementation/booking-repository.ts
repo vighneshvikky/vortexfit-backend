@@ -145,7 +145,6 @@ export class BookingRepository
       page = 1,
       searchTerm,
       limit = 3,
-
     } = filters;
 
     const query: FilterQuery<BookingDocument> = {
