@@ -18,8 +18,8 @@ import {
 import { NotificationType } from 'src/notifications/schema/notification.schema';
 import { NotificationGateway } from 'src/notifications/notification.gateway';
 import { PLANACTION, PLANCYCLEENUM } from '../enum/subscription.enum';
-import { IUserRepository } from '@/user/interfaces/user-repository.interface';
-import { ITrainerRepository } from '@/trainer/interfaces/trainer-repository.interface';
+import { IUSEREPOSITORY, IUserRepository } from '@/user/interfaces/user-repository.interface';
+import { ITRAINEREPOSITORY, ITrainerRepository } from '@/trainer/interfaces/trainer-repository.interface';
 import { ROLE } from '@/common/enums/role.enum';
 
 @Injectable()
@@ -31,9 +31,9 @@ export class SubscriptionService implements ISubscriptionService {
     @Inject(INOTIFICATIONSERVICE)
     private readonly _notificationService: INotificationService,
     private readonly _notificationGateway: NotificationGateway,
-    @Inject(IUserRepository)
+    @Inject(IUSEREPOSITORY)
     private readonly _userRepository: IUserRepository,
-    @Inject(ITrainerRepository)
+    @Inject(ITRAINEREPOSITORY)
     private readonly _trainerRepository: ITrainerRepository,
   ) {}
 

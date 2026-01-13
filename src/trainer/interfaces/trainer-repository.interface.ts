@@ -1,7 +1,8 @@
 import { IBaseRepository } from 'src/common/interface/base-repository.interface';
 import { Trainer } from '../schemas/trainer.schema';
+import { AuthUserModel } from '@/common/model/base-model';
 
-export const ITrainerRepository = Symbol('ITrainerRepository');
+export const ITRAINEREPOSITORY = Symbol('ITRAINEREPOSITORY');
 
 export interface ITrainerRepository extends IBaseRepository<Trainer> {
   createTrainerWithFiles(data: {
@@ -16,6 +17,7 @@ export interface ITrainerRepository extends IBaseRepository<Trainer> {
   }): Promise<Trainer>;
 
   findById(id: string): Promise<Trainer | null>;
+  findAuthUserByEmail(email: string): Promise<AuthUserModel | null>;
 
   updateTrainerWithFiles(
     id: string,
@@ -31,8 +33,11 @@ export interface ITrainerRepository extends IBaseRepository<Trainer> {
     },
   ): Promise<Trainer | null>;
 
-
-  findTrainersBySearch(search: string, page: number, limit: number): Promise<Trainer[]>
+  findTrainersBySearch(
+    search: string,
+    page: number,
+    limit: number,
+  ): Promise<Trainer[]>;
   countTrainersBySearch(search: string): Promise<number>;
   countBlockedTrainers(search: string): Promise<number>;
   findBlockedTrainers(search: string): Promise<Trainer[]>;

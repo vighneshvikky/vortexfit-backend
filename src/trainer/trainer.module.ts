@@ -5,7 +5,7 @@ import { Trainer, TrainerSchema } from './schemas/trainer.schema';
 import { TrainerRepository } from './repositories/trainer.repository';
 import { TrainerService } from './services/trainer.service';
 import { AwsS3Service } from 'src/common/aws/services/aws-s3.service';
-import { ITrainerRepository } from './interfaces/trainer-repository.interface';
+import { ITRAINEREPOSITORY, ITrainerRepository } from './interfaces/trainer-repository.interface';
 import { JwtModule } from '@nestjs/jwt';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
@@ -30,7 +30,7 @@ import { PasswordUtil } from 'src/common/helpers/password.util';
   providers: [
     TrainerRepository,
     {
-      provide: ITrainerRepository,
+      provide: ITRAINEREPOSITORY,
       useClass: TrainerRepository,
     },
     {
@@ -51,7 +51,7 @@ import { PasswordUtil } from 'src/common/helpers/password.util';
     },
   ],
   exports: [
-    { provide: ITrainerRepository, useClass: TrainerRepository },
+    { provide: ITRAINEREPOSITORY, useClass: TrainerRepository },
     TRAINER_SERVICE,
     MongooseModule,
   ],

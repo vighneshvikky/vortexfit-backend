@@ -12,6 +12,7 @@ export class TrainerModel extends BaseModel {
     public readonly idProofUrl?: string,
     public readonly rejectionReason?: string,
     public readonly rejectedAt?: Date,
+    
     public readonly pricing?: {
       oneToOneSession: number;
       workoutPlan: number;

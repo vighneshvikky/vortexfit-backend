@@ -9,8 +9,8 @@ import { Inject } from '@nestjs/common';
 import { User } from 'src/user/schemas/user.schema';
 import { Trainer } from 'src/trainer/schemas/trainer.schema';
 import { PaginatedResult } from 'src/common/interface/base-repository.interface';
-import { IUserRepository } from 'src/user/interfaces/user-repository.interface';
-import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
+import { IUSEREPOSITORY, IUserRepository } from 'src/user/interfaces/user-repository.interface';
+import { ITRAINEREPOSITORY, ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 import {
   GetUsersOptions,
@@ -39,9 +39,9 @@ export class AdminService implements IAdminService {
   constructor(
     @Inject(IJwtTokenService) private readonly _jwtService: IJwtTokenService,
     @Inject('REDIS_CLIENT') private readonly _redis: Redis,
-    @Inject(IUserRepository) private readonly _userRepository: IUserRepository,
+    @Inject(IUSEREPOSITORY) private readonly _userRepository: IUserRepository,
     @Inject(MAIL_SERVICE) private readonly _mailService: IMailService,
-    @Inject(ITrainerRepository)
+    @Inject(ITRAINEREPOSITORY)
     private readonly _trainerRepository: ITrainerRepository,
     @Inject(PASSWORD_UTIL) private readonly _passwordUtil: IPasswordUtil,
     private readonly videoGateway: VideoGateway,
@@ -52,13 +52,13 @@ export class AdminService implements IAdminService {
     password: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     if (email !== this.adminEmail) {
-      throw new UnauthorizedException('Invalid admin credentials');
+      throw new BadRequestException('Invalid admin credentials');
     }
 
     if (
       !(await this._passwordUtil.comparePassword(password, this.adminPassword))
     ) {
-      throw new UnauthorizedException('Invalid admin credentials');
+      throw new BadRequestException('Invalid admin credentials');
     }
 
     const accessToken = this._jwtService.signAccessToken({

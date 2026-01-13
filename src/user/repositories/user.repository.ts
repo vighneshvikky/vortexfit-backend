@@ -4,6 +4,7 @@ import { FilterQuery, Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { BaseRepository } from 'src/common/repositories/base.repository';
 import { IUserRepository } from '../interfaces/user-repository.interface';
+import { AuthUserModel } from '@/common/model/base-model';
 
 @Injectable()
 export class UserRepository
@@ -67,4 +68,11 @@ export class UserRepository
 
     return this.model.countDocuments(query).exec();
   }
+
+  findAuthUserByEmail(email: string): Promise<AuthUserModel | null> {
+  return this.model
+    .findOne({ email })
+    .select('+password +mfaEnabled +mfaSecret +mfaTempSecret +recoveryCodes');
+}
+
 }

@@ -50,19 +50,75 @@ export class AuthController {
     return await this._otpService.resendOtp(body);
   }
 
+  // @Post('login')
+  // async login(
+  //   @Body() body: LoginDto,
+  //   @Res({ passthrough: true }) res: Response,
+  // ) {
+  //   const { accessToken, refreshToken, user } =
+  //     await this._authService.verifyLogin(body);
+
+  //   setTokenCookies(res, accessToken, refreshToken);
+  //   return {
+  //     message: 'Login successfully',
+  //     data: {
+  //       user,
+  //     },
+  //   };
+  // }
+
   @Post('login')
-  async login(
-    @Body() body: LoginDto,
+  async login(@Body() body: any, @Res({ passthrough: true }) res: Response) {
+    console.log('body', body);
+    const result = await this._authService.verifyLogin(body);
+
+    return {
+      message: result.message,
+      data: result,
+    };
+  }
+
+  @Post('mfa/setup')
+  async setupMfa(@Body('userId') userId: string, @Body('role') role: string) {
+    console.log('userId', userId);
+    console.log('role for setup', role);
+    const data = await this._authService.setupMfa(userId, role);
+
+    console.log('data for set mfa', data);
+
+    return { data };
+  }
+
+  @Post('mfa/verify-login')
+  async verifyMfaLogin(
+    @Body('userId') userId: string,
+    @Body('otp') otp: string,
+    @Body('role') role: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, user } =
-      await this._authService.verifyLogin(body);
+    const result = await this._authService.verifyMfaLogin(userId, otp, role);
 
-    setTokenCookies(res, accessToken, refreshToken);
+    setTokenCookies(res, result.accessToken, result.refreshToken);
     return {
       message: 'Login successfully',
       data: {
-        user,
+        user: result.user,
+      },
+    };
+  }
+
+  @Post('mfa/verify-setup')
+  async verifyMfaSetup(
+    @Body('userId') userId: string,
+    @Body('otp') otp: string,
+    @Body('role') role: string,
+  ) {
+    const result = await this._authService.verifyMfaSetup(userId, otp, role);
+
+    return {
+      message: result.message,
+      data: {
+        recoveryCodes: result.recoveryCodes,
       },
     };
   }
@@ -112,50 +168,96 @@ export class AuthController {
     });
   }
 
-  @Get('google/redirect')
-  redirectGoogle(@Query('role') role: string, @Res() res: Response) {
-    const redirectUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    redirectUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID!);
-    redirectUrl.searchParams.set(
-      'redirect_uri',
-      process.env.GOOGLE_REDIRECT_URI!,
-    );
-    redirectUrl.searchParams.set('response_type', 'code');
-    redirectUrl.searchParams.set('scope', 'openid email profile');
-    redirectUrl.searchParams.set('state', role);
+  // @Get('google/redirect')
+  // redirectGoogle(@Query('role') role: string, @Res() res: Response) {
+  //   const redirectUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+  //   redirectUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID!);
+  //   redirectUrl.searchParams.set(
+  //     'redirect_uri',
+  //     process.env.GOOGLE_REDIRECT_URI!,
+  //   );
+  //   redirectUrl.searchParams.set('response_type', 'code');
+  //   redirectUrl.searchParams.set('scope', 'openid email profile');
+  //   redirectUrl.searchParams.set('state', role);
 
-    return res.redirect(redirectUrl.toString());
+  //   return res.redirect(redirectUrl.toString());
+  // }
+
+  @Get('google/redirect')
+  async googleRedirect(@Query('role') role: string, @Res() res: Response) {
+    const state = Buffer.from(JSON.stringify({ role })).toString('base64');
+
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams(
+      {
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
+        response_type: 'code',
+        scope: 'email profile',
+        state, // Pass role via state
+      },
+    )}`;
+
+    res.redirect(googleAuthUrl);
   }
 
+  // @Get('google/callback')
+  // async handleGoogleCallback(
+  //   @Query('code') code: string,
+  //   @Query('state') role: string,
+  //   @Res() res: Response,
+  // ) {
+  //   const { accessToken, refreshToken, user } =
+  //     await this._authService.googleLogin(code, role);
+
+  //   setTokenCookies(res, accessToken, refreshToken);
+  //   console.log('Google callback hit', { code, role, user });
+
+  //   const redirectUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
+  //   redirectUrl.searchParams.set('email', user.email);
+  //   redirectUrl.searchParams.set('name', user.name);
+  //   redirectUrl.searchParams.set('role', user.role);
+  //   redirectUrl.searchParams.set('isVerified', String(user.isVerified));
+
+  //   return res.redirect(
+  //     `${process.env.FRONTEND_URL}/auth/callback?user=${encodeURIComponent(JSON.stringify(user))}`,
+  //   );
+  // }
+
   @Get('google/callback')
-  async handleGoogleCallback(
+  async googleCallback(
     @Query('code') code: string,
-    @Query('state') role: string,
+    @Query('state') state: string, // Contains role
     @Res() res: Response,
   ) {
-    const { accessToken, refreshToken, user } =
-      await this._authService.googleLogin(code, role);
+    try {
+      // Decode state to get role
+      const { role } = JSON.parse(Buffer.from(state, 'base64').toString());
 
-    setTokenCookies(res, accessToken, refreshToken);
-    console.log('Google callback hit', { code, role, user });
+      const result = await this._authService.googleLogin(code, role);
 
-    const redirectUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
-    redirectUrl.searchParams.set('email', user.email);
-    redirectUrl.searchParams.set('name', user.name);
-    redirectUrl.searchParams.set('role', user.role);
-    redirectUrl.searchParams.set('isVerified', String(user.isVerified));
+      // ✅ If MFA required, redirect to MFA pages
+      if (result.mfaRequired) {
+        return res.redirect(
+          `${process.env.FRONTEND_URL}/auth/mfa-verify?userId=${result.userId}&role=${role}&provider=google`,
+        );
+      }
 
-    return res.redirect(
-      `${process.env.FRONTEND_URL}/auth/callback?user=${encodeURIComponent(JSON.stringify(user))}`,
-    );
+      if (result.mfaSetupRequired) {
+        return res.redirect(
+          `${process.env.FRONTEND_URL}/auth/mfa-setup?userId=${result.userId}&role=${role}&provider=google`,
+        );
+      }
+
+      // This shouldn't happen with MFA enforced
+      res.redirect(`${process.env.FRONTEND_URL}/auth/login?role=${role}`);
+    } catch (error) {
+      console.error('Google callback error:', error);
+    }
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard, RolesGuard)
-   logOut(
-    @GetUser() user: TokenPayload,
-    @Res() res: Response,
-  ) {
+  logOut(@GetUser() user: TokenPayload, @Res() res: Response) {
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: true,

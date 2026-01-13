@@ -25,6 +25,8 @@ export abstract class BaseRepository<T extends Document>
     return this.model.find(filter || {}).exec();
   }
 
+  
+
   async findOne(filter: Record<string, unknown>): Promise<T | null> {
     return this.model.findOne(filter).exec();
   }

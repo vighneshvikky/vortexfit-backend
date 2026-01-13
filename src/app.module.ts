@@ -103,6 +103,9 @@ export class AppModule implements NestModule {
         { path: 'auth/reset-password', method: RequestMethod.POST },
         { path: 'admin/login', method: RequestMethod.POST },
         { path: 'auth/google/*', method: RequestMethod.ALL },
+        { path: 'auth/mfa/setup', method: RequestMethod.POST },
+        { path: 'auth/mfa/verify-login', method: RequestMethod.POST },
+         { path: 'auth/mfa/verify-setup', method: RequestMethod.POST },
       )
       .forRoutes('*');
   }

@@ -4,6 +4,7 @@ import { FilterQuery, Model } from 'mongoose';
 import { Trainer, TraninerDocument } from '../schemas/trainer.schema';
 import { BaseRepository } from '../../common/repositories/base.repository';
 import { ITrainerRepository } from '../interfaces/trainer-repository.interface';
+import { AuthUserModel } from '@/common/model/base-model';
 
 @Injectable()
 export class TrainerRepository
@@ -96,5 +97,11 @@ export class TrainerRepository
     }
 
     return this.model.countDocuments(query).exec();
+  }
+
+    async findAuthUserByEmail(email: string): Promise<AuthUserModel | null> {
+    return this.model
+      .findOne({ email })
+      .select('+password +mfaEnabled +mfaSecret +mfaTempSecret +recoveryCodes');
   }
 }

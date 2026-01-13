@@ -12,6 +12,7 @@ export class UserModel extends BaseModel {
     public readonly trainingTypes?: string[],
     public readonly preferredTime?: string,
     public readonly equipments?: string[],
+    
   ) {
     super();
   }

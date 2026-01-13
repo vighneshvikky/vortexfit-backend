@@ -13,16 +13,16 @@ import {
   IMailService,
   MAIL_SERVICE,
 } from 'src/common/helpers/mailer/mail-service.interface';
-import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
-import { IUserRepository } from 'src/user/interfaces/user-repository.interface';
+import { ITRAINEREPOSITORY, ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
+import { IUSEREPOSITORY, IUserRepository } from 'src/user/interfaces/user-repository.interface';
 
 @Injectable()
 export class OtpService implements IOtpService {
   constructor(
     @Inject('REDIS_CLIENT') private readonly _redis: Redis,
     @Inject(MAIL_SERVICE) private readonly _mailService: IMailService,
-    @Inject(IUserRepository) private readonly _userRepo: IUserRepository,
-    @Inject(ITrainerRepository)
+    @Inject(IUSEREPOSITORY) private readonly _userRepo: IUserRepository,
+    @Inject(ITRAINEREPOSITORY)
     private readonly _trainerRepo: ITrainerRepository,
   ) {}
 

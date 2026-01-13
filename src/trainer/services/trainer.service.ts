@@ -1,10 +1,9 @@
-import {
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Trainer } from '../schemas/trainer.schema';
-import { ITrainerRepository } from '../interfaces/trainer-repository.interface';
+import {
+  ITRAINEREPOSITORY,
+  ITrainerRepository,
+} from '../interfaces/trainer-repository.interface';
 import { ITrainerService } from '../interfaces/trainer-service.interface';
 import {
   AWS_S3_SERVICE,
@@ -22,7 +21,7 @@ import {
 @Injectable()
 export class TrainerService implements ITrainerService {
   constructor(
-    @Inject(ITrainerRepository)
+    @Inject(ITRAINEREPOSITORY)
     private readonly _trainerRepo: ITrainerRepository,
     @Inject(AWS_S3_SERVICE) readonly _awsS3Service: IAwsS3Service,
     @Inject(PASSWORD_UTIL) readonly _passwordUtil: IPasswordUtil,

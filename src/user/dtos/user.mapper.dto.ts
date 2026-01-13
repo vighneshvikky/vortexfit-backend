@@ -73,6 +73,23 @@ export class UserProfileDto {
   @IsString({ each: true })
   equipments?: string[];
 
+  @IsOptional()
+  @IsBoolean()
+  mfaEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  mfaSecret?: string;
+
+  @IsOptional()
+  @IsString()
+  mfaTempSecret?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  recoveryCodes?: string[];
+
   @IsDate()
   @Type(() => Date)
   createdAt?: Date;

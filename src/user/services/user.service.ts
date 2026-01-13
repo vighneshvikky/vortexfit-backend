@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IUserRepository } from '../interfaces/user-repository.interface';
+import { IUSEREPOSITORY, IUserRepository } from '../interfaces/user-repository.interface';
 import { UserProfileDto } from '../dtos/user.mapper.dto';
-import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
+import { ITRAINEREPOSITORY, ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
 import { FindApprovedTrainerQuery } from '../interfaces/user-interface';
 import { IUserService } from '../interfaces/user-service.interface';
 import { UserMapper } from '../mapper/user.mapper';
@@ -14,9 +14,9 @@ import { TrainerProfileDto } from 'src/trainer/dtos/trainer.dto';
 @Injectable()
 export class UserService implements IUserService {
   constructor(
-    @Inject(IUserRepository)
+    @Inject(IUSEREPOSITORY)
     private readonly _userRepo: IUserRepository,
-    @Inject(ITrainerRepository)
+    @Inject(ITRAINEREPOSITORY)
     private readonly _trainerRepo: ITrainerRepository,
   ) {}
 

@@ -5,11 +5,13 @@ import { BaseModel } from 'src/common/model/base-model';
 export interface IAuthService {
   signUp(body: SignupDto): Promise<{ message: string; data: { role: string } }>;
 
-  verifyLogin(body: LoginDto): Promise<{
-    accessToken: string;
-    refreshToken: string;
-    user: BaseModel;
-  }>;
+  // verifyLogin(body: LoginDto): Promise<{
+  //   accessToken: string;
+  //   refreshToken: string;
+  //   user: BaseModel;
+  // }>;
+
+  verifyLogin(body: any): Promise<any>;
 
   initiatePasswordReset(
     email: string,
@@ -18,6 +20,12 @@ export interface IAuthService {
     message: string;
     data: null;
   }>;
+
+  setupMfa(userId: string, role: string): Promise<any>;
+
+  verifyMfaSetup(userId: string, otp: string, role: string): Promise<any>;
+
+  verifyMfaLogin(userId: string, otp: string, role: string): Promise<any>;
 
   resetPassword(
     token: string,
@@ -50,9 +58,13 @@ export interface IAuthService {
     code: string,
     role: string,
   ): Promise<{
-    accessToken: string;
-    refreshToken: string;
-    user: BaseModel;
+   accessToken?: string; 
+  refreshToken?: string; 
+  user?: BaseModel;
+  mfaRequired?: boolean;
+  mfaSetupRequired?: boolean;
+  userId?: string;
+  message?: string;
   }>;
 
   getUser(id: string): Promise<BaseModel | null>;
