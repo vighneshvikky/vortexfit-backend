@@ -5,13 +5,15 @@ import { Trainer, TrainerSchema } from './schemas/trainer.schema';
 import { TrainerRepository } from './repositories/trainer.repository';
 import { TrainerService } from './services/trainer.service';
 import { AwsS3Service } from 'src/common/aws/services/aws-s3.service';
-import { ITrainerRepository } from './interfaces/trainer-repository.interface';
+import { ITRAINEREPOSITORY, ITrainerRepository } from './interfaces/trainer-repository.interface';
 import { JwtModule } from '@nestjs/jwt';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
 import { UserModule } from 'src/user/user.module';
 import { TRAINER_SERVICE } from './interfaces/trainer-service.interface';
 import { AWS_S3_SERVICE } from 'src/common/aws/interface/aws-s3-service.interface';
+import { PASSWORD_UTIL } from 'src/common/interface/IPasswordUtil.interface';
+import { PasswordUtil } from 'src/common/helpers/password.util';
 
 @Module({
   imports: [
@@ -28,7 +30,7 @@ import { AWS_S3_SERVICE } from 'src/common/aws/interface/aws-s3-service.interfac
   providers: [
     TrainerRepository,
     {
-      provide: ITrainerRepository,
+      provide: ITRAINEREPOSITORY,
       useClass: TrainerRepository,
     },
     {
@@ -43,10 +45,15 @@ import { AWS_S3_SERVICE } from 'src/common/aws/interface/aws-s3-service.interfac
       provide: AWS_S3_SERVICE,
       useClass: AwsS3Service,
     },
+    {
+      provide: PASSWORD_UTIL,
+      useClass: PasswordUtil,
+    },
   ],
   exports: [
-    { provide: ITrainerRepository, useClass: TrainerRepository },
+    { provide: ITRAINEREPOSITORY, useClass: TrainerRepository },
     TRAINER_SERVICE,
+    MongooseModule,
   ],
 })
 export class TrainerModule {}

@@ -4,6 +4,8 @@ import { BaseModel } from 'src/common/model/base-model';
 
 export type UserDocument = HydratedDocument<User>;
 
+
+
 @Schema({ timestamps: true })
 export class User extends BaseModel {
   @Prop()

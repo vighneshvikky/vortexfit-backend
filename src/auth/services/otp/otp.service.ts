@@ -13,24 +13,23 @@ import {
   IMailService,
   MAIL_SERVICE,
 } from 'src/common/helpers/mailer/mail-service.interface';
-import { MailService } from 'src/common/helpers/mailer/mailer.service';
-import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
-import { IUserRepository } from 'src/user/interfaces/user-repository.interface';
+import { ITRAINEREPOSITORY, ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
+import { IUSEREPOSITORY, IUserRepository } from 'src/user/interfaces/user-repository.interface';
 
 @Injectable()
 export class OtpService implements IOtpService {
   constructor(
-    @Inject('REDIS_CLIENT') private readonly redis: Redis,
-    @Inject(MAIL_SERVICE) private readonly mailService: IMailService,
-    @Inject(IUserRepository) private readonly userRepo: IUserRepository,
-    @Inject(ITrainerRepository)
-    private readonly trainerRepo: ITrainerRepository,
+    @Inject('REDIS_CLIENT') private readonly _redis: Redis,
+    @Inject(MAIL_SERVICE) private readonly _mailService: IMailService,
+    @Inject(IUSEREPOSITORY) private readonly _userRepo: IUserRepository,
+    @Inject(ITRAINEREPOSITORY)
+    private readonly _trainerRepo: ITrainerRepository,
   ) {}
 
   async generateOtp(email: string): Promise<string> {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await this.redis.set(`otp:${email}`, otp, 'EX', 300);
+    await this._redis.set(`otp:${email}`, otp, 'EX', 300);
 
     return otp;
   }
@@ -39,7 +38,7 @@ export class OtpService implements IOtpService {
     message: string;
     data: { message: string; isBlocked: boolean; role: string };
   }> {
-    const storedOtp = await this.redis.get(`otp:${data.email}`);
+    const storedOtp = await this._redis.get(`otp:${data.email}`);
 
     if (!storedOtp) {
       throw new NotFoundException('OTP expired or not found');
@@ -53,7 +52,7 @@ export class OtpService implements IOtpService {
       data.role === 'trainer'
         ? `temp_trainer:${data.email}`
         : `temp_user:${data.email}`;
-    const tempData = await this.redis.get(userKey);
+    const tempData = await this._redis.get(userKey);
 
     if (!tempData) {
       throw new NotFoundException('User data not found');
@@ -62,13 +61,13 @@ export class OtpService implements IOtpService {
     const parsedData = JSON.parse(tempData);
 
     if (data.role === 'user') {
-      await this.userRepo.create(parsedData);
+      await this._userRepo.create(parsedData);
     } else if (data.role === 'trainer') {
-      await this.trainerRepo.create(parsedData);
+      await this._trainerRepo.create(parsedData);
     }
 
-    await this.redis.del(`otp:${data.email}`);
-    await this.redis.del(userKey);
+    await this._redis.del(`otp:${data.email}`);
+    await this._redis.del(userKey);
 
     return {
       message: 'Account Created Successfully',
@@ -87,7 +86,7 @@ export class OtpService implements IOtpService {
       data.role === 'trainer'
         ? `temp_trainer:${data.email}`
         : `temp_user:${data.email}`;
-    const tempData = await this.redis.get(userKey);
+    const tempData = await this._redis.get(userKey);
     if (!tempData) {
       throw new NotFoundException('User data not found ');
     }

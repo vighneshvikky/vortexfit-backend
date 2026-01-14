@@ -17,7 +17,6 @@ import { UploadModule } from './upload/upload.module';
 import { AwsS3Controller } from './common/aws/controller/aws-s3.controller';
 import { AwsS3Service } from './common/aws/services/aws-s3.service';
 import * as winston from 'winston';
-import { WinstonModule } from 'nest-winston';
 import { ScheduleModule } from './trainer/scheduling/scheduling.module';
 import { PaymentModule } from './payments/payments.module';
 import { BookingModule } from './booking/booking.module';
@@ -25,7 +24,17 @@ import { JwtMiddleware } from './common/middleware/jwt-auth.middleware';
 import { ChatModule } from './common/chat/chat.module';
 import { MessageModule } from './messages/message.module';
 import { LoggerModule } from './common/logger/log.module';
-
+import { VideoModule } from './common/video/video.module';
+import { planModule } from './plans/plan.module';
+import { SubscriptionModule } from './subscription/subscription.module';
+import { TransactionModule } from './transactions/transaction.module';
+import { WalletModule } from './wallet/wallet.module';
+import { NotificationModule } from './notifications/notification.module';
+import { AiModule } from './ai/ai.module';
+import { AdminDashboardModule } from './admin/adminDashboard/adminDashboard.module';
+import { UserDashboardModule } from './user/userDashboard/userDashboard.module';
+import { TrainerDashboardModule } from './trainer/trainerDashboard/trainerDashboard.module';
+import { AWS_S3_SERVICE } from './common/aws/interface/aws-s3-service.interface';
 
 winston.addColors({
   info: 'green',
@@ -36,7 +45,9 @@ winston.addColors({
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -56,11 +67,27 @@ winston.addColors({
     PaymentModule,
     BookingModule,
     ChatModule,
+    VideoModule,
     MessageModule,
-    LoggerModule
+    LoggerModule,
+    planModule,
+    SubscriptionModule,
+    TransactionModule,
+    WalletModule,
+    NotificationModule,
+    AiModule,
+    AdminDashboardModule,
+    UserDashboardModule,
+    TrainerDashboardModule,
   ],
   controllers: [AppController, AwsS3Controller],
-  providers: [AppService, AwsS3Service],
+  providers: [
+    AppService,
+    {
+      useClass: AwsS3Service,
+      provide: AWS_S3_SERVICE,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
@@ -76,6 +103,9 @@ export class AppModule implements NestModule {
         { path: 'auth/reset-password', method: RequestMethod.POST },
         { path: 'admin/login', method: RequestMethod.POST },
         { path: 'auth/google/*', method: RequestMethod.ALL },
+        { path: 'auth/mfa/setup', method: RequestMethod.POST },
+        { path: 'auth/mfa/verify-login', method: RequestMethod.POST },
+         { path: 'auth/mfa/verify-setup', method: RequestMethod.POST },
       )
       .forRoutes('*');
   }

@@ -1,27 +1,35 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
-export type MessageDocument = HydratedDocument<Message>;
+export type ChatMessageDocument = ChatMessage & Document;
 
-@Schema({ timestamps: { createdAt: 'createdAt', updatedAt: false } })
-export class Message {
-  @Prop({ required: true })
-  senderId: string;
-
-  @Prop({ required: true })
-  receiverId: string;
-
-  @Prop({ type: [String], index: true, required: true })
-  participants: string[];
+@Schema({ timestamps: true })
+export class ChatMessage {
+  _id: Types.ObjectId;
 
   @Prop({ required: true })
   content: string;
 
-  @Prop({ type: Date, default: null })
-  readAt?: Date | null;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
+  senderId: Types.ObjectId;
 
-  @Prop({ type: Date, index: true })
-  createdAt: Date;
+  @Prop({ required: true, type: Types.ObjectId, ref: 'Trainer' })
+  receiverId: Types.ObjectId;
+
+  @Prop({ required: true, type: [Types.ObjectId], ref: 'User' })
+  participants: Types.ObjectId[];
+
+  @Prop({ default: 'text' })
+  messageType: string;
+
+  @Prop({ default: false })
+  isRead: boolean;
+
+  @Prop({ required: true })
+  roomId: string;
+
+  @Prop({ default: false })
+  isDelivered: boolean;
 }
 
-export const MessageSchema = SchemaFactory.createForClass(Message);
+export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessage);

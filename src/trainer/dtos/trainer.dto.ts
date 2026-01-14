@@ -7,6 +7,8 @@ import {
   IsNumber,
   ValidateNested,
   IsIn,
+  IsArray,
+  IsBoolean,
 } from 'class-validator';
 import { VerificationStatus } from 'src/common/enums/verification-status.enum';
 
@@ -21,6 +23,9 @@ class PricingDto {
 }
 
 export class TrainerProfileDto {
+  @IsOptional()
+  @IsString()
+  _id?: string;
   @IsOptional()
   @IsString()
   name?: string;
@@ -52,9 +57,8 @@ export class TrainerProfileDto {
   @IsOptional()
   isVerified?: boolean;
 
-    @IsOptional()
+  @IsOptional()
   isBlocked?: boolean;
-
 
   @IsOptional()
   @IsString()
@@ -75,6 +79,23 @@ export class TrainerProfileDto {
   @IsOptional()
   @IsString()
   rejectionReason?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  mfaEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  mfaSecret?: string;
+
+  @IsOptional()
+  @IsString()
+  mfaTempSecret?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  recoveryCodes?: string[];
 
   @IsOptional()
   @ValidateNested()

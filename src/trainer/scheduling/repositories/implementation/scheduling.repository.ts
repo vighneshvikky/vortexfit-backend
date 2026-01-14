@@ -6,18 +6,21 @@ import {
   SchedulingRuleDocument,
 } from '../../schemas/schedule.schema';
 import { Model } from 'mongoose';
+import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
-export class ScheduleRepository implements IScheduleRepository {
+export class ScheduleRepository
+  extends BaseRepository<SchedulingRuleDocument>
+  implements IScheduleRepository
+{
   constructor(
     @InjectModel(SchedulingRule.name)
     private readonly _schedulingRuleModel: Model<SchedulingRuleDocument>,
-  ) {}
-
-  async create(data: Partial<SchedulingRule>): Promise<SchedulingRule> {
-    const created = new this._schedulingRuleModel(data);
-    return created.save();
+  ) {
+    super(_schedulingRuleModel);
   }
+
+
 
   async update(
     id: string,

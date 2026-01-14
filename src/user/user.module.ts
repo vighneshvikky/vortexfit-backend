@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { UserRepository } from './repositories/user.repository';
 import { UserService } from './services/user.service';
-import { IUserRepository } from './interfaces/user-repository.interface';
+import { IUSEREPOSITORY, IUserRepository } from './interfaces/user-repository.interface';
 import { IJwtTokenService } from 'src/auth/interfaces/ijwt-token-service.interface';
 import { JwtTokenService } from 'src/auth/services/jwt/jwt.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -21,7 +21,7 @@ import { USER_SERVICE } from './interfaces/user-service.interface';
   controllers: [UserController],
   providers: [
     {
-      provide: IUserRepository,
+      provide: IUSEREPOSITORY,
       useClass: UserRepository,
     },
     {
@@ -35,8 +35,9 @@ import { USER_SERVICE } from './interfaces/user-service.interface';
     },
   ],
   exports: [
-    { provide: IUserRepository, useClass: UserRepository },
+    { provide: IUSEREPOSITORY, useClass: UserRepository },
     USER_SERVICE,
+    MongooseModule,
   ],
 })
 export class UserModule {}

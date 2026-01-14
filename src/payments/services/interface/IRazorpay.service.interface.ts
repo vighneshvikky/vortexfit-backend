@@ -2,6 +2,8 @@ export const RAZORPAY_SERVICE = 'RAZORPAY_SERVICE';
 
 export interface IRazorpayService {
   createOrder(amount: number): Promise<RazorpayOrder>;
+  refundPayment(paymentId: string, amount: number): Promise<RazorpayRefundResponse>
+
 }
 
 export interface RazorpayOrder {
@@ -17,3 +19,15 @@ export interface RazorpayOrder {
   attempts: number;
   created_at: number;
 }
+
+
+export interface RazorpayRefundResponse {
+  id: string;
+  entity: string;
+  amount: number;
+  currency: string;
+  payment_id: string;
+  status: 'created' | 'processed' | 'failed';
+  created_at: number;
+}
+

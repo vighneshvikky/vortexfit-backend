@@ -1,5 +1,18 @@
 import { Prop } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
+
+export class AuthUserModel {
+  _id: Types.ObjectId;
+  email: string;
+  password: string;
+  role: string;
+
+  mfaEnabled: boolean;
+  mfaSecret?: string;
+  mfaTempSecret?: string;
+  recoveryCodes?: string[];
+}
+
 
 export abstract class BaseModel {
   _id: Types.ObjectId;
@@ -36,4 +49,18 @@ export abstract class BaseModel {
 
   @Prop()
   updatedAt: Date;
+
+  /* ================= MFA FIELDS ================= */
+
+ @Prop({ type: Boolean, default: false })
+mfaEnabled: boolean;
+
+@Prop({ type: String, default: null })
+mfaSecret?: string;
+
+@Prop({ type: String, default: null })
+mfaTempSecret?: string | null;
+
+@Prop({ type: [String], default: [] })
+recoveryCodes: string[];
 }

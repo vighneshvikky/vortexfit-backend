@@ -1,17 +1,32 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Message, MessageSchema } from './schemas/message.schema';
+import { ChatMessage, ChatMessageSchema } from './schemas/message.schema';
 import { MessageController } from './controller/messages.controller';
-import { MessageService } from './service/messages.service';
-import { MessageRepository } from './repository/messages.repository';
-import { JwtModule } from '@nestjs/jwt';
+import { MessageService } from './service/implementation/messages.service';
+import { MessageRepository } from './repository/implementation/messages.repository';
+import { MESSAGE_SERVICE } from './service/interface/message.service.interface';
+import { MESSAGE_REPOSITORY } from './repository/interface/messages.repository.interface';
+import { MessageMapper } from './mappers/message.mapper';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
+    MongooseModule.forFeature([
+      { name: ChatMessage.name, schema: ChatMessageSchema },
+    ]),
   ],
   controllers: [MessageController],
-  providers: [MessageService, MessageRepository],
-  exports: [MessageService],
+  providers: [
+    MessageService,
+    MessageMapper,
+    {
+      provide: MESSAGE_SERVICE,
+      useClass: MessageService,
+    },
+    {
+      provide: MESSAGE_REPOSITORY,
+      useClass: MessageRepository,
+    },
+  ],
+  exports: [MESSAGE_SERVICE],
 })
 export class MessageModule {}

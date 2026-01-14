@@ -1,27 +1,22 @@
-import { Booking, BookingDocument } from 'src/booking/schemas/booking.schema';
-import { IBookingRepository } from '../interface/booking-repository.interface';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Booking, BookingDocument } from '@/booking/schemas/booking.schema';
+import { IBookingRepository } from '@/booking/repository/interface/booking-repository.interface';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { BookingStatus } from 'src/booking/enums/booking.enum';
+import { FilterQuery, Model, Types } from 'mongoose';
+import { BookingStatus } from '@/booking/enums/booking.enum';
+import { BookingFilterDto } from '@/booking/dtos/booking-dto.interface';
+import { BaseRepository } from '@/common/repositories/base.repository';
 
 @Injectable()
-export class BookingRepository implements IBookingRepository {
+export class BookingRepository
+  extends BaseRepository<BookingDocument>
+  implements IBookingRepository
+{
   constructor(
     @InjectModel(Booking.name)
     private readonly _bookingModel: Model<BookingDocument>,
-  ) {}
-
-  async create(data: Partial<Booking>): Promise<Booking> {
-    const booking = new this._bookingModel(data);
-
-    return booking.save();
-  }
-
-  async delete(id: string): Promise<boolean> {
-    if (!Types.ObjectId.isValid(id)) return false;
-    const result = await this._bookingModel.deleteOne({ _id: id });
-    return result.deletedCount > 0;
+  ) {
+    super(_bookingModel);
   }
 
   async findBySlot(
@@ -49,6 +44,195 @@ export class BookingRepository implements IBookingRepository {
       .exec();
   }
 
+  async findById(id: string) {
+    const bookingId = new Types.ObjectId(id);
+
+    return this._bookingModel.findById({ _id: bookingId }).exec();
+  }
+
+  async updateOne(
+    filter: Partial<Booking>,
+    data: Partial<Booking>,
+  ): Promise<Booking | null> {
+    return this._bookingModel
+      .findOneAndUpdate(filter, data, { new: true })
+      .exec();
+  }
+
+  async deleteOne(filter: Partial<Booking>): Promise<void> {
+    await this._bookingModel.deleteOne(filter).exec();
+  }
+
+  async delete(id: string): Promise<boolean> {
+    if (!Types.ObjectId.isValid(id)) return false;
+    const result = await this._bookingModel.deleteOne({ _id: id });
+    return result.deletedCount > 0;
+  }
+
+  async getFilteredBookings(
+    trainerId: string,
+    filters: BookingFilterDto,
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
+    const {
+      clientId,
+      status,
+      dateFrom,
+      dateTo,
+      searchTerm,
+      page = 1,
+      limit = 5,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = filters;
+
+    const query: FilterQuery<BookingDocument> = {
+      trainerId: trainerId,
+    };
+
+    if (status) query.status = status;
+    if (clientId) query.userId = clientId;
+
+    if (dateFrom || dateTo) {
+      query.date = {};
+      if (dateFrom) query.date.$gte = new Date(dateFrom);
+      if (dateTo) query.date.$lte = new Date(dateTo);
+    }
+
+    if (searchTerm) {
+      const regex = new RegExp(searchTerm, 'i');
+      query.$or = [{ status: regex }, { sessionType: regex }];
+    }
+
+    const skip = (page - 1) * limit;
+    const sortField = sortBy;
+    const sortDirection = sortOrder === 'desc' ? -1 : 1;
+
+    const [bookings, totalRecords] = await Promise.all([
+      this._bookingModel
+        .find(query)
+        .populate('userId', 'name email image')
+        .populate('trainerId', 'name image')
+        .sort({ [sortField]: sortDirection })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._bookingModel.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return { bookings, totalRecords, currentPage: page, totalPages };
+  }
+
+  async getUserFilteredBookings(
+    userId: string,
+    filters: BookingFilterDto,
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
+    const {
+      status,
+      dateFrom,
+      dateTo,
+      page = 1,
+      searchTerm,
+      limit = 3,
+    } = filters;
+
+    const query: FilterQuery<BookingDocument> = {
+      userId: userId,
+    };
+
+    if (status) {
+      query.status = status;
+    }
+
+    if (dateFrom || dateTo) {
+      query.date = {};
+      if (dateFrom) query.date.$gte = dateFrom;
+      if (dateTo) query.date.$lte = dateTo;
+    }
+    if (searchTerm) {
+      const regex = new RegExp(searchTerm, 'i');
+      query.$or = [{ status: regex }, { sessionType: regex }, { date: regex }];
+    }
+
+    const skip = (page - 1) * limit;
+    const sortField = 'date';
+    const sortDirection = 1;
+
+    const bookings = await this._bookingModel
+      .find(query)
+      .populate('trainerId', 'name email image')
+      .populate('userId', 'name _id image')
+      .sort({ [sortField]: sortDirection })
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const totalRecords = await this._bookingModel.countDocuments(query);
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return { bookings, totalRecords, currentPage: page, totalPages };
+  }
+
+  async findOne(filter: Partial<Booking>) {
+    return this._bookingModel.findOne(filter);
+  }
+
+  async lockSlot(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+  ): Promise<boolean> {
+    const session = await this._bookingModel.db.startSession();
+    session.startTransaction();
+
+    try {
+      const existing = await this._bookingModel.findOne({
+        trainerId,
+        date,
+        timeSlot,
+        $or: [{ isLocked: true }, { status: { $ne: 'CANCELLED' } }],
+      });
+
+      if (existing) {
+        await session.abortTransaction();
+        session.endSession();
+        return false;
+      }
+
+      await this._bookingModel.create(
+        [
+          {
+            trainerId,
+            date,
+            timeSlot,
+            isLocked: true,
+            status: 'LOCKED',
+          },
+        ],
+        { session },
+      );
+
+      await session.commitTransaction();
+      session.endSession();
+      return true;
+    } catch (err) {
+      await session.abortTransaction();
+      session.endSession();
+      throw err;
+    }
+  }
+
   async countActiveBookings(
     trainerId: string,
     dateStr: string,
@@ -59,7 +243,7 @@ export class BookingRepository implements IBookingRepository {
       trainerId,
       date: dateStr,
       timeSlot: `${slotStart}-${slotEnd}`,
-      status: { $ne: 'CANCELLED' },
+      status: { $ne: 'cancelled' },
     });
   }
 
@@ -72,12 +256,85 @@ export class BookingRepository implements IBookingRepository {
       .exec();
   }
 
-  async bookingOfTrainerId(trainerId: string): Promise<Booking[] | null> {
-    return this._bookingModel
-      .find({ trainerId: trainerId })
-      .populate('userId', 'name')
-      .sort({ createdAt: -1 })
-      .exec();
+  async bookingOfTrainerId(
+    trainerId: string,
+    page: number = 1,
+    limit: number = 5,
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const sortField = 'date';
+    const sortDirection = 1;
+
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+
+    const query = {
+      trainerId,
+      date: { $gte: todayString },
+      isLocked: false,
+    };
+    const [bookings, totalRecords] = await Promise.all([
+      this._bookingModel
+        .find(query)
+        .populate('userId', '_id name image')
+        .sort({ [sortField]: sortDirection })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._bookingModel.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return { bookings, totalRecords, currentPage: page, totalPages };
+  }
+
+  async bookingOfUserId(
+    userId: string,
+    page: number = 1,
+    limit: number = 5,
+  ): Promise<{
+    bookings: Booking[];
+    totalRecords: number;
+    currentPage: number;
+    totalPages: number;
+  }> {
+    const skip = (page - 1) * limit;
+
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+
+    const query = {
+      userId,
+      date: { $gte: todayString },
+      isLocked: false,
+    };
+
+    const sortField = 'date';
+    const sortDirection = 1;
+
+    console.log('query', query);
+    const [bookings, totalRecords] = await Promise.all([
+      this._bookingModel
+        .find(query)
+        .populate('trainerId', '_id name image')
+        .populate('userId', '_id name image')
+        .sort({ [sortField]: sortDirection })
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this._bookingModel.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    return { bookings, totalRecords, currentPage: page, totalPages };
   }
 
   async changeStatus(
@@ -86,6 +343,30 @@ export class BookingRepository implements IBookingRepository {
   ): Promise<Booking | null> {
     return this._bookingModel
       .findByIdAndUpdate(bookingId, { status: bookingStatus }, { new: true })
+      .exec();
+  }
+
+  async unlockSlot(
+    trainerId: string,
+    date: string,
+    timeSlot: string,
+    paymentId: string,
+  ): Promise<Booking | null> {
+    return this._bookingModel
+      .findOneAndUpdate(
+        { trainerId, date, timeSlot, isLocked: true },
+        {
+          $set: {
+            isLocked: false,
+            status: BookingStatus.PENDING,
+            paymentId,
+          },
+          $unset: {
+            lockExpiresAt: '',
+          },
+        },
+        { new: true },
+      )
       .exec();
   }
 }

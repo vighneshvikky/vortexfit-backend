@@ -8,12 +8,17 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
-import { PasswordUtil } from 'src/common/helpers/password.util';
 import Redis from 'ioredis';
 import { OAuth2Client } from 'google-auth-library';
 import axios from 'axios';
-import { IUserRepository } from 'src/user/interfaces/user-repository.interface';
-import { ITrainerRepository } from 'src/trainer/interfaces/trainer-repository.interface';
+import {
+  IUSEREPOSITORY,
+  IUserRepository,
+} from 'src/user/interfaces/user-repository.interface';
+import {
+  ITRAINEREPOSITORY,
+  ITrainerRepository,
+} from 'src/trainer/interfaces/trainer-repository.interface';
 import { IJwtTokenService } from './interfaces/ijwt-token-service.interface';
 import { BaseModel } from 'src/common/model/base-model';
 import {
@@ -33,26 +38,31 @@ import { AUTH_SERVICE_REGISTRY } from './interfaces/auth-service-registry.interf
 import { UserRoleServiceRegistry } from 'src/common/services/user-role-service.registry';
 import { IOtpService, OTP_SERVICE } from './interfaces/otp-service.interface';
 import { SignupDto } from './dto/auth.dto';
+import speakeasy from 'speakeasy';
+import QrCode from 'qrcode';
+
 import {
   IPasswordUtil,
   PASSWORD_UTIL,
 } from 'src/common/interface/IPasswordUtil.interface';
+import { User } from '@/user/schemas/user.schema';
+import { SetupMfaResponse, VerifyLoginResponse, VerifyMfaLoginResponse, VerifyMfaSetupResponse } from './interfaces/api.response.interface';
 
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
-    @Inject(USER_SERVICE) private userService: IUserService,
-    @Inject(TRAINER_SERVICE) private trainerService: ITrainerService,
-    @Inject(IJwtTokenService) private readonly jwtService: IJwtTokenService,
-    @Inject(MAIL_SERVICE) private readonly mailService: IMailService,
-    @Inject(IUserRepository) private readonly userRepo: IUserRepository,
+    @Inject(USER_SERVICE) private _userService: IUserService,
+    @Inject(TRAINER_SERVICE) private _trainerService: ITrainerService,
+    @Inject(IJwtTokenService) private readonly _jwtService: IJwtTokenService,
+    @Inject(MAIL_SERVICE) private readonly _mailService: IMailService,
+    @Inject(IUSEREPOSITORY) private readonly _userRepo: IUserRepository,
     @Inject(AUTH_SERVICE_REGISTRY)
-    private readonly roleServiceRegistry: UserRoleServiceRegistry,
-    @Inject(ITrainerRepository)
-    private readonly trainerRepo: ITrainerRepository,
-    @Inject('REDIS_CLIENT') private readonly redis: Redis,
-    @Inject(OTP_SERVICE) private readonly otpService: IOtpService,
-    @Inject(PASSWORD_UTIL) private readonly passwordUtil: IPasswordUtil,
+    private readonly _roleServiceRegistry: UserRoleServiceRegistry,
+    @Inject(ITRAINEREPOSITORY)
+    private readonly _trainerRepo: ITrainerRepository,
+    @Inject('REDIS_CLIENT') private readonly _redis: Redis,
+    @Inject(OTP_SERVICE) private readonly _otpService: IOtpService,
+    @Inject(PASSWORD_UTIL) private readonly _passwordUtil: IPasswordUtil,
   ) {}
 
   private googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -61,29 +71,29 @@ export class AuthService implements IAuthService {
   async signUp(data: SignupDto) {
     const { role, email, password } = data;
 
-    const userRepo = role === 'trainer' ? this.trainerRepo : this.userRepo;
+    const userRepo = role === 'trainer' ? this._trainerRepo : this._userRepo;
 
     const existing = await userRepo.findByEmail(email);
     if (existing) {
       throw new ConflictException('User already exists');
     }
 
-    const hashPassword = await this.passwordUtil.hashPassword(password);
+    const hashPassword = await this._passwordUtil.hashPassword(password);
 
     const tempUser = {
       ...data,
       password: hashPassword,
     };
 
-    await this.redis.set(
+    await this._redis.set(
       `temp_${role}:${email}`,
       JSON.stringify(tempUser),
       'EX',
       300,
     );
 
-    const otp = await this.otpService.generateOtp(email);
-    await this.mailService.sendOtp(email, otp);
+    const otp = await this._otpService.generateOtp(email);
+    await this._mailService.sendOtp(email, otp);
 
     return {
       message: 'OTP sent to your email',
@@ -94,50 +104,149 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async verifyLogin(body: LoginDto) {
-    const userService = this.roleServiceRegistry.getServiceByRole(body.role);
-    const user = await userService.findByEmail(body.email);
 
-    if (
-      !user ||
-      typeof user.password !== 'string' ||
-      typeof user._id === 'undefined'
-    ) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+ // Verifies user login credentials and checks MFA status
+async verifyLogin(body: LoginDto): Promise<VerifyLoginResponse> {
+  const userRepo = this._roleServiceRegistry.getRepoByRole(body.role);
 
-    const isValid = await PasswordUtil.comparePassword(
-      body.password,
-      user.password,
-    );
+  // Find user by email
+  const user = await userRepo.findAuthUserByEmail(body.email);
 
-    if (!isValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    const userId = user._id.toString();
-    const accessToken = this.jwtService.signAccessToken({
-      sub: userId,
-      role: user.role,
-      isBlocked: false,
-    });
-    const refreshToken = this.jwtService.signRefreshToken({
-      sub: userId,
-      role: user.role,
-      isBlocked: false,
-    });
-
-    return { accessToken, refreshToken, user };
+  // If user not found or invalid password/id, throw error
+  if (!user || typeof user.password !== 'string' || typeof user._id === 'undefined') {
+    throw new UnauthorizedException('Invalid credentials');
   }
 
+  // Compare password
+  const isValid = await this._passwordUtil.comparePassword(body.password, user.password);
+  if (!isValid) {
+    throw new BadRequestException('Invalid credentials');
+  }
+
+  // If user has a temp MFA secret but MFA not enabled, setup is required
+  if (user.mfaTempSecret && !user.mfaEnabled) {
+    return {
+      mfaSetupRequired: true,
+      userId: user._id.toString(),
+      message: 'Complete MFA setup',
+    };
+  }
+
+  // If MFA is enabled, require verification
+  if (user.mfaEnabled === true && user.mfaSecret) {
+    return {
+      mfaRequired: true,
+      userId: user._id.toString(),
+      message: 'MFA verification required',
+    };
+  }
+
+  // Default case: MFA setup required
+  return {
+    mfaSetupRequired: true,
+    userId: user._id.toString(),
+    message: 'MFA setup required',
+  };
+}
+
+// Setup MFA for a user and generate QR code for authenticator app
+async setupMfa(userId: string, role: string): Promise<SetupMfaResponse> {
+  const userService = this._roleServiceRegistry.getServiceByRole(role);
+  const userRepo = this._roleServiceRegistry.getRepoByRole(role);
+
+  const user = await userService.findById(userId);
+  if (!user) throw new UnauthorizedException('User not found');
+
+  if (user.mfaEnabled && user.mfaSecret) {
+    throw new BadRequestException('MFA is already enabled for this user');
+  }
+
+  // Generate secret key for Google Authenticator
+  const secret = speakeasy.generateSecret({ name: `MyApp (${user.email})` });
+
+  // Save temp MFA secret
+  await userRepo.updateById(userId, { mfaTempSecret: secret.base32 });
+
+  // Generate QR code for app scanning
+  const qrCode = await QrCode.toDataURL(secret.otpauth_url);
+
+  return { qrCode, manualKey: secret.base32 };
+}
+
+// Verify OTP during MFA setup and enable MFA
+async verifyMfaSetup(userId: string, otp: string, role: string): Promise<VerifyMfaSetupResponse> {
+  const userRepo = this._roleServiceRegistry.getRepoByRole(role);
+  const user = await userRepo.findById(userId);
+
+  if (!user || !user.mfaTempSecret) {
+    throw new BadRequestException('MFA setup not initiated');
+  }
+
+  // Verify OTP
+  const isValid = speakeasy.totp.verify({
+    secret: user.mfaTempSecret,
+    encoding: 'base32',
+    token: otp,
+    window: 1,
+  });
+
+  if (!isValid) throw new BadRequestException('Invalid OTP');
+
+  // Enable MFA and clear temp secret
+  await userRepo.updateById(userId, {
+    mfaSecret: user.mfaTempSecret,
+    mfaTempSecret: null,
+    mfaEnabled: true,
+  });
+
+  return { message: 'MFA enabled successfully' };
+}
+
+// Verify MFA OTP during login and return tokens
+async verifyMfaLogin(userId: string, otp: string, role: string): Promise<VerifyMfaLoginResponse> {
+  const userRepo = this._roleServiceRegistry.getRepoByRole(role);
+  const user = await userRepo.findById(userId);
+
+  if (!user || !user.mfaEnabled || !user.mfaSecret) {
+    throw new BadRequestException('MFA not enabled');
+  }
+
+  // Verify OTP
+  const isValid = speakeasy.totp.verify({
+    secret: user.mfaSecret,
+    encoding: 'base32',
+    token: otp,
+    window: 1,
+  });
+
+  if (!isValid) throw new BadRequestException('Invalid OTP');
+
+  // Generate JWT tokens
+  const accessToken = this._jwtService.signAccessToken({
+    sub: userId,
+    role: user.role,
+    isBlocked: false,
+  });
+
+  const refreshToken = this._jwtService.signRefreshToken({
+    sub: userId,
+    role: user.role,
+    isBlocked: false,
+  });
+
+  return { accessToken, refreshToken, user };
+}
+
+
   async initiatePasswordReset(email: string, role: string) {
-    const userService = this.roleServiceRegistry.getServiceByRole(role);
+    const userService = this._roleServiceRegistry.getServiceByRole(role);
     const user = await userService.findByEmail(email);
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const token = this.jwtService.signPasswordResetToken({
+    const token = this._jwtService.signPasswordResetToken({
       sub: user._id.toString(),
       role: user.role,
       isBlocked: false,
@@ -145,7 +254,7 @@ export class AuthService implements IAuthService {
 
     const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}&role=${role}`;
 
-    await this.mailService.sendResetLink(user.email, resetUrl);
+    await this._mailService.sendResetLink(user.email, resetUrl);
 
     return {
       message: 'Password reset link sent to your email',
@@ -158,13 +267,13 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Password is required');
     }
 
-    const payload = this.jwtService.verifyPasswordResetToken(token);
+    const payload = this._jwtService.verifyPasswordResetToken(token);
 
     const userId = payload.sub;
 
-    const hashedPassword = await PasswordUtil.hashPassword(password);
+    const hashedPassword = await this._passwordUtil.hashPassword(password);
 
-    const userService = this.roleServiceRegistry.getServiceByRole(role);
+    const userService = this._roleServiceRegistry.getServiceByRole(role);
     await userService.updatePassword(userId, hashedPassword);
 
     return {
@@ -178,13 +287,13 @@ export class AuthService implements IAuthService {
     role: 'user' | 'trainer' | 'admin',
     userId: string,
   ): Promise<{ accessToken: string; newRefreshToken: string }> {
-    const accessToken = this.jwtService.signAccessToken({
+    const accessToken = this._jwtService.signAccessToken({
       sub: userId,
       role: role,
       isBlocked: false,
     });
 
-    const newRefreshToken = this.jwtService.signRefreshToken({
+    const newRefreshToken = this._jwtService.signRefreshToken({
       sub: userId,
       role,
       isBlocked: false,
@@ -200,10 +309,10 @@ export class AuthService implements IAuthService {
     let user;
     const refreshTokenTTL = 7 * 24 * 60 * 60;
     if (role === 'trainer') {
-      user = await this.trainerService.findByEmail(googleUser.email);
+      user = await this._trainerService.findByEmail(googleUser.email);
 
       if (!user) {
-        user = await this.trainerRepo.create({
+        user = await this._trainerRepo.create({
           name: googleUser.name,
           email: googleUser.email,
           role: 'trainer',
@@ -214,9 +323,9 @@ export class AuthService implements IAuthService {
         });
       }
     } else if (role === 'user') {
-      user = await this.userService.findByEmail(googleUser.email);
+      user = await this._userService.findByEmail(googleUser.email);
       if (!user) {
-        user = await this.userRepo.create({
+        user = await this._userRepo.create({
           name: googleUser.name,
           email: googleUser.email,
           role: 'user',
@@ -228,17 +337,17 @@ export class AuthService implements IAuthService {
       }
     }
 
-    const accessToken = this.jwtService.signAccessToken({
+    const accessToken = this._jwtService.signAccessToken({
       sub: user._id,
       role: user.role,
       isBlocked: false,
     });
-    const refreshToken = this.jwtService.signRefreshToken({
+    const refreshToken = this._jwtService.signRefreshToken({
       sub: user._id,
       role: user.role,
       isBlocked: false,
     });
-    await this.redis.set(
+    await this._redis.set(
       refreshToken,
       user._id.toString(),
       'EX',
@@ -248,10 +357,20 @@ export class AuthService implements IAuthService {
     return { accessToken, refreshToken, user };
   }
 
+
+
   async googleLogin(
     code: string,
     role: string,
-  ): Promise<{ accessToken: string; refreshToken: string; user: BaseModel }> {
+  ): Promise<{
+    accessToken?: string;
+    refreshToken?: string;
+    user?: BaseModel;
+    mfaRequired?: boolean;
+    mfaSetupRequired?: boolean;
+    userId?: string;
+    message?: string;
+  }> {
     const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
       code,
       client_id: process.env.GOOGLE_CLIENT_ID,
@@ -273,64 +392,67 @@ export class AuthService implements IAuthService {
 
     const { email, name, picture, sub: googleId } = payload;
 
-    if (!email || !name || !picture || !googleId) {
-      throw new Error('No Data fount form payload');
+    if (!email || !name || !googleId) {
+      throw new Error('No data found from payload');
     }
 
-    if (role !== 'trainer' && role !== 'user') throw new Error('Invalid role');
+    if (role !== 'trainer' && role !== 'user') {
+      throw new Error('Invalid role');
+    }
+
+    // Find or create user
     let user;
-    const refreshTokenTTL = 7 * 24 * 60 * 60;
-    if (role === 'trainer') {
-      user = await this.trainerService.findByEmail(email);
+    const userService = this._roleServiceRegistry.getServiceByRole(role);
+    const userRepo = this._roleServiceRegistry.getRepoByRole(role);
 
-      if (!user) {
-        user = await this.trainerRepo.create({
-          name: name,
-          email: email,
-          role: 'trainer',
-          isVerified: false,
-          isBlocked: false,
-          googleId: googleId,
-          provider: 'google',
-          image: picture,
-        });
-      }
-    } else if (role === 'user') {
-      user = await this.userService.findByEmail(email);
-      if (!user) {
-        user = await this.userRepo.create({
-          name: name,
-          email: email,
-          role: 'user',
-          isVerified: false,
-          isBlocked: false,
-          googleId: googleId,
-          provider: 'google',
-          image: picture,
-        });
-      }
+    user = await userRepo.findAuthUserByEmail(email);
+
+    if (!user) {
+      // Create new user
+      user = await userRepo.create({
+        name,
+        email,
+        role,
+        isVerified: false,
+        isBlocked: false,
+        googleId,
+        provider: 'google',
+        image: picture,
+        mfaEnabled: false, // New users don't have MFA yet
+      });
     }
 
-    const accessToken = this.jwtService.signAccessToken({
-      sub: user._id,
-      role: user.role,
-      isBlocked: false,
-    });
-    const refreshToken = this.jwtService.signRefreshToken({
-      sub: user._id,
-      role: user.role,
-      isBlocked: false,
-    });
-    await this.redis.set(
-      refreshToken,
-      user._id.toString(),
-      'EX',
-      refreshTokenTTL,
-    );
-    return { accessToken, refreshToken, user };
+    console.log('user', user);
+
+    // ✅ CHECK MFA STATUS - Same logic as regular login
+
+    // If user has incomplete MFA setup
+    if (user.mfaTempSecret && !user.mfaEnabled) {
+      return {
+        mfaSetupRequired: true,
+        userId: user._id.toString(),
+        message: 'Complete MFA setup',
+      };
+    }
+
+    // If MFA is enabled, require verification
+    if (user.mfaEnabled === true && user.mfaSecret) {
+      return {
+        mfaRequired: true,
+        userId: user._id.toString(),
+        message: 'MFA verification required',
+      };
+    }
+
+    // If MFA not enabled, require setup
+    return {
+      mfaSetupRequired: true,
+      userId: user._id.toString(),
+      message: 'MFA setup required',
+    };
   }
 
   async getUser(id: string) {
-    return this.trainerRepo.findById(id);
+    return this._trainerRepo.findById(id);
   }
 }

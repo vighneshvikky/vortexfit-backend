@@ -44,11 +44,13 @@ export class AdminController {
       );
 
     setTokenCookies(response, accessToken, refreshToken);
+    const adminId = process.env.ADMIN_ID;
     return {
       message: 'Admin login successful',
       data: {
+        _id: process.env.ADMIN_ID,
         email: loginDto.email,
-        role: 'admin',
+        role: adminId,
       },
     };
   }
@@ -59,18 +61,13 @@ export class AdminController {
   async getUsers(
     @Query()
     query: UserQueryDto & {
-      filter?:
-        | UserFilter.ALL
-        | UserFilter.USER
-        | UserFilter.TRAINER
-        | UserFilter.BLOCKED;
+      filter?: UserFilter.USER | UserFilter.TRAINER | UserFilter.BLOCKED;
     },
   ) {
-    const { page = '1', limit = '10', ...rest } = query;
+    const { page = '1',  ...rest } = query;
     return this.adminService.getUsers({
       ...rest,
       page: parseInt(page),
-      limit: parseInt(limit),
       filter: query.filter,
     });
   }

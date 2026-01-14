@@ -11,7 +11,7 @@ import { Type } from 'class-transformer';
 
 export class UserProfileDto {
   @IsString()
-  id: string;
+  _id: string;
 
   @IsString()
   name: string;
@@ -20,7 +20,7 @@ export class UserProfileDto {
   email: string;
 
   @IsString()
-  image? : string;
+  image?: string;
 
   @IsBoolean()
   isVerified?: boolean;
@@ -72,6 +72,23 @@ export class UserProfileDto {
   @IsArray()
   @IsString({ each: true })
   equipments?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  mfaEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  mfaSecret?: string;
+
+  @IsOptional()
+  @IsString()
+  mfaTempSecret?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  recoveryCodes?: string[];
 
   @IsDate()
   @Type(() => Date)

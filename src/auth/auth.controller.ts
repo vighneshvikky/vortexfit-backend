@@ -32,49 +32,88 @@ import { TokenPayload } from './interfaces/token-payload.interface';
 @Controller('auth')
 export class AuthController {
   constructor(
-    @Inject(OTP_SERVICE) private readonly otpService: IOtpService,
-    @Inject(AUTH_SERVICE) private readonly authService: IAuthService,
-    @Inject(IJwtTokenService) private readonly jwtService: IJwtTokenService,
+    @Inject(OTP_SERVICE) private readonly _otpService: IOtpService,
+    @Inject(AUTH_SERVICE) private readonly _authService: IAuthService,
+    @Inject(IJwtTokenService) private readonly _jwtService: IJwtTokenService,
   ) {}
   @Post('signup')
   async signUp(@Body() body: SignupDto) {
-    return this.authService.signUp(body);
+    return this._authService.signUp(body);
   }
   @Post('verify-otp')
   async verifyOtp(@Body() body: VerifyOtpDto) {
-    return await this.otpService.verifyOtp(body);
+    return await this._otpService.verifyOtp(body);
   }
 
   @Post('resend-otp')
   async resendOtp(@Body() body: ResendOtpDto) {
-    return await this.otpService.resendOtp(body);
+    return await this._otpService.resendOtp(body);
   }
 
+
+
   @Post('login')
-  async login(
-    @Body() body: LoginDto,
+  async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
+    console.log('body', body);
+    const result = await this._authService.verifyLogin(body);
+
+    return {
+      message: result.message,
+      data: result,
+    };
+  }
+
+  @Post('mfa/setup')
+  async setupMfa(@Body('userId') userId: string, @Body('role') role: string) {
+    console.log('userId', userId);
+    console.log('role for setup', role);
+    const data = await this._authService.setupMfa(userId, role);
+
+    console.log('data for set mfa', data);
+
+    return { data };
+  }
+
+  @Post('mfa/verify-login')
+  async verifyMfaLogin(
+    @Body('userId') userId: string,
+    @Body('otp') otp: string,
+    @Body('role') role: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, user } =
-      await this.authService.verifyLogin(body);
+    const result = await this._authService.verifyMfaLogin(userId, otp, role);
 
-    setTokenCookies(res, accessToken, refreshToken);
+    setTokenCookies(res, result.accessToken, result.refreshToken);
     return {
       message: 'Login successfully',
       data: {
-        user,
+        user: result.user,
       },
+    };
+  }
+
+  @Post('mfa/verify-setup')
+  async verifyMfaSetup(
+    @Body('userId') userId: string,
+    @Body('otp') otp: string,
+    @Body('role') role: string,
+  ) {
+    const result = await this._authService.verifyMfaSetup(userId, otp, role);
+
+    return {
+      message: result.message,
+
     };
   }
 
   @Post('forgot-password')
   async forgotPassword(@Body() { email, role }: ForgotPasswordDto) {
-    return this.authService.initiatePasswordReset(email, role);
+    return this._authService.initiatePasswordReset(email, role);
   }
 
   @Post('reset-password')
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    const data = await this.authService.resetPassword(
+    const data = await this._authService.resetPassword(
       dto.token,
       dto.role,
       dto.newPassword,
@@ -91,14 +130,14 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const payload = this.jwtService.decodeToken(refreshToken);
+    const payload = this._jwtService.decodeToken(refreshToken);
 
     if (!payload?.sub || !payload?.role) {
       throw new UnauthorizedException('Invalid refresh token payload');
     }
 
     const { accessToken, newRefreshToken } =
-      await this.authService.rotateRefreshToken(
+      await this._authService.rotateRefreshToken(
         refreshToken,
         payload.role,
         payload.sub,
@@ -112,49 +151,62 @@ export class AuthController {
     });
   }
 
-  @Get('google/redirect')
-  redirectGoogle(@Query('role') role: string, @Res() res: Response) {
-    const redirectUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    redirectUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID!);
-    redirectUrl.searchParams.set(
-      'redirect_uri',
-      process.env.GOOGLE_REDIRECT_URI!,
-    );
-    redirectUrl.searchParams.set('response_type', 'code');
-    redirectUrl.searchParams.set('scope', 'openid email profile');
-    redirectUrl.searchParams.set('state', role);
 
-    return res.redirect(redirectUrl.toString());
+
+  @Get('google/redirect')
+  async googleRedirect(@Query('role') role: string, @Res() res: Response) {
+    const state = Buffer.from(JSON.stringify({ role })).toString('base64');
+
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams(
+      {
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
+        response_type: 'code',
+        scope: 'email profile',
+        state, 
+      },
+    )}`;
+
+    res.redirect(googleAuthUrl);
   }
 
+
+
   @Get('google/callback')
-  async handleGoogleCallback(
+  async googleCallback(
     @Query('code') code: string,
-    @Query('state') role: string,
+    @Query('state') state: string,
     @Res() res: Response,
   ) {
-    const { accessToken, refreshToken, user } =
-      await this.authService.googleLogin(code, role);
+    try {
+    
+      const { role } = JSON.parse(Buffer.from(state, 'base64').toString());
 
-    setTokenCookies(res, accessToken, refreshToken);
+      const result = await this._authService.googleLogin(code, role);
 
-    const redirectUrl = new URL('http://localhost:4200/auth/callback');
-    redirectUrl.searchParams.set('email', user.email);
-    redirectUrl.searchParams.set('name', user.name);
-    redirectUrl.searchParams.set('role', user.role);
-    redirectUrl.searchParams.set('isVerified', String(user.isVerified));
+     
+      if (result.mfaRequired) {
+        return res.redirect(
+          `${process.env.FRONTEND_URL}/auth/mfa-verify?userId=${result.userId}&role=${role}&provider=google`,
+        );
+      }
 
-    return res.redirect(
-      `http://localhost:4200/auth/callback?user=${encodeURIComponent(JSON.stringify(user))}`,
-    );
+      if (result.mfaSetupRequired) {
+        return res.redirect(
+          `${process.env.FRONTEND_URL}/auth/mfa-setup?userId=${result.userId}&role=${role}&provider=google`,
+        );
+      }
+
+   
+      res.redirect(`${process.env.FRONTEND_URL}/auth/login?role=${role}`);
+    } catch (error) {
+      console.error('Google callback error:', error);
+    }
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async logOut(
-    @GetUser() user: TokenPayload,
-    @Res() res: Response,
-  ): Promise<void> {
+  logOut(@GetUser() user: TokenPayload, @Res() res: Response) {
     res.clearCookie('access_token', {
       httpOnly: true,
       secure: true,

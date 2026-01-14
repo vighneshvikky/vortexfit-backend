@@ -1,0 +1,44 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main   # Trigger workflow on pushes to main branch
+
+jobs:
+  build-and-deploy-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout backend code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3️⃣ Install dependencies and build NestJS backend
+      - name: Build backend
+        run: |
+          npm install
+          npm run build
+        working-directory: .
+
+      # 4️⃣ Deploy to EC2 via SSH
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "Deployed backend to EC2..."
+            cd /home/ec2-user/vortexfit-backend
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart all
+            echo "Deployment completed!"

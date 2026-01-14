@@ -58,6 +58,6 @@ import { PasswordUtil } from 'src/common/helpers/password.util';
       useClass: PasswordUtil,
     },
   ],
-  exports: [IJwtTokenService],
+  exports: [IJwtTokenService, PASSWORD_UTIL],
 })
 export class AuthModule {}

@@ -1,31 +1,19 @@
-export class UserModel {
-  id: string;
-  name: string;
-  email: string;
-  password?: string;
-  role: 'user' | 'trainer' | 'admin';
-  provider: 'local' | 'google';
-  isBlocked: boolean;
-  isVerified: boolean;
-  googleId?: string;
-  image?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+import { BaseModel } from 'src/common/model/base-model';
 
-  dob?: string;
-  height?: number;
-  heightUnit?: string;
-  weight?: number;
-  weightUnit?: string;
-  fitnessLevel?: string;
-  fitnessGoals?: string[];
-  trainingTypes?: string[];
-  preferredTime?: string;
-  equipments?: string[];
-
-  constructor(partial: Partial<UserModel>) {
-    Object.assign(this, partial);
+export class UserModel extends BaseModel {
+  constructor(
+    public readonly dob?: string,
+    public readonly height?: number,
+    public readonly heightUnit?: string,
+    public readonly weight?: number,
+    public readonly weightUnit?: string,
+    public readonly fitnessLevel?: string,
+    public readonly fitnessGoals?: string[],
+    public readonly trainingTypes?: string[],
+    public readonly preferredTime?: string,
+    public readonly equipments?: string[],
+    
+  ) {
+    super();
   }
-
-
 }

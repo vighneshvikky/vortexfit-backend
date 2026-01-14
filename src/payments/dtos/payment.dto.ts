@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsDateString } from 'class-validator';
+import { IsString, IsNumber, IsDateString, IsNotEmpty } from 'class-validator';
 
 export class CreateOrderDto {
   @IsString()
@@ -41,4 +41,49 @@ export class VerifyPaymentDto {
 
   @IsNumber()
   amount: number;
+}
+
+export class VerifySubscriptionPaymentDto {
+  @IsString()
+  @IsNotEmpty()
+  planId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  razorpay_order_id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  razorpay_payment_id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  razorpay_signature: string;
+}
+
+
+
+
+
+export class LockSlotDto {
+  @IsNotEmpty()
+  @IsString()
+  trainerId: string;
+
+
+  @IsNotEmpty()
+  @IsString()
+  date: string;
+
+  @IsNotEmpty()
+  @IsString()
+  timeSlot: string;
+
+  @IsNotEmpty()
+  @IsNumber()
+  amount: number;
+
+  @IsNotEmpty()
+  @IsString()
+  sessionType: string;
 }
