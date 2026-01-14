@@ -50,22 +50,7 @@ export class AuthController {
     return await this._otpService.resendOtp(body);
   }
 
-  // @Post('login')
-  // async login(
-  //   @Body() body: LoginDto,
-  //   @Res({ passthrough: true }) res: Response,
-  // ) {
-  //   const { accessToken, refreshToken, user } =
-  //     await this._authService.verifyLogin(body);
 
-  //   setTokenCookies(res, accessToken, refreshToken);
-  //   return {
-  //     message: 'Login successfully',
-  //     data: {
-  //       user,
-  //     },
-  //   };
-  // }
 
   @Post('login')
   async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
@@ -166,20 +151,7 @@ export class AuthController {
     });
   }
 
-  // @Get('google/redirect')
-  // redirectGoogle(@Query('role') role: string, @Res() res: Response) {
-  //   const redirectUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-  //   redirectUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID!);
-  //   redirectUrl.searchParams.set(
-  //     'redirect_uri',
-  //     process.env.GOOGLE_REDIRECT_URI!,
-  //   );
-  //   redirectUrl.searchParams.set('response_type', 'code');
-  //   redirectUrl.searchParams.set('scope', 'openid email profile');
-  //   redirectUrl.searchParams.set('state', role);
 
-  //   return res.redirect(redirectUrl.toString());
-  // }
 
   @Get('google/redirect')
   async googleRedirect(@Query('role') role: string, @Res() res: Response) {
@@ -191,49 +163,28 @@ export class AuthController {
         redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
         response_type: 'code',
         scope: 'email profile',
-        state, // Pass role via state
+        state, 
       },
     )}`;
 
     res.redirect(googleAuthUrl);
   }
 
-  // @Get('google/callback')
-  // async handleGoogleCallback(
-  //   @Query('code') code: string,
-  //   @Query('state') role: string,
-  //   @Res() res: Response,
-  // ) {
-  //   const { accessToken, refreshToken, user } =
-  //     await this._authService.googleLogin(code, role);
 
-  //   setTokenCookies(res, accessToken, refreshToken);
-  //   console.log('Google callback hit', { code, role, user });
-
-  //   const redirectUrl = new URL(`${process.env.FRONTEND_URL}/auth/callback`);
-  //   redirectUrl.searchParams.set('email', user.email);
-  //   redirectUrl.searchParams.set('name', user.name);
-  //   redirectUrl.searchParams.set('role', user.role);
-  //   redirectUrl.searchParams.set('isVerified', String(user.isVerified));
-
-  //   return res.redirect(
-  //     `${process.env.FRONTEND_URL}/auth/callback?user=${encodeURIComponent(JSON.stringify(user))}`,
-  //   );
-  // }
 
   @Get('google/callback')
   async googleCallback(
     @Query('code') code: string,
-    @Query('state') state: string, // Contains role
+    @Query('state') state: string,
     @Res() res: Response,
   ) {
     try {
-      // Decode state to get role
+    
       const { role } = JSON.parse(Buffer.from(state, 'base64').toString());
 
       const result = await this._authService.googleLogin(code, role);
 
-      // ✅ If MFA required, redirect to MFA pages
+     
       if (result.mfaRequired) {
         return res.redirect(
           `${process.env.FRONTEND_URL}/auth/mfa-verify?userId=${result.userId}&role=${role}&provider=google`,
@@ -246,7 +197,7 @@ export class AuthController {
         );
       }
 
-      // This shouldn't happen with MFA enforced
+   
       res.redirect(`${process.env.FRONTEND_URL}/auth/login?role=${role}`);
     } catch (error) {
       console.error('Google callback error:', error);

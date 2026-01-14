@@ -104,157 +104,139 @@ export class AuthService implements IAuthService {
     };
   }
 
-  // ✅ FIXED: Check mfaEnabled property correctly
-  async verifyLogin(body: LoginDto): Promise<VerifyLoginResponse> {
-    const userRepo = this._roleServiceRegistry.getRepoByRole(body.role);
 
-    const user = await userRepo.findAuthUserByEmail(body.email);
+ // Verifies user login credentials and checks MFA status
+async verifyLogin(body: LoginDto): Promise<VerifyLoginResponse> {
+  const userRepo = this._roleServiceRegistry.getRepoByRole(body.role);
 
-    console.log('user data from vighnesh', user);
+  // Find user by email
+  const user = await userRepo.findAuthUserByEmail(body.email);
 
-    console.log('LOGIN USER DATA:', {
-      id: user!._id,
-      email: user!.email,
-      mfaEnabled: user!.mfaEnabled,
-      mfaSecret: !!user!.mfaSecret,
-      mfaTempSecret: user!.mfaTempSecret,
-      typeOfMfaEnabled: typeof user!.mfaEnabled,
-    });
+  // If user not found or invalid password/id, throw error
+  if (!user || typeof user.password !== 'string' || typeof user._id === 'undefined') {
+    throw new UnauthorizedException('Invalid credentials');
+  }
 
-    if (
-      !user ||
-      typeof user.password !== 'string' ||
-      typeof user._id === 'undefined'
-    ) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+  // Compare password
+  const isValid = await this._passwordUtil.comparePassword(body.password, user.password);
+  if (!isValid) {
+    throw new BadRequestException('Invalid credentials');
+  }
 
-    const isValid = await this._passwordUtil.comparePassword(
-      body.password,
-      user.password,
-    );
-
-    if (!isValid) {
-      throw new BadRequestException('Invalid credentials');
-    }
-
-    if (user.mfaTempSecret && !user.mfaEnabled) {
-      return {
-        mfaSetupRequired: true,
-        userId: user._id.toString(),
-        message: 'Complete MFA setup',
-      };
-    }
-
-
-    if (user.mfaEnabled === true && user.mfaSecret) {
-      return {
-        mfaRequired: true,
-        userId: user._id.toString(),
-        message: 'MFA verification required',
-      };
-    }
-
+  // If user has a temp MFA secret but MFA not enabled, setup is required
+  if (user.mfaTempSecret && !user.mfaEnabled) {
     return {
       mfaSetupRequired: true,
       userId: user._id.toString(),
-      message: 'MFA setup required',
+      message: 'Complete MFA setup',
     };
   }
 
-  async setupMfa(userId: string, role: string): Promise<SetupMfaResponse> {
-    const userService = this._roleServiceRegistry.getServiceByRole(role);
-    const userRepo = this._roleServiceRegistry.getRepoByRole(role);
-
-    const user = await userService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    if (user.mfaEnabled && user.mfaSecret) {
-      throw new BadRequestException('MFA is already enabled for this user');
-    }
-
-    const secret = speakeasy.generateSecret({ name: `MyApp (${user.email})` });
-
-    // Store in temporary field
-    await userRepo.updateById(userId, { mfaTempSecret: secret.base32 });
-
-    const qrCode = await QrCode.toDataURL(secret.otpauth_url);
-
-    return { qrCode, manualKey: secret.base32 };
-  }
-
-  async verifyMfaSetup(userId: string, otp: string, role: string): Promise<VerifyMfaSetupResponse> {
-    const userRepo = this._roleServiceRegistry.getRepoByRole(role);
-    const user = await userRepo.findById(userId);
-
-    if (!user || !user.mfaTempSecret) {
-      throw new BadRequestException('MFA setup not initiated');
-    }
-
-    const isValid = speakeasy.totp.verify({
-      secret: user.mfaTempSecret,
-      encoding: 'base32',
-      token: otp,
-      window: 1,
-    });
-
-    if (!isValid) {
-      throw new BadRequestException('Invalid OTP');
-    }
-
-    // const recoveryCodes = Array.from({ length: 5 }).map(() =>
-    //   Math.random().toString(36).substring(2, 10).toUpperCase(),
-    // );
-
-    // ✅ Move temp secret to permanent secret and enable MFA
-    await userRepo.updateById(userId, {
-      mfaSecret: user.mfaTempSecret,
-      mfaTempSecret: null, // Clear temp secret
-      mfaEnabled: true, // Enable MFA
-      // recoveryCodes,
-    });
-
+  // If MFA is enabled, require verification
+  if (user.mfaEnabled === true && user.mfaSecret) {
     return {
-      message: 'MFA enabled successfully',
-      // recoveryCodes,
+      mfaRequired: true,
+      userId: user._id.toString(),
+      message: 'MFA verification required',
     };
   }
 
-  async verifyMfaLogin(userId: string, otp: string, role: string): Promise<VerifyMfaLoginResponse> {
-    const userRepo = this._roleServiceRegistry.getRepoByRole(role);
-    const user = await userRepo.findById(userId);
+  // Default case: MFA setup required
+  return {
+    mfaSetupRequired: true,
+    userId: user._id.toString(),
+    message: 'MFA setup required',
+  };
+}
 
-    if (!user || !user.mfaEnabled || !user.mfaSecret) {
-      throw new BadRequestException('MFA not enabled');
-    }
+// Setup MFA for a user and generate QR code for authenticator app
+async setupMfa(userId: string, role: string): Promise<SetupMfaResponse> {
+  const userService = this._roleServiceRegistry.getServiceByRole(role);
+  const userRepo = this._roleServiceRegistry.getRepoByRole(role);
 
-    const isValid = speakeasy.totp.verify({
-      secret: user.mfaSecret,
-      encoding: 'base32',
-      token: otp,
-      window: 1,
-    });
+  const user = await userService.findById(userId);
+  if (!user) throw new UnauthorizedException('User not found');
 
-    if (!isValid) {
-      throw new BadRequestException('Invalid OTP');
-    }
-
-    const accessToken = this._jwtService.signAccessToken({
-      sub: userId,
-      role: user.role,
-      isBlocked: false,
-    });
-
-    const refreshToken = this._jwtService.signRefreshToken({
-      sub: userId,
-      role: user.role,
-      isBlocked: false,
-    });
-
-    return { accessToken, refreshToken, user };
+  if (user.mfaEnabled && user.mfaSecret) {
+    throw new BadRequestException('MFA is already enabled for this user');
   }
+
+  // Generate secret key for Google Authenticator
+  const secret = speakeasy.generateSecret({ name: `MyApp (${user.email})` });
+
+  // Save temp MFA secret
+  await userRepo.updateById(userId, { mfaTempSecret: secret.base32 });
+
+  // Generate QR code for app scanning
+  const qrCode = await QrCode.toDataURL(secret.otpauth_url);
+
+  return { qrCode, manualKey: secret.base32 };
+}
+
+// Verify OTP during MFA setup and enable MFA
+async verifyMfaSetup(userId: string, otp: string, role: string): Promise<VerifyMfaSetupResponse> {
+  const userRepo = this._roleServiceRegistry.getRepoByRole(role);
+  const user = await userRepo.findById(userId);
+
+  if (!user || !user.mfaTempSecret) {
+    throw new BadRequestException('MFA setup not initiated');
+  }
+
+  // Verify OTP
+  const isValid = speakeasy.totp.verify({
+    secret: user.mfaTempSecret,
+    encoding: 'base32',
+    token: otp,
+    window: 1,
+  });
+
+  if (!isValid) throw new BadRequestException('Invalid OTP');
+
+  // Enable MFA and clear temp secret
+  await userRepo.updateById(userId, {
+    mfaSecret: user.mfaTempSecret,
+    mfaTempSecret: null,
+    mfaEnabled: true,
+  });
+
+  return { message: 'MFA enabled successfully' };
+}
+
+// Verify MFA OTP during login and return tokens
+async verifyMfaLogin(userId: string, otp: string, role: string): Promise<VerifyMfaLoginResponse> {
+  const userRepo = this._roleServiceRegistry.getRepoByRole(role);
+  const user = await userRepo.findById(userId);
+
+  if (!user || !user.mfaEnabled || !user.mfaSecret) {
+    throw new BadRequestException('MFA not enabled');
+  }
+
+  // Verify OTP
+  const isValid = speakeasy.totp.verify({
+    secret: user.mfaSecret,
+    encoding: 'base32',
+    token: otp,
+    window: 1,
+  });
+
+  if (!isValid) throw new BadRequestException('Invalid OTP');
+
+  // Generate JWT tokens
+  const accessToken = this._jwtService.signAccessToken({
+    sub: userId,
+    role: user.role,
+    isBlocked: false,
+  });
+
+  const refreshToken = this._jwtService.signRefreshToken({
+    sub: userId,
+    role: user.role,
+    isBlocked: false,
+  });
+
+  return { accessToken, refreshToken, user };
+}
+
 
   async initiatePasswordReset(email: string, role: string) {
     const userService = this._roleServiceRegistry.getServiceByRole(role);
