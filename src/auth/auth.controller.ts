@@ -68,7 +68,7 @@ export class AuthController {
   // }
 
   @Post('login')
-  async login(@Body() body: any, @Res({ passthrough: true }) res: Response) {
+  async login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
     console.log('body', body);
     const result = await this._authService.verifyLogin(body);
 
@@ -117,9 +117,7 @@ export class AuthController {
 
     return {
       message: result.message,
-      data: {
-        recoveryCodes: result.recoveryCodes,
-      },
+
     };
   }
 

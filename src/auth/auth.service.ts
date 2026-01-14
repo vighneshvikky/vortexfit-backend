@@ -46,6 +46,7 @@ import {
   PASSWORD_UTIL,
 } from 'src/common/interface/IPasswordUtil.interface';
 import { User } from '@/user/schemas/user.schema';
+import { SetupMfaResponse, VerifyLoginResponse, VerifyMfaLoginResponse, VerifyMfaSetupResponse } from './interfaces/api.response.interface';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -104,14 +105,12 @@ export class AuthService implements IAuthService {
   }
 
   // ✅ FIXED: Check mfaEnabled property correctly
-  async verifyLogin(body: any) {
-
+  async verifyLogin(body: LoginDto): Promise<VerifyLoginResponse> {
     const userRepo = this._roleServiceRegistry.getRepoByRole(body.role);
 
     const user = await userRepo.findAuthUserByEmail(body.email);
 
     console.log('user data from vighnesh', user);
-  
 
     console.log('LOGIN USER DATA:', {
       id: user!._id,
@@ -136,7 +135,7 @@ export class AuthService implements IAuthService {
     );
 
     if (!isValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new BadRequestException('Invalid credentials');
     }
 
     if (user.mfaTempSecret && !user.mfaEnabled) {
@@ -147,8 +146,7 @@ export class AuthService implements IAuthService {
       };
     }
 
-    // ✅ FIX: Check if MFA is ALREADY enabled
-    // If mfaEnabled is true AND mfaSecret exists, user needs to verify
+
     if (user.mfaEnabled === true && user.mfaSecret) {
       return {
         mfaRequired: true,
@@ -157,7 +155,6 @@ export class AuthService implements IAuthService {
       };
     }
 
-    // ✅ If MFA is not enabled, require setup
     return {
       mfaSetupRequired: true,
       userId: user._id.toString(),
@@ -165,7 +162,7 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async setupMfa(userId: string, role: string) {
+  async setupMfa(userId: string, role: string): Promise<SetupMfaResponse> {
     const userService = this._roleServiceRegistry.getServiceByRole(role);
     const userRepo = this._roleServiceRegistry.getRepoByRole(role);
 
@@ -174,7 +171,6 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    // ✅ FIX: Don't generate new secret if MFA is already enabled
     if (user.mfaEnabled && user.mfaSecret) {
       throw new BadRequestException('MFA is already enabled for this user');
     }
@@ -189,7 +185,7 @@ export class AuthService implements IAuthService {
     return { qrCode, manualKey: secret.base32 };
   }
 
-  async verifyMfaSetup(userId: string, otp: string, role: string) {
+  async verifyMfaSetup(userId: string, otp: string, role: string): Promise<VerifyMfaSetupResponse> {
     const userRepo = this._roleServiceRegistry.getRepoByRole(role);
     const user = await userRepo.findById(userId);
 
@@ -208,30 +204,30 @@ export class AuthService implements IAuthService {
       throw new BadRequestException('Invalid OTP');
     }
 
-    const recoveryCodes = Array.from({ length: 5 }).map(() =>
-      Math.random().toString(36).substring(2, 10).toUpperCase(),
-    );
+    // const recoveryCodes = Array.from({ length: 5 }).map(() =>
+    //   Math.random().toString(36).substring(2, 10).toUpperCase(),
+    // );
 
     // ✅ Move temp secret to permanent secret and enable MFA
     await userRepo.updateById(userId, {
       mfaSecret: user.mfaTempSecret,
       mfaTempSecret: null, // Clear temp secret
       mfaEnabled: true, // Enable MFA
-      recoveryCodes,
+      // recoveryCodes,
     });
 
     return {
       message: 'MFA enabled successfully',
-      recoveryCodes,
+      // recoveryCodes,
     };
   }
 
-  async verifyMfaLogin(userId: string, otp: string, role: string) {
+  async verifyMfaLogin(userId: string, otp: string, role: string): Promise<VerifyMfaLoginResponse> {
     const userRepo = this._roleServiceRegistry.getRepoByRole(role);
     const user = await userRepo.findById(userId);
 
     if (!user || !user.mfaEnabled || !user.mfaSecret) {
-      throw new UnauthorizedException('MFA not enabled');
+      throw new BadRequestException('MFA not enabled');
     }
 
     const isValid = speakeasy.totp.verify({
@@ -242,7 +238,7 @@ export class AuthService implements IAuthService {
     });
 
     if (!isValid) {
-      throw new UnauthorizedException('Invalid OTP');
+      throw new BadRequestException('Invalid OTP');
     }
 
     const accessToken = this._jwtService.signAccessToken({
@@ -379,180 +375,100 @@ export class AuthService implements IAuthService {
     return { accessToken, refreshToken, user };
   }
 
-  // async googleLogin(
-  //   code: string,
-  //   role: string,
-  // ): Promise<{ accessToken: string; refreshToken: string; user: BaseModel }> {
-  //   const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
-  //     code,
-  //     client_id: process.env.GOOGLE_CLIENT_ID,
-  //     client_secret: process.env.GOOGLE_CLIENT_SECRET,
-  //     redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-  //     grant_type: 'authorization_code',
-  //   });
 
-  //   const id_token = tokenRes.data.id_token;
-
-  //   const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-  //   const ticket = await client.verifyIdToken({
-  //     idToken: id_token,
-  //     audience: process.env.GOOGLE_CLIENT_ID,
-  //   });
-  //   const payload = ticket.getPayload();
-
-  //   if (!payload) throw new Error('Invalid Google token payload');
-
-  //   const { email, name, picture, sub: googleId } = payload;
-
-  //   if (!email || !name || !picture || !googleId) {
-  //     throw new Error('No Data fount form payload');
-  //   }
-
-  //   if (role !== 'trainer' && role !== 'user') throw new Error('Invalid role');
-  //   let user;
-  //   const refreshTokenTTL = 7 * 24 * 60 * 60;
-  //   if (role === 'trainer') {
-  //     user = await this._trainerService.findByEmail(email);
-
-  //     if (!user) {
-  //       user = await this._trainerRepo.create({
-  //         name: name,
-  //         email: email,
-  //         role: 'trainer',
-  //         isVerified: false,
-  //         isBlocked: false,
-  //         googleId: googleId,
-  //         provider: 'google',
-  //         image: picture,
-  //       });
-  //     }
-  //   } else if (role === 'user') {
-  //     user = await this._userService.findByEmail(email);
-  //     if (!user) {
-  //       user = await this._userRepo.create({
-  //         name: name,
-  //         email: email,
-  //         role: 'user',
-  //         isVerified: false,
-  //         isBlocked: false,
-  //         googleId: googleId,
-  //         provider: 'google',
-  //         image: picture,
-  //       });
-  //     }
-  //   }
-
-  //   const accessToken = this._jwtService.signAccessToken({
-  //     sub: user._id,
-  //     role: user.role,
-  //     isBlocked: false,
-  //   });
-  //   const refreshToken = this._jwtService.signRefreshToken({
-  //     sub: user._id,
-  //     role: user.role,
-  //     isBlocked: false,
-  //   });
-  //   await this._redis.set(
-  //     refreshToken,
-  //     user._id.toString(),
-  //     'EX',
-  //     refreshTokenTTL,
-  //   );
-  //   return { accessToken, refreshToken, user };
-  // }
 
   async googleLogin(
-  code: string,
-  role: string,
-): Promise<{ 
-  accessToken?: string; 
-  refreshToken?: string; 
-  user?: BaseModel;
-  mfaRequired?: boolean;
-  mfaSetupRequired?: boolean;
-  userId?: string;
-  message?: string;
-}> {
-  const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
-    code,
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-    grant_type: 'authorization_code',
-  });
-
-  const id_token = tokenRes.data.id_token;
-
-  const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-  const ticket = await client.verifyIdToken({
-    idToken: id_token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
-  const payload = ticket.getPayload();
-
-  if (!payload) throw new Error('Invalid Google token payload');
-
-  const { email, name, picture, sub: googleId } = payload;
-
-  if (!email || !name || !googleId) {
-    throw new Error('No data found from payload');
-  }
-
-  if (role !== 'trainer' && role !== 'user') {
-    throw new Error('Invalid role');
-  }
-
-  // Find or create user
-  let user;
-  const userService = this._roleServiceRegistry.getServiceByRole(role);
-  const userRepo = this._roleServiceRegistry.getRepoByRole(role);
-
-  user = await userRepo.findAuthUserByEmail(email);
-
-  if (!user) {
-    // Create new user
-    user = await userRepo.create({
-      name,
-      email,
-      role,
-      isVerified: false,
-      isBlocked: false,
-      googleId,
-      provider: 'google',
-      image: picture,
-      mfaEnabled: false, // New users don't have MFA yet
+    code: string,
+    role: string,
+  ): Promise<{
+    accessToken?: string;
+    refreshToken?: string;
+    user?: BaseModel;
+    mfaRequired?: boolean;
+    mfaSetupRequired?: boolean;
+    userId?: string;
+    message?: string;
+  }> {
+    const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+      grant_type: 'authorization_code',
     });
-  }
 
-  console.log('user', user)
+    const id_token = tokenRes.data.id_token;
 
-  // ✅ CHECK MFA STATUS - Same logic as regular login
-  
-  // If user has incomplete MFA setup
-  if (user.mfaTempSecret && !user.mfaEnabled) {
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    if (!payload) throw new Error('Invalid Google token payload');
+
+    const { email, name, picture, sub: googleId } = payload;
+
+    if (!email || !name || !googleId) {
+      throw new Error('No data found from payload');
+    }
+
+    if (role !== 'trainer' && role !== 'user') {
+      throw new Error('Invalid role');
+    }
+
+    // Find or create user
+    let user;
+    const userService = this._roleServiceRegistry.getServiceByRole(role);
+    const userRepo = this._roleServiceRegistry.getRepoByRole(role);
+
+    user = await userRepo.findAuthUserByEmail(email);
+
+    if (!user) {
+      // Create new user
+      user = await userRepo.create({
+        name,
+        email,
+        role,
+        isVerified: false,
+        isBlocked: false,
+        googleId,
+        provider: 'google',
+        image: picture,
+        mfaEnabled: false, // New users don't have MFA yet
+      });
+    }
+
+    console.log('user', user);
+
+    // ✅ CHECK MFA STATUS - Same logic as regular login
+
+    // If user has incomplete MFA setup
+    if (user.mfaTempSecret && !user.mfaEnabled) {
+      return {
+        mfaSetupRequired: true,
+        userId: user._id.toString(),
+        message: 'Complete MFA setup',
+      };
+    }
+
+    // If MFA is enabled, require verification
+    if (user.mfaEnabled === true && user.mfaSecret) {
+      return {
+        mfaRequired: true,
+        userId: user._id.toString(),
+        message: 'MFA verification required',
+      };
+    }
+
+    // If MFA not enabled, require setup
     return {
       mfaSetupRequired: true,
       userId: user._id.toString(),
-      message: 'Complete MFA setup',
+      message: 'MFA setup required',
     };
   }
-
-  // If MFA is enabled, require verification
-  if (user.mfaEnabled === true && user.mfaSecret) {
-    return {
-      mfaRequired: true,
-      userId: user._id.toString(),
-      message: 'MFA verification required',
-    };
-  }
-
-  // If MFA not enabled, require setup
-  return {
-    mfaSetupRequired: true,
-    userId: user._id.toString(),
-    message: 'MFA setup required',
-  };
-}
 
   async getUser(id: string) {
     return this._trainerRepo.findById(id);

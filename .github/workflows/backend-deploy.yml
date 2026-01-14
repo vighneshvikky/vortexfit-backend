@@ -36,7 +36,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             echo "Deployed backend to EC2..."
-            cd /home/ubuntu/vortexfit-backend
+            cd /home/ec2-user/vortexfit-backend
             git pull origin main
             npm install
             npm run build
